@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://bdvt714idmpo3"]
+
+[ext_resource type="Script" uid="uid://jd1t3ule1gmr" path="res://scripts/hand/hand_manager.gd" id="1_h2fjb"]
+
+[node name="HandManager" type="HBoxContainer" unique_id=1408419153]
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_h2fjb")
