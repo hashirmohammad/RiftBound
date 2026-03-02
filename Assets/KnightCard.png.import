@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bnqryqquvuxct"
-path="res://.godot/imported/RiftBoundBoard.jpg-3743a475a5fb3fba60d6bc930d6a904a.ctex"
+uid="uid://t4wicqajqes3"
+path="res://.godot/imported/KnightCard.png-c4e1cb491f2b3ffd8ce23f44c1ce3b7f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://RiftBoundBoard.jpg"
-dest_files=["res://.godot/imported/RiftBoundBoard.jpg-3743a475a5fb3fba60d6bc930d6a904a.ctex"]
+source_file="res://Assets/KnightCard.png"
+dest_files=["res://.godot/imported/KnightCard.png-c4e1cb491f2b3ffd8ce23f44c1ce3b7f.ctex"]
 
 [params]
 

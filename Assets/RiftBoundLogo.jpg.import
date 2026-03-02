@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bkxid40s3iqyh"
-path="res://.godot/imported/RiftBoundLogo.jpg-58ed5e86b6f1f21fb9ff8e23b5c525b8.ctex"
+path="res://.godot/imported/RiftBoundLogo.jpg-3e6fcabb38b731fd00a45250f12bad0c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://RiftBoundLogo.jpg"
-dest_files=["res://.godot/imported/RiftBoundLogo.jpg-58ed5e86b6f1f21fb9ff8e23b5c525b8.ctex"]
+source_file="res://Assets/RiftBoundLogo.jpg"
+dest_files=["res://.godot/imported/RiftBoundLogo.jpg-3e6fcabb38b731fd00a45250f12bad0c.ctex"]
 
 [params]
 
