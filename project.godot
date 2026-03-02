@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="riftBound"
-run/main_scene="res://board.tscn"
+run/main_scene="res://Scenes/Board.tscn"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
 
