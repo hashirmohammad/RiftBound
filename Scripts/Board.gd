@@ -26,7 +26,7 @@ func add_rect(pos: Vector2, size: Vector2, color: Color):
 	r.position = pos;  r.size = size;  r.color = color
 	add_child(r)
 	
-#Adds the color trim to the boxes anf fills some boxes 
+#Adds the color trim to the boxes and fills some boxes 
 func make_style(rounded := false, fill := Color(0,0,0,0)) -> StyleBoxFlat:
 	var s = StyleBoxFlat.new()
 	s.bg_color = fill;  s.border_color = COLOR_BORDER
@@ -74,15 +74,14 @@ func add_image(panel: Panel, tex: ImageTexture, al: float, at: float, ar: float,
 	tr.modulate = mod
 	panel.add_child(tr)
 
-
 #Build one player's half of the board 
 func build_player(y: float, flip: bool, ph: float):
 	var PAD = 8.0
-	var bh  = ph - HAND_H                                    # board height (excludes hand)
-	var by  = y + HAND_H if flip else y                      # board origin y
-	var hy  = y          if flip else y + bh                 # hand origin y
+	var bh  = ph - HAND_H
+	var by  = y + HAND_H if flip else y
+	var hy  = y          if flip else y + bh
 
-	#creating the are for the players hand 
+	#creating the area for the players hand 
 	add_panel("Hand", Vector2(0, hy), Vector2(SCREEN_W, HAND_H), make_style(false, COLOR_HAND))
 
 	#Creating mana circles
@@ -96,7 +95,7 @@ func build_player(y: float, flip: bool, ph: float):
 		ml.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		ml.vertical_alignment   = VERTICAL_ALIGNMENT_CENTER
 
-	#The math to ensure that the board is align correctly with the collums and rows 
+	#The math to ensure that the board is aligned correctly with the columns and rows 
 	var tw  = SCREEN_W - MANA_COL_W - GAP
 	var cw  = floor(tw * 0.14)
 	var lw  = tw - cw * 2 - GAP * 2
@@ -117,6 +116,7 @@ func build_player(y: float, flip: bool, ph: float):
 		["RUNES",           xl+rdw+GAP,   y3, lw-rdw-GAP+cw+GAP, rb],
 		["TRASH",           xr,           y3, cw,                rb],
 	]
+
 	#checking and placing the two image logos onto the board 
 	var runes_ref: Panel = null
 	for z in zones:
@@ -125,7 +125,7 @@ func build_player(y: float, flip: bool, ph: float):
 		var fy = by + zy if not flip else by + (bh - zy - zh)
 		var p = add_panel(zname.replace(" ","_"), Vector2(zx, fy), Vector2(zw, zh))
 		if zname == "RUNES": runes_ref = p
-		if zname == "BASE":  add_image(p, tint_gold("res://RiftBoundLogo.jpg"), -0.2,-0.5,1.2,1.5, 0.0,0.0,0.0,0.0, Color(0.83,0.68,0.21,0.55))
+		if zname == "BASE":  add_image(p, tint_gold("res://Assets/RiftBoundLogo.jpg"), -0.2,-0.5,1.2,1.5, 0.0,0.0,0.0,0.0, Color(0.83,0.68,0.21,0.55))
 
 	if runes_ref:
-		add_image(runes_ref, tint_gold("res://runes.jpg"), 0.05,0.2,0.25,1.0, 6.0,1.0,0.0,0.0)
+		add_image(runes_ref, tint_gold("res://Assets/runes.jpg"), 0.05,0.2,0.25,1.0, 6.0,1.0,0.0,0.0)
