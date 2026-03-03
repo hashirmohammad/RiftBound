@@ -1,6 +1,0 @@
-[gd_scene format=3 uid="uid://b442xjsd0sdaj"]
-
-[node name="Card" type="Card" unique_id=1517482939]
-modulate = Color(1, 0.72156864, 1, 1)
-offset_right = 1579.0
-offset_bottom = 2323.0
