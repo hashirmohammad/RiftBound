@@ -3,3 +3,6 @@
 /android/
 *.tmp
 riftbound/
+
+# Mac system files
+.DS_Store
