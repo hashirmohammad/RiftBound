@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://bcd6w6o1ruqom"]
 
-[ext_resource type="Script" path="res://Scripts/HandManager.gd" id="1_i0bmm"]
+[ext_resource type="Script" uid="uid://jd1t3ule1gmr" path="res://Scripts/HandManager.gd" id="1_i0bmm"]
 
 [node name="HandManager" type="HBoxContainer" unique_id=1408419153]
 offset_right = 40.0

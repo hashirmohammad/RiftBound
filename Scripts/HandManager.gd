@@ -1,6 +1,5 @@
 class_name HandManager
 extends HBoxContainer
-
 ## HandManager — Manages the player's hand of cards at the bottom of the screen.
 ##
 ## Inherits from HBoxContainer so cards are automatically laid out
@@ -19,7 +18,7 @@ extends HBoxContainer
 var cards_in_hand: Array[RiftCard] = []
 
 ## Preload the card scene so we can instantiate new cards
-const CARD_SCENE = preload("res://scenes/cards/card.tscn")
+const CARD_SCENE = preload("res://Scenes/Card.tscn")
 
 ## Deals a new card into the hand from a CardData resource.
 ## Called by the game manager when drawing a card.
@@ -45,5 +44,4 @@ func return_card(card: RiftCard) -> void:
 	if not cards_in_hand.has(card):
 		cards_in_hand.append(card)
 	card.set_card_state(RiftCard.CardState.IN_HAND)
-
 	# TODO (Task 5): Add a Tween here to smoothly slide the card back into position
