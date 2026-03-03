@@ -1,6 +1,8 @@
 # Godot 4+ specific ignores
 .godot/
 /android/
+*.tmp
+riftbound/
 
 # Mac system files
 .DS_Store

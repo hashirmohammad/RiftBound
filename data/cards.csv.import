@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://c24mhergx21sj"
+
+[deps]
+
+files=["res://Data/cards.Card Number.translation", "res://Data/cards.Card Name.translation", "res://Data/cards.Energy.translation", "res://Data/cards.Might.translation", "res://Data/cards.Domain.translation", "res://Data/cards.Card Type.translation", "res://Data/cards.Tags.translation", "res://Data/cards.Ability.translation", "res://Data/cards.Rarity.translation", "res://Data/cards.Artist.translation", "res://Data/cards.Image URL.translation"]
+
+source_file="res://Data/cards.csv"
+dest_files=["res://Data/cards.Card Number.translation", "res://Data/cards.Card Name.translation", "res://Data/cards.Energy.translation", "res://Data/cards.Might.translation", "res://Data/cards.Domain.translation", "res://Data/cards.Card Type.translation", "res://Data/cards.Tags.translation", "res://Data/cards.Ability.translation", "res://Data/cards.Rarity.translation", "res://Data/cards.Artist.translation", "res://Data/cards.Image URL.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true
