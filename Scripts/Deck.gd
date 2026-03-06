@@ -1,46 +1,56 @@
 extends Node2D
+## Deck — Draw pile. Deals cards directly into HandManager.
+const STARTING_HAND_SIZE := 4
 
-const CARD_SCENE_PATH = "res://Scenes/Card.tscn"
-const CARD_DRAW_SPEED = 1
-const STARTING_HAND_SIZE = 5
+var player_deck: Array[String] = [
+	"OGN-001/298", "OGN-002/298", "OGN-003/298",
+	"OGN-001/298", "OGN-001/298", "OGN-001/298",
+	"OGN-001/298", "OGN-001/298",
+]
 
-var player_deck = ["Knight","Archer","Demon", "Knight", "Knight","Knight","Knight","Knight",]
-var card_database_reference
-var drawn_card_this_turn = false
+var drawn_card_this_turn := false
+var _hand_manager: HandManager = null
 
-# Called when the node enters the scene tree for the first time.
 func _ready() -> void:
+	_hand_manager = get_node_or_null("../HandManager")
+	print("=== DECK DEBUG ===")
+	print("HandManager found: ", _hand_manager)
+	print("CardDatabase total cards: ", CardDatabase.get_all_cards().size())
+	var test = CardDatabase.get_card("OGN-001/298")
+	print("Test card lookup 'OGN-001/298': ", test)
+	if _hand_manager == null:
+		push_error("Deck: HandManager not found!")
+		return
 	player_deck.shuffle()
 	$RichTextLabel.text = str(player_deck.size())
-	card_database_reference = preload("res://Scripts/CardDatabase.gd")
 	for i in range(STARTING_HAND_SIZE):
 		draw_card()
 		drawn_card_this_turn = false
 	drawn_card_this_turn = false
 
-func draw_card():
-	if drawn_card_this_turn:
+func draw_card() -> void:
+	if drawn_card_this_turn or player_deck.is_empty():
 		return
-		
-		drawn_card_this_turn = true
-		
-	var card_draw_name = player_deck[0]
-	player_deck.erase(card_draw_name)
-	
-	if player_deck.size() == 0:
+	drawn_card_this_turn = true
+	var card_id: String = player_deck.pop_front()
+	print("Drawing card: ", card_id)
+	if player_deck.is_empty():
 		$Area2D/CollisionShape2D.disabled = true
-		$Sprite2D.visible = false
-		$RichTextLabel.visible = false
-		
+		$Sprite2D.visible                 = false
+		$RichTextLabel.visible            = false
 	$RichTextLabel.text = str(player_deck.size())
-	var card_scene = preload(CARD_SCENE_PATH)
-	var new_card = card_scene.instantiate()
-	var card_image_path = str("res://Assets/" +card_draw_name+ "Card.png")
-	new_card.get_node("CardImage").texture = load(card_image_path)
-	new_card.get_node("Attack").text = str(card_database_reference.CARDS[card_draw_name][0])
-	new_card.get_node("Health").text = str(card_database_reference.CARDS[card_draw_name][1])
-	new_card.card_type = card_database_reference.CARDS[card_draw_name][2]
-	$"../CardManager".add_child(new_card)
-	new_card.name = "Card"
-	$"../PlayerHand".add_card_to_hand(new_card, CARD_DRAW_SPEED)
-	new_card.get_node("AnimationPlayer").play("card_flip")
+	var data: CardData = CardDatabase.get_card(card_id)
+	if data == null:
+		push_error("Deck: card_id '%s' not found in CardDatabase" % card_id)
+		drawn_card_this_turn = false
+		return
+	print("Card data found: ", data.card_id)
+	var new_card: RiftCard = _hand_manager.deal_card(data)
+	if new_card == null:
+		push_error("Deck: deal_card() returned null for card_id '%s'" % card_id)
+		drawn_card_this_turn = false
+		return
+	print("Card dealt successfully: ", card_id)
+	var anim: AnimationPlayer = new_card.get_node_or_null("AnimationPlayer")
+	if anim:
+		anim.play("card_flip")

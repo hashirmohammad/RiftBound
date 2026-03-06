@@ -1,47 +1,58 @@
 class_name HandManager
-extends HBoxContainer
-## HandManager — Manages the player's hand of cards at the bottom of the screen.
-##
-## Inherits from HBoxContainer so cards are automatically laid out
-## horizontally and spacing adjusts when cards are added or removed.
-##
-## Responsibilities:
-##   - Dealing cards into the hand via deal_card()
-##   - Removing cards from the hand when played
-##   - Returning cards back to hand when a drag fails via return_card()
-##
-## Dependencies:
-##   - RiftCard   (scripts/card/card.gd) — the card node being managed
-##   - CardData   (scripts/card/card_data.gd) — the data loaded into each card
+extends Node2D
 
-## All cards currently in the player's hand
-var cards_in_hand: Array[RiftCard] = []
+const CARD_SCENE    := preload("res://Scenes/Card.tscn")
+const DEAL_SPEED    := 0.35
+const RETURN_SPEED  := 0.15
+const NORMAL_SCALE  := Vector2(0.4, 0.4)
+const CARD_SPACING  := 160
 
-## Preload the card scene so we can instantiate new cards
-const CARD_SCENE = preload("res://Scenes/Card.tscn")
+var cards_in_hand: Array = []
 
-## Deals a new card into the hand from a CardData resource.
-## Called by the game manager when drawing a card.
-## @param data — A CardData .tres resource from resources/cards/
-func deal_card(data: CardData) -> void:
+func deal_card(data: CardData):
 	var card = CARD_SCENE.instantiate()
 	card.load_from_resource(data)
-	cards_in_hand.append(card)
+	card.scale    = NORMAL_SCALE
+	card.modulate = Color(1, 1, 1, 1)
 	add_child(card)
+	cards_in_hand.append(card)
+	_reposition_cards()
+	_tween_deal(card)
+	return card
 
-## Removes a card from the hand when it is successfully played to the board.
-## Called by Task 4 (BoardManager) on successful drop.
-## @param card — The RiftCard node to remove
-func remove_card(card: RiftCard) -> void:
+func remove_card(card) -> void:
 	if cards_in_hand.has(card):
 		cards_in_hand.erase(card)
-		card.queue_free()
+		remove_child(card)
+		_reposition_cards()
 
-## Returns a card back to the hand after a failed drag.
-## Called by Task 3 (mouse input) when card is dropped on invalid area.
-## @param card — The RiftCard node to return
-func return_card(card: RiftCard) -> void:
+func return_card(card) -> void:
 	if not cards_in_hand.has(card):
 		cards_in_hand.append(card)
+		add_child(card)
 	card.set_card_state(RiftCard.CardState.IN_HAND)
-	# TODO (Task 5): Add a Tween here to smoothly slide the card back into position
+	card.z_index = 1
+	_reposition_cards()
+	_tween_return(card)
+
+func has_card(card) -> bool:
+	return cards_in_hand.has(card)
+
+func _reposition_cards() -> void:
+	var count = cards_in_hand.size()
+	if count == 0:
+		return
+	var total_width = (count - 1) * CARD_SPACING
+	var start_x = -total_width / 2.0
+	for i in range(count):
+		cards_in_hand[i].position = Vector2(start_x + i * CARD_SPACING, 0)
+
+func _tween_deal(card) -> void:
+	var tween = create_tween().set_parallel(true)
+	tween.tween_property(card, "modulate", Color.WHITE, DEAL_SPEED)
+	tween.tween_property(card, "scale", NORMAL_SCALE, DEAL_SPEED).from(NORMAL_SCALE * 0.7)
+
+func _tween_return(card) -> void:
+	var tween = create_tween()
+	tween.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+	tween.tween_property(card, "scale", NORMAL_SCALE, RETURN_SPEED)

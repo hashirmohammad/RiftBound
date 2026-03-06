@@ -11,9 +11,13 @@ config_version=5
 [application]
 
 config/name="riftBound"
-run/main_scene="res://Scenes/Board.tscn"
+run/main_scene="uid://db3x6hhv5s5yi"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://Assets/icon.svg"
+
+[autoload]
+
+CardDatabase="*uid://b11a8ldvnscom"
 
 [display]
 

@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://bvwwupfvmcc3r"]
 
-[ext_resource type="Script" uid="uid://c0vilvv1pybv1" path="res://Scripts/Card.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://1f3mklked6y3" path="res://Scripts/Card.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://t4wicqajqes3" path="res://Assets/KnightCard.png" id="2_3p273"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_3p273"]
 size = Vector2(222, 306)
@@ -9,9 +10,11 @@ size = Vector2(222, 306)
 script = ExtResource("1_script")
 
 [node name="CardBackImage" type="Sprite2D" parent="." unique_id=111111111]
+texture = ExtResource("2_3p273")
 
 [node name="CardImage" type="Sprite2D" parent="." unique_id=91958118]
 z_index = -1
+texture = ExtResource("2_3p273")
 
 [node name="Area2D" type="Area2D" parent="." unique_id=988411148]
 

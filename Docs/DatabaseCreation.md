@@ -178,4 +178,3 @@ Example usage in GDScript:
 var card = CardDB.get\_card("OGN-010/298")
 
 print(card\["name"])
-

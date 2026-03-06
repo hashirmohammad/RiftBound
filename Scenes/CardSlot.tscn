@@ -1,16 +1,18 @@
 [gd_scene format=3 uid="uid://bdtm88erd1wam"]
 
-[ext_resource type="Texture2D" uid="uid://ba65mgc1itqn2" path="res://Assets/CardSlot.png" id="1_5tl20"]
-[ext_resource type="Script" uid="uid://b58s281nm6kpq" path="res://Scripts/MonsterCardSlot.gd" id="1_mt86f"]
+[ext_resource type="Script" uid="uid://nm1xostfv6gs" path="res://Scripts/CardSlot.gd" id="1_enycx"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_mt86f"]
 size = Vector2(180, 266)
 
 [node name="CardSlot" type="Node2D" unique_id=402928220]
-script = ExtResource("1_mt86f")
+script = ExtResource("1_enycx")
 
-[node name="CardSlotImage" type="Sprite2D" parent="." unique_id=1279434237]
-texture = ExtResource("1_5tl20")
+[node name="CardSlotImage" type="Polygon2D" parent="." unique_id=673516698]
+z_index = 5
+color = Color(0, 0.007843138, 0, 1)
+polygon = PackedVector2Array(-60, -80, 60, -80, 60, 80, -60, 80)
+uv = PackedVector2Array(-60, -80, 60, -80, 60, 80, -60, 80)
 
 [node name="Area2D" type="Area2D" parent="." unique_id=2014197897]
 collision_layer = 2

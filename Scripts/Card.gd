@@ -1,48 +1,45 @@
 class_name RiftCard
 extends Node2D
-
-## Card — The visual node that represents a single playable card on screen.
+## RiftCard — Visual node representing a single playable card on screen.
 ##
-## Extends Node2D to work with Kajbaso's Area2D collision-based
-## hover and drag detection system via CardManager.
-##
-## Card stat data lives in CardData (Scripts/CardData.gd)
-## Drag logic lives in CardManager (Scripts/CardManager.gd)
-## Hand layout lives in PlayerHand (Scripts/PlayerHand.gd)
-
+## Drag logic  → CardManager.gd
+## Hand layout → PlayerHand.gd  (legacy tween system, still in use by Deck)
+## Card data   → CardData.gd
 signal hovered(card: RiftCard)
 signal hovered_off(card: RiftCard)
-
-## Tracks what the card is currently doing.
-## Read and written by CardManager and PlayerHand.
 enum CardState {
-	IN_HAND,    ## Sitting in the hand
-	DRAGGING,   ## Following the mouse cursor
-	ON_BOARD,   ## Placed on a valid board slot
-	RETURNING   ## Animating back to hand after invalid drop
+	IN_HAND,
+	DRAGGING,
+	ON_BOARD,
+	RETURNING
 }
-
 var card_data: CardData = null
 var current_state: CardState = CardState.IN_HAND
 var starting_position: Vector2
 var card_slot_card_is_in = null
+var card_type: int = 0  ## 0=UNIT, 1=SPELL, 2=RUNE, 3=CHAMPION
 
 func _ready() -> void:
-	# CardManager connects hover signals on all cards
-	get_parent().connect_card_signals(self)
+	var parent = get_parent()
+	if parent and parent.has_method("connect_card_signals"):
+		parent.connect_card_signals(self)
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	pass
 
-## Called by PlayerHand or Deck when dealing a card.
-## Populates visuals from CardData loaded via CardDatabase.
 func load_from_resource(data: CardData) -> void:
 	if data == null:
 		return
 	card_data = data
-	get_node("Attack").text = str(card_data.might)
-	get_node("Health").text = str(card_data.cost)
-	# TODO (T6S-24): load card image from card_data.image_url
+	card_type = data.type
+
+	var attack_label = get_node_or_null("Attack")
+	var health_label = get_node_or_null("Health")
+
+	if attack_label:
+		attack_label.text = str(card_data.might)
+	if health_label:
+		health_label.text = str(card_data.health)
 
 func get_card_state() -> CardState:
 	return current_state
