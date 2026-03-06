@@ -1,0 +1,16 @@
+{
+  "card_id": "OGN-260/298",
+  "set_code": "Origins",
+  "name": "Last Breath",
+  "cost": 3,
+  "might": 0,
+  "domain": "Calm",
+  "type": "Signature Spell",
+  "keywords": [
+    "Yasuo"
+  ],
+  "rules_text": "[Action] (Play on your turn or in showdowns.)Ready a friendly unit. It deals damage equal to its Might to an enemy unit at a battlefield.",
+  "rarity": "Epic",
+  "artist": "Kudos Productions",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/e7e6dc840210124825f787095541a66ae5cea178-744x1039.png"
+}

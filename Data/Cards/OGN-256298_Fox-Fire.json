@@ -1,0 +1,16 @@
+{
+  "card_id": "OGN-256/298",
+  "set_code": "Origins",
+  "name": "Fox-Fire",
+  "cost": 3,
+  "might": 0,
+  "domain": "Calm",
+  "type": "Signature Spell",
+  "keywords": [
+    "Ahri"
+  ],
+  "rules_text": "[Hidden] (Hide now for Rune Rainbow to react with later for 0 Energy.)[Action] (Play on your turn or in showdowns.)Kill any number of units at a battlefield with total Might 4 or less.",
+  "rarity": "Epic",
+  "artist": "League Splash Team",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/7ad9d6a46a1c54080d54950a0044da3a82e32b45-744x1039.png"
+}

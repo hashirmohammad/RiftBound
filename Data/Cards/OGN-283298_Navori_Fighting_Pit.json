@@ -1,0 +1,14 @@
+{
+  "card_id": "OGN-283/298",
+  "set_code": "Origins",
+  "name": "Navori Fighting Pit",
+  "cost": 0,
+  "might": 0,
+  "domain": "Colorless",
+  "type": "Battlefield",
+  "keywords": [],
+  "rules_text": "When you hold here, buff a unit here. (If it doesn't have a buff, it gets a +1 Might buff.)",
+  "rarity": "Uncommon",
+  "artist": "Envar Studio",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/c03ed3ddf8b764963e4b0745e86a12a5ebcef2a3-1038x744.png"
+}

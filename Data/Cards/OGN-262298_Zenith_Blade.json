@@ -1,0 +1,16 @@
+{
+  "card_id": "OGN-262/298",
+  "set_code": "Origins",
+  "name": "Zenith Blade",
+  "cost": 3,
+  "might": 0,
+  "domain": "Calm",
+  "type": "Signature Spell",
+  "keywords": [
+    "Leona"
+  ],
+  "rules_text": "[Action] (Play on your turn or in showdowns.)Stun an enemy unit at a battlefield. You may move a friendly unit to that enemy unit's battlefield._ (A stunned unit doesn't deal combat damage this turn.)_",
+  "rarity": "Epic",
+  "artist": "Kudos Productions",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/a572f0bc3ed1bd47c5759d36f5b951b15338e57e-744x1039.png"
+}

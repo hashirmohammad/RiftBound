@@ -1,0 +1,17 @@
+{
+  "card_id": "OGN-068/298",
+  "set_code": "Origins",
+  "name": "Caitlyn, Patrolling",
+  "cost": 3,
+  "might": 3,
+  "domain": "Calm",
+  "type": "Champion Unit",
+  "keywords": [
+    "Caitlyn",
+    "Piltover"
+  ],
+  "rules_text": "I must be assigned combat damage last.Exhaust: Deal damage equal to my Might to a unit at a battlefield. Use this ability only while I'm at a battlefield.",
+  "rarity": "Rare",
+  "artist": "Six More Vodka",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/51e6bacf25d19e7c391367ff107efb9e0b9f1ff5-744x1039.png"
+}

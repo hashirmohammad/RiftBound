@@ -1,0 +1,16 @@
+{
+  "card_id": "OGN-308/298",
+  "set_code": "Origins",
+  "name": "Herald of the Arcane",
+  "cost": 0,
+  "might": 0,
+  "domain": "Mind",
+  "type": "Legend",
+  "keywords": [
+    "Viktor"
+  ],
+  "rules_text": "1 Energy, Exhaust: Play a 1 Might Recruit unit token.",
+  "rarity": "Showcase",
+  "artist": "Rudy Siswanto",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/a39902058db800a4318f3333dddb8a62a8751d7c-1488x2078.png"
+}

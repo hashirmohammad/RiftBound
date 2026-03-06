@@ -1,0 +1,17 @@
+{
+  "card_id": "OGN-036/298",
+  "set_code": "Origins",
+  "name": "Vi, Destructive",
+  "cost": 2,
+  "might": 3,
+  "domain": "Fury",
+  "type": "Champion Unit",
+  "keywords": [
+    "Vi",
+    "Piltover"
+  ],
+  "rules_text": "[Ganking] (I can move from battlefield to battlefield.)Recycle 1 from your trash: Give me +1 Might this turn.",
+  "rarity": "Rare",
+  "artist": "Kudos Productions",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/7ab52254ac49b8853fc7ae65b03aaee3f8c5994a-744x1039.png"
+}

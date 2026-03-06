@@ -1,0 +1,17 @@
+{
+  "card_id": "OGN-092/298",
+  "set_code": "Origins",
+  "name": "Riptide Rex",
+  "cost": 6,
+  "might": 6,
+  "domain": "Mind",
+  "type": "Unit",
+  "keywords": [
+    "Pirate",
+    "Bilgewater"
+  ],
+  "rules_text": "When you play me, deal 6 to an enemy unit at a battlefield.",
+  "rarity": "Common",
+  "artist": "MAR Studio",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/e09bf1fb6d72da31d415ea31ae7413fe7f02d650-744x1039.png"
+}

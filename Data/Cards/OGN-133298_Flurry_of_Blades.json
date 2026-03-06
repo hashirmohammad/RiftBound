@@ -1,0 +1,14 @@
+{
+  "card_id": "OGN-133/298",
+  "set_code": "Origins",
+  "name": "Flurry of Blades",
+  "cost": 1,
+  "might": 0,
+  "domain": "Body",
+  "type": "Spell",
+  "keywords": [],
+  "rules_text": "[Reaction] (Play any time, even before spells and abilities resolve.)Deal 1 to all units at battlefields.",
+  "rarity": "Common",
+  "artist": "Rafael Zanchetin",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/c72f872e7e71b55b2074c5be4f2d7a44fa6fafca-744x1039.png"
+}

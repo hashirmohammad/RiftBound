@@ -1,0 +1,16 @@
+{
+  "card_id": "OGN-304/298",
+  "set_code": "Origins",
+  "name": "Blind Monk",
+  "cost": 0,
+  "might": 0,
+  "domain": "Calm",
+  "type": "Legend",
+  "keywords": [
+    "Lee Sin"
+  ],
+  "rules_text": "1 Energy, Exhaust: Buff a friendly unit. (If it doesn't have a buff, it gets a +1 Might buff.)",
+  "rarity": "Showcase",
+  "artist": "Loiza Chen",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/fb6316c39ad2a00d65f4b6cc823cbdd61cadda3b-1488x2078.png"
+}

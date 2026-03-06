@@ -1,0 +1,17 @@
+{
+  "card_id": "OGN-034/298",
+  "set_code": "Origins",
+  "name": "Tryndamere, Barbarian",
+  "cost": 7,
+  "might": 8,
+  "domain": "Fury",
+  "type": "Champion Unit",
+  "keywords": [
+    "Tryndamere",
+    "Freljord"
+  ],
+  "rules_text": "When I conquer after an attack, if you assigned 5 or more excess damage to enemy units, you score 1 point.",
+  "rarity": "Rare",
+  "artist": "Six More Vodka",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/124c93495c927be1baea03fdacf6c7b283cf8b6c-744x1039.png"
+}

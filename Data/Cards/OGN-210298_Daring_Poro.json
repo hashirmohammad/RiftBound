@@ -1,0 +1,16 @@
+{
+  "card_id": "OGN-210/298",
+  "set_code": "Origins",
+  "name": "Daring Poro",
+  "cost": 2,
+  "might": 2,
+  "domain": "Order",
+  "type": "Unit",
+  "keywords": [
+    "Poro"
+  ],
+  "rules_text": "[Assault] (+1 Might while I'm an attacker.)",
+  "rarity": "Common",
+  "artist": "Six More Vodka",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/41dee7ec46124c261352595cfbd8a6d38d32b947-744x1039.png"
+}

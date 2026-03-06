@@ -1,0 +1,14 @@
+{
+  "card_id": "OGN-108/298",
+  "set_code": "Origins",
+  "name": "Convergent Mutation",
+  "cost": 2,
+  "might": 0,
+  "domain": "Mind",
+  "type": "Spell",
+  "keywords": [],
+  "rules_text": "[Reaction] (Play any time, even before spells and abilities resolve.)Choose a friendly unit. If its Might is less than another friendly unit's, its Might becomes the Might of that friendly unit this turn.",
+  "rarity": "Rare",
+  "artist": "Wild Blue Studios",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/61d414fc67ff52b9082e282e628dd0916afd8454-744x1039.png"
+}

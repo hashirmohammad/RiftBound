@@ -1,0 +1,17 @@
+{
+  "card_id": "OGN-075/298",
+  "set_code": "Origins",
+  "name": "Tasty Faefolk",
+  "cost": 7,
+  "might": 6,
+  "domain": "Calm",
+  "type": "Unit",
+  "keywords": [
+    "Fae",
+    "Bandle City"
+  ],
+  "rules_text": "[Accelerate] (You may pay 1 EnergyCalm as an additional cost to have me enter ready.)[Deathknell] — Channel 2 runes exhausted and draw 1. (When I die, get the effect.)",
+  "rarity": "Rare",
+  "artist": "Dao Trong Le",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/65f69ca9a1087deb12e91fb6fdee7b6efd0c088f-744x1039.png"
+}

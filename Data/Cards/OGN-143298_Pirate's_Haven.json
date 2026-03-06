@@ -1,0 +1,14 @@
+{
+  "card_id": "OGN-143/298",
+  "set_code": "Origins",
+  "name": "Pirate's Haven",
+  "cost": 3,
+  "might": 0,
+  "domain": "Body",
+  "type": "Gear",
+  "keywords": [],
+  "rules_text": "When you ready a friendly unit, give it +1 Might this turn.",
+  "rarity": "Uncommon",
+  "artist": "Envar Studio",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/1991b64d58cbd3698574f44b404f7a88d6403134-744x1039.png"
+}

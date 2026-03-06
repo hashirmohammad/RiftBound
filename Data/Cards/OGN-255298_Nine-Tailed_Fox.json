@@ -1,0 +1,16 @@
+{
+  "card_id": "OGN-255/298",
+  "set_code": "Origins",
+  "name": "Nine-Tailed Fox",
+  "cost": 0,
+  "might": 0,
+  "domain": "Calm",
+  "type": "Legend",
+  "keywords": [
+    "Ahri"
+  ],
+  "rules_text": "When an enemy unit attacks a battlefield you control, give it -1 Might this turn, to a minimum of 1 Might.",
+  "rarity": "Rare",
+  "artist": "Envar Studio",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/56457c7986d3f140b7123a988149cc30a83493a7-744x1039.png"
+}

@@ -1,0 +1,17 @@
+{
+  "card_id": "OGN-113/298",
+  "set_code": "Origins",
+  "name": "Malzahar, Fanatic",
+  "cost": 4,
+  "might": 3,
+  "domain": "Mind",
+  "type": "Champion Unit",
+  "keywords": [
+    "Malzahar",
+    "The Void"
+  ],
+  "rules_text": "Kill a friendly unit or gear, Exhaust: [Action] — [Add] Rune RainbowRune Rainbow. (Use on your turn or in showdowns. Abilities that add resources can't be reacted to.)",
+  "rarity": "Rare",
+  "artist": "League Splash Team",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/ba1fa3a18b1c2ff132ad536577e53deb49bce1f9-744x1039.png"
+}

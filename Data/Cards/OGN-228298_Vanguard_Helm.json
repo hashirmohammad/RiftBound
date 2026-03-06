@@ -1,0 +1,14 @@
+{
+  "card_id": "OGN-228/298",
+  "set_code": "Origins",
+  "name": "Vanguard Helm",
+  "cost": 2,
+  "might": 0,
+  "domain": "Order",
+  "type": "Gear",
+  "keywords": [],
+  "rules_text": "When a buffed friendly unit dies, buff another friendly unit. (If it doesn't have a buff, it gets a +1 Might buff.)",
+  "rarity": "Uncommon",
+  "artist": "Kudos Productions",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/9718c666cbf789a572760c826d0a06b26b787ae5-744x1039.png"
+}

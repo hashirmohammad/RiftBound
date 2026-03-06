@@ -1,0 +1,16 @@
+{
+  "card_id": "OGS-024/024",
+  "set_code": "Proving Grounds",
+  "name": "Decisive Strike",
+  "cost": 5,
+  "might": 0,
+  "domain": "Body",
+  "type": "Signature Spell",
+  "keywords": [
+    "Garen"
+  ],
+  "rules_text": "[Action] (Play on your turn or in showdowns.)Give friendly units +2 Might this turn.",
+  "rarity": "Epic",
+  "artist": "Kudos Productions",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/986782271be078c184a8d1c196e375106459c6c5-744x1039.png"
+}

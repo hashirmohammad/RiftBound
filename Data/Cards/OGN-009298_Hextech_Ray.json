@@ -1,0 +1,14 @@
+{
+  "card_id": "OGN-009/298",
+  "set_code": "Origins",
+  "name": "Hextech Ray",
+  "cost": 1,
+  "might": 0,
+  "domain": "Fury",
+  "type": "Spell",
+  "keywords": [],
+  "rules_text": "[Action] (Play on your turn or in showdowns.)Deal 3 to a unit at a battlefield.",
+  "rarity": "Common",
+  "artist": "League of Legends",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/1e7d12693822c38377ddc8f15db23e2f9b6d560a-744x1039.png"
+}

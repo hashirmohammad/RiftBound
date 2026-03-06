@@ -1,0 +1,17 @@
+{
+  "card_id": "OGN-074/298",
+  "set_code": "Origins",
+  "name": "Taric, Protector",
+  "cost": 4,
+  "might": 4,
+  "domain": "Calm",
+  "type": "Champion Unit",
+  "keywords": [
+    "Taric",
+    "Mount Targon"
+  ],
+  "rules_text": "[Shield] (+1 Might while I'm a defender.)[Tank] (I must be assigned combat damage first.)Other friendly units here have [Shield].",
+  "rarity": "Rare",
+  "artist": "Six More Vodka",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/7d08e3f64401cb87b8a0564a1cbe6fc94aee03a7-744x1039.png"
+}

@@ -1,0 +1,16 @@
+{
+  "card_id": "OGN-147/298",
+  "set_code": "Origins",
+  "name": "Wildclaw Shaman",
+  "cost": 4,
+  "might": 3,
+  "domain": "Body",
+  "type": "Unit",
+  "keywords": [
+    "Freljord"
+  ],
+  "rules_text": "When you play me, you may spend a buff to buff me and ready me. (If I don't have a buff, I get a +1 Might buff.)",
+  "rarity": "Uncommon",
+  "artist": "Kudos Productions",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/7abc938fee4ba397f52c8ea60d350857a7517b0c-744x1039.png"
+}

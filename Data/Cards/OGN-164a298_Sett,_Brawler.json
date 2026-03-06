@@ -1,0 +1,17 @@
+{
+  "card_id": "OGN-164a/298",
+  "set_code": "Origins",
+  "name": "Sett, Brawler",
+  "cost": 5,
+  "might": 4,
+  "domain": "Body",
+  "type": "Champion Unit",
+  "keywords": [
+    "Sett",
+    "Ionia"
+  ],
+  "rules_text": "When I'm played and when I conquer, buff me. (If I don't have a buff, I get a +1 Might buff.)Spend my buff: Give me +4 Might this turn.",
+  "rarity": "Showcase",
+  "artist": "Kudos Productions",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/26e65c15e8a1ce1a9cd60d96345c7916e67e00ac-744x1039.png"
+}

@@ -1,0 +1,18 @@
+{
+  "card_id": "OGN-121a/298",
+  "set_code": "Origins",
+  "name": "Teemo, Strategist",
+  "cost": 2,
+  "might": 2,
+  "domain": "Mind",
+  "type": "Champion Unit",
+  "keywords": [
+    "Yordle",
+    "Teemo",
+    "Bandle City"
+  ],
+  "rules_text": "[Hidden] (Hide now for Rune Rainbow to react with later for 0 Energy.)When I defend or I'm played from [Hidden], reveal the top 5 cards of your Main Deck. Deal 1 to an enemy unit here for each card with [Hidden], then recycle them.",
+  "rarity": "Showcase",
+  "artist": "League Splash Team",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/0709ab02b75d9acc8f3c4037ec3a4140323150d8-744x1039.png"
+}

@@ -1,0 +1,16 @@
+{
+  "card_id": "OGS-018/024",
+  "set_code": "Proving Grounds",
+  "name": "Tibbers",
+  "cost": 8,
+  "might": 7,
+  "domain": "Fury",
+  "type": "Signature Unit",
+  "keywords": [
+    "Annie"
+  ],
+  "rules_text": "When you play me, deal 3 to all units at battlefields.",
+  "rarity": "Epic",
+  "artist": "Polar Engine Studio",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/74f8bc78573b33d9979b0e9c121b858d770a490c-744x1039.png"
+}

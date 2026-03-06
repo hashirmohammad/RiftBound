@@ -1,0 +1,17 @@
+{
+  "card_id": "OGN-215/298",
+  "set_code": "Origins",
+  "name": "Petty Officer",
+  "cost": 5,
+  "might": 5,
+  "domain": "Order",
+  "type": "Unit",
+  "keywords": [
+    "Pirate",
+    "Bilgewater"
+  ],
+  "rules_text": "[Assault] (+1 Might while I'm an attacker.)",
+  "rarity": "Common",
+  "artist": "Six More Vodka",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/29e062c4a38c0be12056568a2f8563557e2611c6-744x1039.png"
+}

@@ -1,0 +1,18 @@
+{
+  "card_id": "OGN-193a/298",
+  "set_code": "Origins",
+  "name": "Miss Fortune, Buccaneer",
+  "cost": 4,
+  "might": 4,
+  "domain": "Chaos",
+  "type": "Champion Unit",
+  "keywords": [
+    "Pirate",
+    "Miss Fortune",
+    "Bilgewater"
+  ],
+  "rules_text": "You may play me to an open battlefield.Friendly units may be played to open battlefields.",
+  "rarity": "Showcase",
+  "artist": "Pandart Studio",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/8fde2eeb516af55b24467569aa982037f5b67b89-744x1039.png"
+}

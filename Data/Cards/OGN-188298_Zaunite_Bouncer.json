@@ -1,0 +1,16 @@
+{
+  "card_id": "OGN-188/298",
+  "set_code": "Origins",
+  "name": "Zaunite Bouncer",
+  "cost": 4,
+  "might": 2,
+  "domain": "Chaos",
+  "type": "Unit",
+  "keywords": [
+    "Zaun"
+  ],
+  "rules_text": "When you play me, return another unit at a battlefield to its owner's hand.",
+  "rarity": "Uncommon",
+  "artist": "Envar Studio",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/0f4e8258e3920e4a4654cfe74faf8c266f2aa5dd-744x1039.png"
+}

@@ -1,0 +1,16 @@
+{
+  "card_id": "OGN-266/298",
+  "set_code": "Origins",
+  "name": "Siphon Power",
+  "cost": 2,
+  "might": 0,
+  "domain": "Mind",
+  "type": "Signature Spell",
+  "keywords": [
+    "Viktor"
+  ],
+  "rules_text": "[Reaction] (Play any time, even before spells and abilities resolve.)Choose a battlefield. Give friendly units there +1 Might this turn and enemy units there -1 Might this turn, to a minimum of 1 Might.",
+  "rarity": "Epic",
+  "artist": "Kudos Productions",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/b449170ba312711c82708d1fea2b044822ce5eaa-744x1039.png"
+}

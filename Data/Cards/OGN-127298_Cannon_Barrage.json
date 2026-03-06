@@ -1,0 +1,14 @@
+{
+  "card_id": "OGN-127/298",
+  "set_code": "Origins",
+  "name": "Cannon Barrage",
+  "cost": 2,
+  "might": 0,
+  "domain": "Body",
+  "type": "Spell",
+  "keywords": [],
+  "rules_text": "[Reaction] (Play any time, even before spells and abilities resolve.)Deal 2 to all enemy units in combat.",
+  "rarity": "Common",
+  "artist": "Kudos Productions",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/07ef531829e5c6084a8d31044ebd783a9266f59e-744x1039.png"
+}

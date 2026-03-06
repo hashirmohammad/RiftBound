@@ -1,0 +1,17 @@
+{
+  "card_id": "OGN-038/298",
+  "set_code": "Origins",
+  "name": "Kadregrin the Infernal",
+  "cost": 9,
+  "might": 9,
+  "domain": "Fury",
+  "type": "Unit",
+  "keywords": [
+    "Dragon",
+    "Demacia"
+  ],
+  "rules_text": "When you play me, draw 1 for each of your [Mighty] units. (A unit is Mighty while it has 5+ Might.)",
+  "rarity": "Epic",
+  "artist": "Six More Vodka",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/733c32b1fccc7e2983cbb3586358152f90a6df04-744x1039.png"
+}

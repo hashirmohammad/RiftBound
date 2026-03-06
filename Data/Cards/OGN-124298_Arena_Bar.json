@@ -1,0 +1,14 @@
+{
+  "card_id": "OGN-124/298",
+  "set_code": "Origins",
+  "name": "Arena Bar",
+  "cost": 3,
+  "might": 0,
+  "domain": "Body",
+  "type": "Gear",
+  "keywords": [],
+  "rules_text": "Exhaust: Buff an exhausted friendly unit. (If it doesn't have a buff, it gets a +1 Might buff.)",
+  "rarity": "Common",
+  "artist": "Kudos Productions",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/519306d1d4a36f2d54fe0982268a197a257f5e5d-744x1039.png"
+}

@@ -1,0 +1,16 @@
+{
+  "card_id": "OGN-264/298",
+  "set_code": "Origins",
+  "name": "Guerilla Warfare",
+  "cost": 2,
+  "might": 0,
+  "domain": "Mind",
+  "type": "Signature Spell",
+  "keywords": [
+    "Teemo"
+  ],
+  "rules_text": "Return up to two cards with [Hidden] from your trash to your hand. You can hide cards ignoring costs this turn.",
+  "rarity": "Epic",
+  "artist": "Kudos Productions",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/3a1f70e49f1fdbac907a3395f517e96717e8afea-744x1039.png"
+}

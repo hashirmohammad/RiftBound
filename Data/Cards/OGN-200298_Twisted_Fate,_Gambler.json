@@ -1,0 +1,17 @@
+{
+  "card_id": "OGN-200/298",
+  "set_code": "Origins",
+  "name": "Twisted Fate, Gambler",
+  "cost": 4,
+  "might": 4,
+  "domain": "Chaos",
+  "type": "Champion Unit",
+  "keywords": [
+    "Twisted Fate",
+    "Bilgewater"
+  ],
+  "rules_text": "When I attack, reveal the top rune of your rune deck, then recycle it. Do one of the following based on its domain:* Fury — Deal 2 to an enemy unit here and 1 to all other enemy units here.* Mind — Draw 1.* Rune Order — Stun an enemy unit.",
+  "rarity": "Rare",
+  "artist": "Six More Vodka",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/9eff1a038528c4d633196f13259670d84b74c2a8-744x1039.png"
+}

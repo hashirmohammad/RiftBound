@@ -1,0 +1,17 @@
+{
+  "card_id": "OGN-078a/298",
+  "set_code": "Origins",
+  "name": "Lee Sin, Ascetic",
+  "cost": 5,
+  "might": 5,
+  "domain": "Calm",
+  "type": "Champion Unit",
+  "keywords": [
+    "Lee Sin",
+    "Ionia"
+  ],
+  "rules_text": "[Shield]_ (+1 Might while I'm a defender.)_Exhaust: Buff me. (I get a +1 Might buff.)I can have any number of buffs.",
+  "rarity": "Showcase",
+  "artist": "League Splash Team",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/d34a98faacd3f7d32afd6fad99c806f202aa9dad-744x1039.png"
+}

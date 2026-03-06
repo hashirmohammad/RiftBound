@@ -1,0 +1,14 @@
+{
+  "card_id": "OGN-198/298",
+  "set_code": "Origins",
+  "name": "The Harrowing",
+  "cost": 6,
+  "might": 0,
+  "domain": "Chaos",
+  "type": "Spell",
+  "keywords": [],
+  "rules_text": "Play a unit from your trash, ignoring its Energy cost. (You must still pay its Power cost.)",
+  "rarity": "Rare",
+  "artist": "Rafael Zanchetin",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/6914034f56dd50ab37df26e3541c997479bb5a6d-744x1039.png"
+}

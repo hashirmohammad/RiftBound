@@ -1,0 +1,16 @@
+{
+  "card_id": "OGN-223/298",
+  "set_code": "Origins",
+  "name": "Peak Guardian",
+  "cost": 6,
+  "might": 5,
+  "domain": "Order",
+  "type": "Unit",
+  "keywords": [
+    "Mount Targon"
+  ],
+  "rules_text": "When you play me, buff me. Then, if I am at a battlefield, buff all other friendly units there. (To buff a unit, give it a +1 Might buff if it doesn't already have one.)",
+  "rarity": "Uncommon",
+  "artist": "Six More Vodka",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/bb56433bc032fd31a957923c43babc48b66db24c-744x1039.png"
+}

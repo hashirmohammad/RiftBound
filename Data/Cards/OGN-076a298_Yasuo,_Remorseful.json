@@ -1,0 +1,17 @@
+{
+  "card_id": "OGN-076a/298",
+  "set_code": "Origins",
+  "name": "Yasuo, Remorseful",
+  "cost": 6,
+  "might": 6,
+  "domain": "Calm",
+  "type": "Champion Unit",
+  "keywords": [
+    "Yasuo",
+    "Ionia"
+  ],
+  "rules_text": "When I attack, deal damage equal to my Might to an enemy unit here.",
+  "rarity": "Showcase",
+  "artist": "League Splash Team",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/3f2cff3ff3b146c8bfe11594e37e9d8109884273-744x1039.png"
+}

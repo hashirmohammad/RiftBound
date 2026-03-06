@@ -1,0 +1,17 @@
+{
+  "card_id": "OGN-041a/298",
+  "set_code": "Origins",
+  "name": "Volibear, Furious",
+  "cost": 10,
+  "might": 9,
+  "domain": "Fury",
+  "type": "Champion Unit",
+  "keywords": [
+    "Volibear",
+    "Freljord"
+  ],
+  "rules_text": "[Deflect 2] (Opponents must pay Rune RainbowRune Rainbow to choose me with a spell or ability.)When I attack, deal 5 damage split among any number of enemy units here.",
+  "rarity": "Showcase",
+  "artist": "League Splash Team",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/744d1b950ae7ef1e6e5b244538a6afb9802e5e3d-744x1039.png"
+}

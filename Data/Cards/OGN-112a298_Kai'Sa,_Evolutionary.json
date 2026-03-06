@@ -1,0 +1,17 @@
+{
+  "card_id": "OGN-112a/298",
+  "set_code": "Origins",
+  "name": "Kai'Sa, Evolutionary",
+  "cost": 6,
+  "might": 6,
+  "domain": "Mind",
+  "type": "Champion Unit",
+  "keywords": [
+    "Kai'Sa",
+    "The Void"
+  ],
+  "rules_text": "[Ganking] (I can move from battlefield to battlefield.)When I conquer, you may play a spell from your trash with Energy cost less than your points without paying its Energy cost. Then recycle it. (You must still pay its Power cost.)",
+  "rarity": "Showcase",
+  "artist": "League Splash Team",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/2c8c9619d4afd081de548b511000f7c4b849ec1e-744x1039.png"
+}

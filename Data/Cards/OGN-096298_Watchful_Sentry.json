@@ -1,0 +1,16 @@
+{
+  "card_id": "OGN-096/298",
+  "set_code": "Origins",
+  "name": "Watchful Sentry",
+  "cost": 2,
+  "might": 1,
+  "domain": "Mind",
+  "type": "Unit",
+  "keywords": [
+    "Freljord"
+  ],
+  "rules_text": "[Deathknell] — Draw 1. (When I die, get the effect.)",
+  "rarity": "Common",
+  "artist": "Six More Vodka",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/d84da2c62b1e218a0a74b227c49ce8a953918ebd-744x1039.png"
+}

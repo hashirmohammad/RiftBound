@@ -1,0 +1,18 @@
+{
+  "card_id": "OGN-236/298",
+  "set_code": "Origins",
+  "name": "Karthus, Eternal",
+  "cost": 3,
+  "might": 3,
+  "domain": "Order",
+  "type": "Champion Unit",
+  "keywords": [
+    "Spirit",
+    "Karthus",
+    "Shadow Isles"
+  ],
+  "rules_text": "Your [Deathknell] effects trigger an additional time.",
+  "rarity": "Rare",
+  "artist": "League Splash Team",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/df3497ce6a602da554813340f572240675c7f0e2-744x1039.png"
+}

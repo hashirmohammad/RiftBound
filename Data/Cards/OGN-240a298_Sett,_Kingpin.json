@@ -1,0 +1,17 @@
+{
+  "card_id": "OGN-240a/298",
+  "set_code": "Origins",
+  "name": "Sett, Kingpin",
+  "cost": 4,
+  "might": 5,
+  "domain": "Order",
+  "type": "Champion Unit",
+  "keywords": [
+    "Sett",
+    "Ionia"
+  ],
+  "rules_text": "[Tank] (I must be assigned combat damage first.)I get +1 Might for each buffed friendly unit at my battlefield.",
+  "rarity": "Showcase",
+  "artist": "Wild Rift Splash Team",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/010bbd89c60c57dc508f6b22201d31bb188f84d6-744x1039.png"
+}

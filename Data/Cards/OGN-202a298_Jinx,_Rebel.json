@@ -1,0 +1,17 @@
+{
+  "card_id": "OGN-202a/298",
+  "set_code": "Origins",
+  "name": "Jinx, Rebel",
+  "cost": 5,
+  "might": 5,
+  "domain": "Chaos",
+  "type": "Champion Unit",
+  "keywords": [
+    "Jinx",
+    "Zaun"
+  ],
+  "rules_text": "When you discard one or more cards, ready me and give me +1 Might this turn.",
+  "rarity": "Showcase",
+  "artist": "League Splash Team",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/da4c4f96081b4c0e151dba74a0ef6eae338478f0-744x1039.png"
+}
