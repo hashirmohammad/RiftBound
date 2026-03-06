@@ -1,0 +1,16 @@
+{
+  "card_id": "OGN-239/298",
+  "set_code": "Origins",
+  "name": "Machine Evangel",
+  "cost": 5,
+  "might": 4,
+  "domain": "Order",
+  "type": "Unit",
+  "keywords": [
+    "Piltover"
+  ],
+  "rules_text": "[Deathknell] — Play three 1 Might Recruit unit tokens into your base. (When I die, get the effect.)",
+  "rarity": "Rare",
+  "artist": "Kudos Productions",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/ad15d4ff89548e83dcede9b209b12233652cf3a1-744x1039.png"
+}

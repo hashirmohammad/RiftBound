@@ -1,0 +1,16 @@
+{
+  "card_id": "OGN-265/298",
+  "set_code": "Origins",
+  "name": "Herald of the Arcane",
+  "cost": 0,
+  "might": 0,
+  "domain": "Mind",
+  "type": "Legend",
+  "keywords": [
+    "Viktor"
+  ],
+  "rules_text": "1 Energy, Exhaust: Play a 1 Might Recruit unit token.",
+  "rarity": "Rare",
+  "artist": "Fortiche Production",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/913236dabf1e4f71650bbba46870fff8163e2eff-744x1039.png"
+}

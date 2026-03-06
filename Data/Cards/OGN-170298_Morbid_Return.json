@@ -1,0 +1,14 @@
+{
+  "card_id": "OGN-170/298",
+  "set_code": "Origins",
+  "name": "Morbid Return",
+  "cost": 2,
+  "might": 0,
+  "domain": "Chaos",
+  "type": "Spell",
+  "keywords": [],
+  "rules_text": "[Action] (Play on your turn or in showdowns.)Return a unit from your trash to your hand.",
+  "rarity": "Common",
+  "artist": "Rafael Zanchetin",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/33b5ca4e580b94f2056bd884a4a35e8c630920a2-744x1039.png"
+}

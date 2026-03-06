@@ -1,0 +1,14 @@
+{
+  "card_id": "OGN-123/298",
+  "set_code": "Origins",
+  "name": "Unchecked Power",
+  "cost": 7,
+  "might": 0,
+  "domain": "Mind",
+  "type": "Spell",
+  "keywords": [],
+  "rules_text": "Exhaust all friendly units, then deal 12 to ALL units at battlefields.",
+  "rarity": "Epic",
+  "artist": "Kudos Productions",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/c44cd1f6f41144c770ac79f10e5ae75f0c6d6435-744x1039.png"
+}

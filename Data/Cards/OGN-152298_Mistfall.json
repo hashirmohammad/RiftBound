@@ -1,0 +1,14 @@
+{
+  "card_id": "OGN-152/298",
+  "set_code": "Origins",
+  "name": "Mistfall",
+  "cost": 3,
+  "might": 0,
+  "domain": "Body",
+  "type": "Gear",
+  "keywords": [],
+  "rules_text": "When you buff a friendly unit, you may pay Body and exhaust this to ready it.",
+  "rarity": "Rare",
+  "artist": "Polar Engine Studio",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/1cedf0dcd6c4a44ae867e9f04f9f179d9b91c357-744x1039.png"
+}

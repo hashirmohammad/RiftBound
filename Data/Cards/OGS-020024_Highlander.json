@@ -1,0 +1,16 @@
+{
+  "card_id": "OGS-020/024",
+  "set_code": "Proving Grounds",
+  "name": "Highlander",
+  "cost": 4,
+  "might": 0,
+  "domain": "Calm",
+  "type": "Signature Spell",
+  "keywords": [
+    "Master Yi"
+  ],
+  "rules_text": "[Reaction] (Play any time, even before spells and abilities resolve.)Choose a friendly unit. The next time it dies this turn, recall it exhausted instead. (Send it to base. This isn't a move.)",
+  "rarity": "Epic",
+  "artist": "Kudos Productions",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/18c0818cbbfdf26a1237b4f7703b1f035f47b014-744x1039.png"
+}

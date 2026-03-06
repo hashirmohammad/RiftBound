@@ -1,0 +1,17 @@
+{
+  "card_id": "OGN-079a/298",
+  "set_code": "Origins",
+  "name": "Leona, Zealot",
+  "cost": 6,
+  "might": 6,
+  "domain": "Calm",
+  "type": "Champion Unit",
+  "keywords": [
+    "Leona",
+    "Mount Targon"
+  ],
+  "rules_text": "If an opponent's score is within 3 points of the Victory Score, I enter ready.Stunned enemy units here have -8 Might, to a minimum of 1 Might.",
+  "rarity": "Showcase",
+  "artist": "Six More Vodka",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/451caa433b1fbe8e9d2b86548b82c3c5f2bac620-744x1039.png"
+}

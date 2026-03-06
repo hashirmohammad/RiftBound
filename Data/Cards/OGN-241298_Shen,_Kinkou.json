@@ -1,0 +1,17 @@
+{
+  "card_id": "OGN-241/298",
+  "set_code": "Origins",
+  "name": "Shen, Kinkou",
+  "cost": 3,
+  "might": 3,
+  "domain": "Order",
+  "type": "Champion Unit",
+  "keywords": [
+    "Shen",
+    "Ionia"
+  ],
+  "rules_text": "[Reaction] (Play any time, even before spells and abilities resolve, including to a battlefield you control.)[Shield 2] (+2 Might while I'm a defender.)[Tank] (I must be assigned combat damage first.)",
+  "rarity": "Rare",
+  "artist": "Six More Vodka",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/25f3a9fa33201278ebf475b2d02dae8c0c0cb20c-744x1039.png"
+}

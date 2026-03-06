@@ -1,0 +1,17 @@
+{
+  "card_id": "OGN-130/298",
+  "set_code": "Origins",
+  "name": "Crackshot Corsair",
+  "cost": 3,
+  "might": 3,
+  "domain": "Body",
+  "type": "Unit",
+  "keywords": [
+    "Pirate",
+    "Bilgewater"
+  ],
+  "rules_text": "When I attack, deal 1 to an enemy unit here.",
+  "rarity": "Common",
+  "artist": "Six More Vodka",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/9106ab084e02d7a489cb351e98112e5833b0bb11-744x1039.png"
+}

@@ -1,0 +1,17 @@
+{
+  "card_id": "OGN-015/298",
+  "set_code": "Origins",
+  "name": "Captain Farron",
+  "cost": 4,
+  "might": 5,
+  "domain": "Fury",
+  "type": "Unit",
+  "keywords": [
+    "Trifarian",
+    "Noxus"
+  ],
+  "rules_text": "Other friendly units here have [Assault]. (+1 Might while they're attackers.)",
+  "rarity": "Uncommon",
+  "artist": "Six More Vodka",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/4c65e2cae6748590f589ad8b26bc5a20c0d770c2-744x1039.png"
+}

@@ -1,0 +1,16 @@
+{
+  "card_id": "OGN-299/298",
+  "set_code": "Origins",
+  "name": "Daughter of the Void",
+  "cost": 0,
+  "might": 0,
+  "domain": "Fury",
+  "type": "Legend",
+  "keywords": [
+    "Kai'Sa"
+  ],
+  "rules_text": "Exhaust: [Reaction] — [Add] Rune Rainbow. Use only to play spells. (Abilities that add resources can't be reacted to.)",
+  "rarity": "Showcase",
+  "artist": "Jason Chan",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/57e13462b8fea9a5cfa1b424d3ad3005f37b00ad-1488x2078.png"
+}

@@ -1,0 +1,16 @@
+{
+  "card_id": "OGN-305/298",
+  "set_code": "Origins",
+  "name": "Unforgiven",
+  "cost": 0,
+  "might": 0,
+  "domain": "Calm",
+  "type": "Legend",
+  "keywords": [
+    "Yasuo"
+  ],
+  "rules_text": "2 Energy, Exhaust: Move a friendly unit to or from its base.",
+  "rarity": "Showcase",
+  "artist": "Quy Ho",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/2c804ec513085702763a9145fac93a8adb6c4783-1488x2078.png"
+}

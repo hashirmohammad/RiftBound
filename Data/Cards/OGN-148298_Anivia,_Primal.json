@@ -1,0 +1,18 @@
+{
+  "card_id": "OGN-148/298",
+  "set_code": "Origins",
+  "name": "Anivia, Primal",
+  "cost": 7,
+  "might": 8,
+  "domain": "Body",
+  "type": "Champion Unit",
+  "keywords": [
+    "Bird",
+    "Anivia",
+    "Freljord"
+  ],
+  "rules_text": "When I attack, deal 3 to all enemy units here.",
+  "rarity": "Rare",
+  "artist": "Six More Vodka",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/ca1a56035333e31b3a04d67ee9131bb4d533e5db-744x1039.png"
+}

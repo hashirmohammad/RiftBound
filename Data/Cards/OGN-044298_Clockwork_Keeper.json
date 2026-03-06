@@ -1,0 +1,16 @@
+{
+  "card_id": "OGN-044/298",
+  "set_code": "Origins",
+  "name": "Clockwork Keeper",
+  "cost": 2,
+  "might": 2,
+  "domain": "Calm",
+  "type": "Unit",
+  "keywords": [
+    "Shurima"
+  ],
+  "rules_text": "As you play me, you may pay Calm as an additional cost. If you do, draw 1.",
+  "rarity": "Common",
+  "artist": "Polar Engine Studio",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/417e606418349bb25d4b07d460fa043ad85f2778-744x1039.png"
+}

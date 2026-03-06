@@ -1,0 +1,17 @@
+{
+  "card_id": "OGN-139/298",
+  "set_code": "Origins",
+  "name": "Cithria of Cloudfield",
+  "cost": 2,
+  "might": 1,
+  "domain": "Body",
+  "type": "Unit",
+  "keywords": [
+    "Elite",
+    "Demacia"
+  ],
+  "rules_text": "When you play another unit, buff me. (If I don't have a buff, I get a +1 Might buff.)",
+  "rarity": "Uncommon",
+  "artist": "Six More Vodka",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/6f0931db65e25e0a8d8351ffb97f8deed5dc0aa9-744x1039.png"
+}

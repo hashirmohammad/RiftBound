@@ -1,0 +1,16 @@
+{
+  "card_id": "OGN-013/298",
+  "set_code": "Origins",
+  "name": "Pouty Poro",
+  "cost": 2,
+  "might": 2,
+  "domain": "Fury",
+  "type": "Unit",
+  "keywords": [
+    "Poro"
+  ],
+  "rules_text": "[Deflect] (Opponents must pay Rune Rainbow to choose me with a spell or ability.)",
+  "rarity": "Common",
+  "artist": "Caravan Studio",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/d541bf3bcb5aa3ad0d48d87f5753569b72ac426f-744x1039.png"
+}

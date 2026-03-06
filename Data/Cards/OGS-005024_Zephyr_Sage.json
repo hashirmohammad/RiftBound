@@ -1,0 +1,17 @@
+{
+  "card_id": "OGS-005/024",
+  "set_code": "Proving Grounds",
+  "name": "Zephyr Sage",
+  "cost": 6,
+  "might": 6,
+  "domain": "Calm",
+  "type": "Unit",
+  "keywords": [
+    "Ionia",
+    "Bird"
+  ],
+  "rules_text": "[Shield] (+1 Might while I'm a defender.)",
+  "rarity": "Uncommon",
+  "artist": "Six More Vodka",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/7664b03bb107954195153d9f2f86c5d63682fa4b-744x1039.png"
+}

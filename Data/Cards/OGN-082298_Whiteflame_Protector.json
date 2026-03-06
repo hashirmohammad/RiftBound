@@ -1,0 +1,17 @@
+{
+  "card_id": "OGN-082/298",
+  "set_code": "Origins",
+  "name": "Whiteflame Protector",
+  "cost": 8,
+  "might": 8,
+  "domain": "Calm",
+  "type": "Unit",
+  "keywords": [
+    "Dragon",
+    "Mount Targon"
+  ],
+  "rules_text": "When you play me, give a unit +8 Might this turn.",
+  "rarity": "Epic",
+  "artist": "Aron Elekes",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/a5cdd793736f915fa1b4ea388af66de7b2bc00cb-744x1039.png"
+}

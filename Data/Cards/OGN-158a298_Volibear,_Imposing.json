@@ -1,0 +1,17 @@
+{
+  "card_id": "OGN-158a/298",
+  "set_code": "Origins",
+  "name": "Volibear, Imposing",
+  "cost": 12,
+  "might": 10,
+  "domain": "Body",
+  "type": "Champion Unit",
+  "keywords": [
+    "Volibear",
+    "Freljord"
+  ],
+  "rules_text": "[Shield 3] (+3 Might while I'm a defender.)[Tank] (I must be assigned combat damage first.)When an opponent moves to a battlefield other than mine, draw 1. (Bases are not battlefield.)",
+  "rarity": "Showcase",
+  "artist": "Wild Rift Splash Team",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/faceb90b6a46e79eadba43871b8cffe1ec5037a7-744x1039.png"
+}

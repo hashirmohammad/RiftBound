@@ -1,0 +1,17 @@
+{
+  "card_id": "OGN-035/298",
+  "set_code": "Origins",
+  "name": "Vayne, Hunter",
+  "cost": 4,
+  "might": 2,
+  "domain": "Fury",
+  "type": "Champion Unit",
+  "keywords": [
+    "Vayne",
+    "Demacia"
+  ],
+  "rules_text": "[Assault 3]_ (+3 Might while I'm an attacker.)_If an opponent controls a battlefield, I enter ready.When I conquer, you may pay 1 Energy to return me to my owner's hand.",
+  "rarity": "Rare",
+  "artist": "Kudos Productions",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/b38a22e6f4bfaa8589f32754a7466fe5214e81b5-744x1039.png"
+}

@@ -1,0 +1,14 @@
+{
+  "card_id": "OGN-145/298",
+  "set_code": "Origins",
+  "name": "Unyielding Spirit",
+  "cost": 1,
+  "might": 0,
+  "domain": "Body",
+  "type": "Spell",
+  "keywords": [],
+  "rules_text": "[Reaction]_ (Play any time, even before spells and abilities resolve.)_Prevent all spell and ability damage this turn.",
+  "rarity": "Uncommon",
+  "artist": "Max Grecke",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/9afea96ec04ce0c2ee76c4affbf4e6df470e7647-744x1039.png"
+}

@@ -1,0 +1,17 @@
+{
+  "card_id": "OGN-039a/298",
+  "set_code": "Origins",
+  "name": "Kai'Sa, Survivor",
+  "cost": 4,
+  "might": 4,
+  "domain": "Fury",
+  "type": "Champion Unit",
+  "keywords": [
+    "Kai'Sa",
+    "The Void"
+  ],
+  "rules_text": "[Accelerate] (You may pay 1 EnergyFury as an additional cost to have me enter ready.)When I conquer, draw 1.",
+  "rarity": "Showcase",
+  "artist": "Envar Studio",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/ad69bde670ce218adee1d2a618a7295d2fb7bd4c-744x1039.png"
+}

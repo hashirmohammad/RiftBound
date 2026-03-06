@@ -1,0 +1,17 @@
+{
+  "card_id": "OGN-110/298",
+  "set_code": "Origins",
+  "name": "Ekko, Recurrent",
+  "cost": 5,
+  "might": 5,
+  "domain": "Mind",
+  "type": "Champion Unit",
+  "keywords": [
+    "Ekko",
+    "Zaun"
+  ],
+  "rules_text": "[Accelerate] (You may pay 1 EnergyMind as an additional cost to have me enter ready.)[Deathknell] — Recycle me to ready your runes. (When I die, get the effect.)",
+  "rarity": "Rare",
+  "artist": "Six More Vodka",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/65da19325b6def53d33c07bc1aa8f91fd2f1e723-744x1039.png"
+}

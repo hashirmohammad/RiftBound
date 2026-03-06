@@ -1,0 +1,14 @@
+{
+  "card_id": "OGN-063/298",
+  "set_code": "Origins",
+  "name": "Spirit's Refuge",
+  "cost": 2,
+  "might": 0,
+  "domain": "Calm",
+  "type": "Gear",
+  "keywords": [],
+  "rules_text": "When you play this, buff a friendly unit. (If it doesn't have a buff, it gets a +1 Might buff.)Friendly buffed units have [Deflect] if they didn't already. (Opponents must pay Rune Rainbow to choose those units with a spell or ability.)",
+  "rarity": "Uncommon",
+  "artist": "Kudos Productions",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/26d5e54580d1f17ed6c35a66ac6a90ce56c99ec8-744x1039.png"
+}

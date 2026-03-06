@@ -1,0 +1,17 @@
+{
+  "card_id": "OGN-109/298",
+  "set_code": "Origins",
+  "name": "Dr. Mundo, Expert",
+  "cost": 8,
+  "might": 6,
+  "domain": "Mind",
+  "type": "Champion Unit",
+  "keywords": [
+    "Dr. Mundo",
+    "Zaun"
+  ],
+  "rules_text": "My Might is increased by the number of cards in your trash.At the start of your Beginning Phase, recycle 3 from your trash.",
+  "rarity": "Rare",
+  "artist": "League Splash Team",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/cf51fe8bedf5139e8cc1fc062969949ea7b121f0-744x1039.png"
+}

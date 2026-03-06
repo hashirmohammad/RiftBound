@@ -1,0 +1,17 @@
+{
+  "card_id": "OGN-205a/298",
+  "set_code": "Origins",
+  "name": "Yasuo, Windrider",
+  "cost": 5,
+  "might": 4,
+  "domain": "Chaos",
+  "type": "Champion Unit",
+  "keywords": [
+    "Yasuo",
+    "Ionia"
+  ],
+  "rules_text": "[Ganking] (I can move from battlefield to battlefield.)The third time I move in a turn, you score 1 point.",
+  "rarity": "Showcase",
+  "artist": "League Splash Team",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/35f7ca6802af48585af55d23cf7675a8922d8535-744x1039.png"
+}

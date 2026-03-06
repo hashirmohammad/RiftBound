@@ -1,0 +1,16 @@
+{
+  "card_id": "OGN-140/298",
+  "set_code": "Origins",
+  "name": "Herald of Scales",
+  "cost": 4,
+  "might": 3,
+  "domain": "Body",
+  "type": "Unit",
+  "keywords": [
+    "Mount Targon"
+  ],
+  "rules_text": "Your Dragons' Energy costs are reduced by 2 Energy, to a minimum of 1 Energy.",
+  "rarity": "Uncommon",
+  "artist": "Polar Engine Studio",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/be49bceea1d328769774fb4daac4732861f6e4fd-744x1039.png"
+}
