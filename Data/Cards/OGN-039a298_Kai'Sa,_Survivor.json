@@ -7,7 +7,7 @@
   "domain": "Fury",
   "type": "Champion Unit",
   "keywords": [
-    "Kai'Sa",
+	"Kai'Sa",
     "The Void"
   ],
   "rules_text": "[Accelerate] (You may pay 1 EnergyFury as an additional cost to have me enter ready.)When I conquer, draw 1.",

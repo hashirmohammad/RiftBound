@@ -7,7 +7,7 @@
   "domain": "Fury",
   "type": "Champion Unit",
   "keywords": [
-    "Jinx",
+	"Jinx",
     "Zaun"
   ],
   "rules_text": "[Accelerate] (You may pay 1 EnergyFury as an additional cost to have me enter ready.)[Assault 2] (+2 Might while I'm an attacker.)When you play me, discard 2.",

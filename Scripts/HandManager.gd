@@ -45,7 +45,7 @@ func _reposition_cards() -> void:
 	var total_width = (count - 1) * CARD_SPACING
 	var start_x = -total_width / 2.0
 	for i in range(count):
-		cards_in_hand[i].position = Vector2(start_x + i * CARD_SPACING, 0)
+		cards_in_hand[i].position = Vector2(start_x + i * CARD_SPACING, 40)
 
 func _tween_deal(card) -> void:
 	var tween = create_tween().set_parallel(true)

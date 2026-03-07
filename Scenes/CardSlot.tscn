@@ -10,7 +10,7 @@ script = ExtResource("1_enycx")
 
 [node name="CardSlotImage" type="Polygon2D" parent="." unique_id=673516698]
 z_index = 5
-color = Color(0, 0.007843138, 0, 1)
+color = Color(0.83137256, 0.6666667, 0.20784314, 1)
 polygon = PackedVector2Array(-60, -80, 60, -80, 60, 80, -60, 80)
 uv = PackedVector2Array(-60, -80, 60, -80, 60, 80, -60, 80)
 

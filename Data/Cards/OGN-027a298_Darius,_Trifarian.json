@@ -7,8 +7,8 @@
   "domain": "Fury",
   "type": "Champion Unit",
   "keywords": [
-    "Trifarian",
-    "Darius",
+	"Trifarian",
+	"Darius",
     "Noxus"
   ],
   "rules_text": "When you play your second card in a turn, give me +2 Might this turn and ready me.",
