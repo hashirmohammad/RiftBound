@@ -44,7 +44,11 @@ func start_drag(card) -> void:
 	card.set_card_state(RiftCard.CardState.DRAGGING)
 	if card.get_parent() != self:
 		var saved_global_pos = card.global_position
-		card.get_parent().remove_child(card)
+		if card.card_slot_card_is_in:
+			card.card_slot_card_is_in.remove_card(card)
+			card.card_slot_card_is_in = null
+		else:
+			card.get_parent().remove_child(card)
 		add_child(card)
 		card.global_position = saved_global_pos
 		if hand_manager.cards_in_hand.has(card):
@@ -60,20 +64,17 @@ func finish_drag() -> void:
 
 	var slot = _raycast_slot()
 
-	if slot and not slot.card_in_slot:
+	if slot:
 		var card = card_being_dragged
 		card_being_dragged = null
 
-		card.global_position      = slot.global_position
-		card.scale                = BOARD_SCALE
+		remove_child(card)
 		card.z_index              = 100
 		card.card_slot_card_is_in = slot
 		card.get_node("Area2D/CollisionShape2D").disabled = true
 		card.set_card_state(RiftCard.CardState.ON_BOARD)
-		slot.card_in_slot         = true
+		slot.add_card(card)
 		is_hovering_on_card       = false
-
-		print("Card placed! card=", card, " pos=", card.global_position, " slot_pos=", slot.global_position, " visible=", card.visible, " scale=", card.scale, " parent=", card.get_parent())
 	else:
 		var card = card_being_dragged
 		card_being_dragged = null
@@ -95,10 +96,7 @@ func finish_drag() -> void:
 
 func _highlight_slots(_card) -> void:
 	for slot in all_slots:
-		if slot.card_in_slot:
-			slot.highlight(false)
-		else:
-			slot.highlight(true, true)
+		slot.highlight(true, true)
 
 func _clear_slot_highlights() -> void:
 	for slot in all_slots:

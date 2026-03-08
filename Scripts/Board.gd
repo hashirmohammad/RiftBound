@@ -1,3 +1,4 @@
+@tool
 extends Control
 ## Board — Draws all UI zones procedurally and wires HandManager into the
 ## player's Hand panel so cards are laid out inside the board automatically.
