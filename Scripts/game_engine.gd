@@ -50,8 +50,7 @@ static func start_game() -> GameState:
 	state.players = [p0, p1]
 
 	# Load real cards
-	var all_cards: Array[CardData] = CardDatabase.load_cards_from_json()
-
+	var all_cards: Array[CardData] = CardDatabase.get_all_cards()
 	# TEMP: build a 40-card deck by sampling from all_cards
 	for i in range(40):
 		var d0: CardData = all_cards[randi() % all_cards.size()]
