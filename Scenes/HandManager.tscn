@@ -71,7 +71,5 @@ func _tween_return(card: RiftCard) -> void:
 	tween.tween_property(card, \"scale\", NORMAL_SCALE, RETURN_SPEED)
 "
 
-[node name="HandManager" type="HBoxContainer" unique_id=1408419153]
-offset_right = 40.0
-offset_bottom = 40.0
+[node name="HandManager" type="Node2D" unique_id=1713076396]
 script = SubResource("GDScript_r0y0a")

@@ -41,7 +41,7 @@ assets/
 Step 1 — Open the scene:
 
 - In Godot open scenes/board/board_layout.tscn
-- Hit Play Scene (F5)
+- Hit Play Scene (F6)
 
 The expected result when doing this should be the full board render and display on screen 
 
