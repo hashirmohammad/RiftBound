@@ -1,11 +1,8 @@
 extends Node2D
-
 signal left_mouse_button_clicked
 signal left_mouse_button_released
-
 const COLLISION_MASK_CARD = 1 
 const COLLISION_MASK_DECK = 4
-
 var card_manager_reference
 var deck_reference
 
@@ -13,7 +10,6 @@ func _ready() -> void:
 	card_manager_reference = $"../CardManager"
 	deck_reference = $"../Deck"
 
-# Called when the node enters the scene tree for the first time.
 func _input(event):
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed:
@@ -31,10 +27,8 @@ func raycast_at_cursor():
 	if result.size() > 0:
 		var result_collision_mask = result[0].collider.collision_mask
 		if result_collision_mask == COLLISION_MASK_CARD:
-			# Card clicked
 			var card_found = result[0].collider.get_parent()
-			if card_found:
+			if card_found and card_found.current_state != RiftCard.CardState.ON_BOARD:
 				card_manager_reference.start_drag(card_found)
 		elif result_collision_mask == COLLISION_MASK_DECK:
-			# Deck clicked
 			deck_reference.draw_card()

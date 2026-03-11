@@ -18,11 +18,13 @@ var all_slots:             Array    = []
 func _ready() -> void:
 	screen_size  = get_viewport_rect().size
 	hand_manager = $"../HandManager"
+
 	var slots_container = get_node_or_null("../CardSlots")
 	if slots_container:
 		all_slots = slots_container.get_children()
 	else:
 		push_error("CardManager: CardSlots node not found!")
+
 	var input_mgr = get_node_or_null("../InputManager")
 	if input_mgr:
 		if not input_mgr.left_mouse_button_released.is_connected(_on_release):
@@ -42,6 +44,7 @@ func _process(_delta: float) -> void:
 func start_drag(card) -> void:
 	card_being_dragged = card
 	card.set_card_state(RiftCard.CardState.DRAGGING)
+
 	if card.get_parent() != self:
 		var saved_global_pos = card.global_position
 		if card.card_slot_card_is_in:
@@ -51,10 +54,12 @@ func start_drag(card) -> void:
 			card.get_parent().remove_child(card)
 		add_child(card)
 		card.global_position = saved_global_pos
+
 		if hand_manager.cards_in_hand.has(card):
 			hand_manager.cards_in_hand.erase(card)
 			hand_manager._reposition_cards()
-	drag_offset = get_global_mouse_position() - card.global_position
+
+	drag_offset  = get_global_mouse_position() - card.global_position
 	card.scale   = DEFAULT_SCALE
 	card.z_index = 10
 
@@ -64,8 +69,8 @@ func finish_drag() -> void:
 
 	var slot = _raycast_slot()
 
-	if slot:
-		var card = card_being_dragged
+	if slot and not slot.card_in_slot:
+		var card          = card_being_dragged
 		card_being_dragged = null
 
 		remove_child(card)
@@ -73,10 +78,17 @@ func finish_drag() -> void:
 		card.card_slot_card_is_in = slot
 		card.get_node("Area2D/CollisionShape2D").disabled = true
 		card.set_card_state(RiftCard.CardState.ON_BOARD)
-		slot.add_card(card)
-		is_hovering_on_card       = false
+		slot.card_in_slot   = true
+		is_hovering_on_card = false
+
+		print("Card placed! card=", card,
+			  " pos=", card.global_position,
+			  " slot_pos=", slot.global_position,
+			  " visible=", card.visible,
+			  " scale=", card.scale,
+			  " parent=", card.get_parent())
 	else:
-		var card = card_being_dragged
+		var card          = card_being_dragged
 		card_being_dragged = null
 
 		if card.get_parent() != hand_manager:
@@ -127,8 +139,8 @@ func _on_hovered_off(card) -> void:
 			is_hovering_on_card = false
 
 func _highlight(card, on: bool) -> void:
-	card.scale   = HOVER_SCALE  if on else DEFAULT_SCALE
-	card.z_index = 2            if on else 1
+	card.scale   = HOVER_SCALE if on else DEFAULT_SCALE
+	card.z_index = 2           if on else 1
 
 func _raycast_slot():
 	var p = PhysicsPointQueryParameters2D.new()

@@ -15,6 +15,7 @@ size = Vector2(179, 265)
 [node name="Main" type="Node2D" unique_id=1554237704]
 
 [node name="Board" parent="." unique_id=272103127 instance=ExtResource("1_344ge")]
+z_index = -1
 
 [node name="HandManager" type="Node2D" parent="." unique_id=1612433838]
 position = Vector2(960, 950)

@@ -1,17 +1,5 @@
 @tool
 extends Control
-## Board — Draws all UI zones procedurally and wires HandManager into the
-## player's Hand panel so cards are laid out inside the board automatically.
-##
-## CHANGE: Board now calls _setup_hand_manager() after building the layout,
-## which finds the Hand panel and adds HandManager as a sized child.
-## This means you do NOT need a separate HandManager node in the scene root —
-## Board creates and positions it for you.
-##
-## Other nodes that need a HandManager reference (Deck, CardManager) should
-## use $HandManager on the scene root OR rely on the autoload approach.
-## The simplest wiring: keep HandManager as a sibling node in the scene
-## and let Board just size/anchor it to the hand panel's rect.
 
 const SCREEN_W = 1920.0;  const SCREEN_H = 1080.0
 const COLOR_BG     = Color("#0d1b35")
@@ -22,7 +10,6 @@ const BORDER_W = 2;  const GAP = 6;  const FONT_SIZE = 11
 const MANA_X = 8;   const MANA_SIZE = 38;  const MANA_COL_W = 52
 const HAND_H = 130; const DIVIDER_H = 4;   const ARENA_H = 200
 
-## Keeps a reference to the player's Hand panel so we can anchor HandManager
 var _hand_panel: Panel = null
 
 func _ready() -> void:
@@ -33,23 +20,6 @@ func _ready() -> void:
 	add_panel("Arena", Vector2(0, ph + DIVIDER_H), Vector2(SCREEN_W, ARENA_H), make_style(), "ARENA", 18)
 	add_rect(Vector2(0, ph + DIVIDER_H + ARENA_H), Vector2(SCREEN_W, DIVIDER_H), COLOR_DIV)
 	build_player(ph + DIVIDER_H * 2 + ARENA_H,    false, ph)
-	_anchor_hand_manager()
-
-## After the board is built, find the sibling HandManager and fit it inside
-## the Hand panel that build_player() created for the local player (flip=false).
-func _anchor_hand_manager() -> void:
-	if _hand_panel == null:
-		return
-	var hm: HandManager = get_parent().get_node_or_null("HandManager")
-	if hm == null:
-		push_warning("Board: No HandManager sibling found. Add one to the scene root.")
-		return
-	# Re-parent HandManager into the Hand panel so it sits inside the board zone
-	_hand_panel.add_child(hm)
-	hm.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	# Give some padding so cards don't hug the panel edge
-	hm.add_theme_constant_override("separation", 12)
-	hm.alignment = BoxContainer.ALIGNMENT_CENTER
 
 func add_rect(pos: Vector2, size: Vector2, color: Color) -> void:
 	var r = ColorRect.new()
@@ -109,7 +79,6 @@ func build_player(y: float, flip: bool, ph: float) -> void:
 	var hand_panel = add_panel("Hand", Vector2(0, hy), Vector2(SCREEN_W, HAND_H),
 		make_style(false, COLOR_HAND))
 
-	## Store a reference to the LOCAL player's hand panel (flip == false)
 	if not flip:
 		_hand_panel = hand_panel
 
