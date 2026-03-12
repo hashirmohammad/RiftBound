@@ -69,26 +69,34 @@ func finish_drag() -> void:
 
 	var slot = _raycast_slot()
 
+	
 	if slot and not slot.card_in_slot:
 		var card          = card_being_dragged
 		card_being_dragged = null
 
+		# Remove from CardManager before handing to slot
 		remove_child(card)
-		card.z_index              = 100
+
+		card.z_index = 100
 		card.card_slot_card_is_in = slot
 		card.get_node("Area2D/CollisionShape2D").disabled = true
 		card.set_card_state(RiftCard.CardState.ON_BOARD)
-		slot.card_in_slot   = true
+		card.scale = Vector2(0.70, 0.70)  # scale down for board display
+
+		slot.add_card(card)
+		card.self_modulate = Color.WHITE
+		card.z_as_relative = false
+		card.z_index = 10
+		card._original_scale = card.scale  # ← add this, saves 0.8 so enlarge restores correctly
+
+
+
 		is_hovering_on_card = false
 
-		print("Card placed! card=", card,
-			  " pos=", card.global_position,
-			  " slot_pos=", slot.global_position,
-			  " visible=", card.visible,
-			  " scale=", card.scale,
-			  " parent=", card.get_parent())
+		played_card_this_turn = true
+
 	else:
-		var card          = card_being_dragged
+		var card = card_being_dragged
 		card_being_dragged = null
 
 		if card.get_parent() != hand_manager:

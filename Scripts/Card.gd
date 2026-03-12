@@ -27,6 +27,7 @@ var _pending_image_url: String       = ""
 var _pending_card_id:   String       = ""
 var _is_enlarged:       bool         = false
 var _cached_texture:    ImageTexture = null
+var _original_scale:    Vector2      = Vector2.ONE  
 var _original_position: Vector2      = Vector2.ZERO
 
 func _ready() -> void:
@@ -70,31 +71,35 @@ func _toggle_enlarge() -> void:
 	var tween = create_tween()
 	tween.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
 	if _is_enlarged:
-		# Save original position to restore later
+		_original_scale    = scale
 		_original_position = global_position
-		# Clamp so card stays fully on screen when enlarged
-		var half_w = CARD_WIDTH * ENLARGED_SCALE.x / 2.0
+		var half_w = CARD_WIDTH  * ENLARGED_SCALE.x / 2.0
 		var half_h = CARD_HEIGHT * ENLARGED_SCALE.y / 2.0
 		var screen = get_viewport_rect().size
 		var clamped = Vector2(
 			clamp(global_position.x, half_w, screen.x - half_w),
 			clamp(global_position.y, half_h, screen.y - half_h)
 		)
+	# Use a larger scale for board cards to compensate for slot's 0.55 scale
+		var target_scale = ENLARGED_SCALE if current_state != CardState.ON_BOARD else ENLARGED_SCALE / 0.55
 		tween.tween_property(self, "global_position", clamped, 0.2)
-		tween.parallel().tween_property(self, "scale", ENLARGED_SCALE, 0.2)
+		tween.parallel().tween_property(self, "scale", target_scale, 0.2)
+		tween.parallel().tween_property(self, "self_modulate", Color.WHITE, 0.1)
 		z_index = 200
 	else:
-		# Restore original position and scale
+		# Bug fix 2: restore to whatever scale the card had before enlarging,
+		# not the hardcoded NORMAL_SCALE (which was shrinking board cards to 0.4)
 		tween.tween_property(self, "global_position", _original_position, 0.2)
-		tween.parallel().tween_property(self, "scale", NORMAL_SCALE, 0.2)
+		tween.parallel().tween_property(self, "scale", _original_scale, 0.2)
+		# Bug fix 1: restore inherited tint from parent slot
+		tween.parallel().tween_property(self, "self_modulate", Color.WHITE, 0.1)
 		z_index = 100 if current_state == CardState.ON_BOARD else 1
-
+		
 func set_card_state(new_state: CardState) -> void:
 	current_state = new_state
-	# Reset enlarged state when card changes state
 	if new_state != CardState.ON_BOARD and _is_enlarged:
 		_is_enlarged = false
-		scale = NORMAL_SCALE
+		scale = _original_scale  # was NORMAL_SCALE
 		global_position = _original_position
 
 func load_from_resource(data: CardData) -> void:

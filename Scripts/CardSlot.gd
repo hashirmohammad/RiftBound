@@ -17,6 +17,7 @@ func add_card(card: RiftCard) -> void:
 	cards.append(card)
 	add_child(card)
 	_reposition_cards()
+	$CardSlotImage.visible = false  # hide slot graphic when occupied
 
 func remove_card(card: RiftCard) -> void:
 	if not card in cards:
@@ -24,6 +25,7 @@ func remove_card(card: RiftCard) -> void:
 	cards.erase(card)
 	remove_child(card)
 	_reposition_cards()
+	$CardSlotImage.visible = true   # show slot graphic again when empty
 
 ## Lays cards out horizontally, centered on this slot's origin
 func _reposition_cards() -> void:

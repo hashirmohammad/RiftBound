@@ -30,72 +30,62 @@ script = ExtResource("1_21xkr")
 script = ExtResource("1_kry3j")
 
 [node name="CardSlot" parent="CardSlots" unique_id=402928220 instance=ExtResource("2_jjvhh")]
-modulate = Color(0.83137256, 0.6666667, 0.20784314, 1)
 z_index = -3
 position = Vector2(976.99994, 898)
 scale = Vector2(0.55, 0.55)
 
 [node name="CardSlot2" parent="CardSlots" unique_id=1283769364 instance=ExtResource("2_jjvhh")]
-modulate = Color(0.83137256, 0.6666667, 0.20784314, 1)
 z_index = -3
 position = Vector2(894, 800)
 scale = Vector2(0.55, 0.55)
 
 [node name="CardSlot3" parent="CardSlots" unique_id=1618857134 instance=ExtResource("2_jjvhh")]
-modulate = Color(0.83137256, 0.6666667, 0.20784314, 1)
 z_index = -3
 position = Vector2(976.99994, 800)
 scale = Vector2(0.55, 0.55)
 
 [node name="CardSlot4" parent="CardSlots" unique_id=1424280011 instance=ExtResource("2_jjvhh")]
-modulate = Color(1, 0, 0, 1)
 z_index = -3
 position = Vector2(1549.9999, 702.99994)
 scale = Vector2(0.55, 0.55)
 
 [node name="CardSlot5" parent="CardSlots" unique_id=846035168 instance=ExtResource("2_jjvhh")]
-modulate = Color(0.83137256, 0.6666667, 0.20784314, 1)
 z_index = -3
 position = Vector2(1061, 800)
 scale = Vector2(0.55, 0.55)
 
 [node name="CardSlot6" parent="CardSlots" unique_id=1542259996 instance=ExtResource("2_jjvhh")]
-modulate = Color(0.83137256, 0.6666667, 0.20784314, 1)
 z_index = -3
 position = Vector2(1144, 800)
 scale = Vector2(0.55, 0.55)
 
 [node name="CardSlot7" parent="CardSlots" unique_id=938148835 instance=ExtResource("2_jjvhh")]
-modulate = Color(0.83137256, 0.6666667, 0.20784314, 1)
 z_index = -3
 position = Vector2(894, 898)
 scale = Vector2(0.55, 0.55)
 
 [node name="CardSlot8" parent="CardSlots" unique_id=556147842 instance=ExtResource("2_jjvhh")]
-modulate = Color(0.83137256, 0.6666667, 0.20784314, 1)
 z_index = -3
 position = Vector2(811.99994, 898)
 scale = Vector2(0.55, 0.55)
 
 [node name="ChampSlot1" parent="CardSlots" unique_id=1117342945 instance=ExtResource("2_jjvhh")]
-modulate = Color(1, 0, 0, 1)
+z_index = -3
 position = Vector2(1811.9999, 702.99994)
 scale = Vector2(0.55, 0.55)
 
 [node name="CardSlot9" parent="CardSlots" unique_id=809036098 instance=ExtResource("2_jjvhh")]
-modulate = Color(0.83137256, 0.6666667, 0.20784314, 1)
 z_index = -3
 position = Vector2(1144, 898)
 scale = Vector2(0.55, 0.55)
 
 [node name="CardSlot10" parent="CardSlots" unique_id=268072419 instance=ExtResource("2_jjvhh")]
-modulate = Color(0.83137256, 0.6666667, 0.20784314, 1)
 z_index = -3
 position = Vector2(1061, 898)
 scale = Vector2(0.55, 0.55)
 
 [node name="CardSlot11" parent="CardSlots" unique_id=410913255 instance=ExtResource("2_jjvhh")]
-modulate = Color(0.83137256, 0.6666667, 0.20784314, 1)
+z_index = -3
 position = Vector2(811.99994, 800)
 scale = Vector2(0.55, 0.55)
 
