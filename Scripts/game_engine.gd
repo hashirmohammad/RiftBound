@@ -50,8 +50,7 @@ static func start_game() -> GameState:
 	state.players = [p0, p1]
 
 	# Load real cards
-	var all_cards: Array[CardData] = CardDatabase.load_cards_from_json()
-
+	var all_cards: Array[CardData] = CardDatabase.get_all_cards()
 	# TEMP: build a 40-card deck by sampling from all_cards
 	for i in range(40):
 		var d0: CardData = all_cards[randi() % all_cards.size()]
@@ -64,12 +63,8 @@ static func start_game() -> GameState:
 	p1.deck.shuffle()
 
 	# TEMP rune decks (FIFO queue)
-	for i in range(DEFAULT_RUNE_DECK_SIZE):
-		p0.rune_deck.append("Rune_%d" % i)
-		p1.rune_deck.append("Rune_%d" % i)
-
-	p0.rune_deck.shuffle()
-	p1.rune_deck.shuffle()
+	build_rune_deck(p0, RuneInstance.RuneType.BODY, RuneInstance.RuneType.FURY, state)
+	build_rune_deck(p1, RuneInstance.RuneType.CALM, RuneInstance.RuneType.MIND, state)
 
 	# Opening hands
 	for i in range(OPENING_HAND_SIZE):
@@ -104,6 +99,8 @@ static func end_turn(state: GameState) -> void:
 
 	# Start the next player's turn
 	start_turn(state)
+	
+	
 static func _play_card(state: GameState, action: GameAction) -> void:
 	# Only allow playing cards in MAIN phase
 	if state.phase != "MAIN":
@@ -113,19 +110,35 @@ static func _play_card(state: GameState, action: GameAction) -> void:
 	var p := state.get_active_player()
 
 	# Validate index
-	if action.card_index < 0 or action.card_index >= p.hand.size():
-		state.add_event("Invalid PLAY_CARD: card_index out of range.")
+	if action.card_uid < 0 or action.card_uid >= p.hand.size():
+		state.add_event("Invalid PLAY_CARD: card index out of range.")
 		return	
 
-	var card: CardInstance = p.hand[action.card_index]
+	var card: CardInstance = p.hand[action.card_uid]
 	var cost := card.data.cost   # instead of 1
 	if p.rune_count_in_pool() < cost:
 		state.add_event("P%d cannot play card: not enough runes." % p.id)
 		return
 	card.zone = CardInstance.Zone.BOARD
 	# Spend and move card from hand -> board
-	p.spend_runes(cost)
-	p.hand.remove_at(action.card_index)
+	p.spend_runes(p.rune_pool.slice(0,cost))
+	p.hand.remove_at(action.card_uid)
 	card.exhaust()
 	p.board.append(card)
 	state.add_event("P%d played %s (cost %d)." % [p.id, card.data.card_name, cost])
+	
+static func build_rune_deck(p: PlayerState, type_0: RuneInstance.RuneType, type_1: RuneInstance.RuneType, state:GameState) -> void:
+	p.rune_deck.clear()
+	p.rune_pool.clear()
+	
+	for i in range(6):
+		var rune_0 := RuneInstance.new(state.next_uid(), type_0)
+		rune_0.zone = RuneInstance.Zone.RUNE_DECK
+		p.rune_deck.append(rune_0)
+
+	for i in range(6):
+		var rune_1 := RuneInstance.new(state.next_uid(), type_1)
+		rune_1.zone = RuneInstance.Zone.RUNE_DECK
+		p.rune_deck.append(rune_1)
+
+	p.rune_deck.shuffle()

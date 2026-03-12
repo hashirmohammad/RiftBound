@@ -117,8 +117,14 @@ func next_phase():
 func _awaken_phase(player:PlayerState):
 	for c in player.board:
 		c.awaken()
+	var rune_count: int = 0
+	for r in player.rune_pool:
+		if r.is_exhausted():
+			r.awaken()
+			rune_count += 1
 
 	state.add_event("P%d awakens %d cards." % [player.id, player.board.size()])
+	state.add_event("P%d awakens %d runes." % [player.id, rune_count])
 
 # Handles end phase logic
 func _end_phase(player:PlayerState):

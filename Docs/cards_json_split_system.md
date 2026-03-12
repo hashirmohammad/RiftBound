@@ -160,4 +160,3 @@ py tools/split\_cards\_json.py data/cards.json data/cards
 
 
 After running the script, the data/cards/ directory will contain a JSON file for each card.
-

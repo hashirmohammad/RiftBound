@@ -7,9 +7,9 @@ enum ActionType {
 
 var type: ActionType
 var player_id: int
-var card_index: int = -1  # which card in hand to play
+var card_uid: int = -1  # which card in hand to play
 
 func _init(t: ActionType, pid: int, idx: int = -1):
 	type = t
 	player_id = pid
-	card_index = idx
+	card_uid = idx

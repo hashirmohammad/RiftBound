@@ -38,3 +38,4 @@ func get_winner_index() -> int:
 
 func is_game_over() -> bool:
 	return get_winner_index() != -1
+	
