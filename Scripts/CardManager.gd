@@ -70,7 +70,7 @@ func finish_drag() -> void:
 	var slot = _raycast_slot()
 
 	
-	if slot and not slot.card_in_slot:
+	if slot:
 		var card          = card_being_dragged
 		card_being_dragged = null
 
