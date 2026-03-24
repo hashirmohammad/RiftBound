@@ -17,14 +17,15 @@ func _ready() -> void:
 	var ph = floor((SCREEN_H - DIVIDER_H * 2 - ARENA_H) / 2.0)
 	build_player(0.0,                              true,  ph)
 	add_rect(Vector2(0, ph),                       Vector2(SCREEN_W, DIVIDER_H), COLOR_DIV)
-	add_panel("Arena", Vector2(0, ph + DIVIDER_H), Vector2(SCREEN_W, ARENA_H), make_style(), "ARENA", 18)
+	var arena = add_panel("Arena", Vector2(0, ph + DIVIDER_H), Vector2(SCREEN_W, ARENA_H), make_style(), "ARENA", 18)
+	add_rect(Vector2(SCREEN_W / 2.0 - DIVIDER_H / 2.0, 0), Vector2(DIVIDER_H, ARENA_H), COLOR_BORDER, arena)
 	add_rect(Vector2(0, ph + DIVIDER_H + ARENA_H), Vector2(SCREEN_W, DIVIDER_H), COLOR_DIV)
 	build_player(ph + DIVIDER_H * 2 + ARENA_H,    false, ph)
 
-func add_rect(pos: Vector2, size: Vector2, color: Color) -> void:
+func add_rect(pos: Vector2, size: Vector2, color: Color, parent: Node = self) -> void:
 	var r = ColorRect.new()
 	r.position = pos;  r.size = size;  r.color = color
-	add_child(r)
+	parent.add_child(r)
 
 func make_style(rounded := false, fill := Color(0,0,0,0)) -> StyleBoxFlat:
 	var s = StyleBoxFlat.new()
@@ -118,7 +119,7 @@ func build_player(y: float, flip: bool, ph: float) -> void:
 		var zx := float(z[1]);  var zy := float(z[2])
 		var zw := float(z[3]);  var zh := float(z[4])
 		var fy = by + zy if not flip else by + (bh - zy - zh)
-		var p = add_panel(zname.replace(" ", "_"), Vector2(zx, fy), Vector2(zw, zh))
+		var p = add_panel(zname.replace(" ", "_"), Vector2(zx, fy), Vector2(zw, zh), make_style(), zname)
 		if zname == "RUNES": runes_ref = p
 		if zname == "BASE":
 			add_image(p, tint_gold("res://Assets/RiftBoundLogo.jpg"),

@@ -27,8 +27,11 @@ var _pending_image_url: String       = ""
 var _pending_card_id:   String       = ""
 var _is_enlarged:       bool         = false
 var _cached_texture:    ImageTexture = null
-var _original_scale:    Vector2      = Vector2.ONE  
+var _original_scale:    Vector2      = Vector2.ONE
 var _original_position: Vector2      = Vector2.ZERO
+var _is_tapped:         bool         = false
+var _last_click_time:   float        = 0.0
+const DOUBLE_CLICK_TIME := 0.35
 
 func _ready() -> void:
 	DirAccess.make_dir_recursive_absolute(CACHE_DIR)
@@ -59,12 +62,26 @@ func _process(_delta: float) -> void:
 func _input(event: InputEvent) -> void:
 	if current_state == CardState.DRAGGING or current_state == CardState.RETURNING:
 		return
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
+	if event is InputEventMouseButton and event.pressed:
 		var local_pos = to_local(get_global_mouse_position())
 		var half_w = (CARD_WIDTH * scale.x) / 2.0
 		var half_h = (CARD_HEIGHT * scale.y) / 2.0
 		if abs(local_pos.x) <= half_w and abs(local_pos.y) <= half_h:
-			_toggle_enlarge()
+			if event.button_index == MOUSE_BUTTON_RIGHT:
+				_toggle_enlarge()
+			elif event.button_index == MOUSE_BUTTON_LEFT and current_state == CardState.ON_BOARD:
+				var now := Time.get_ticks_msec() / 1000.0
+				if now - _last_click_time < DOUBLE_CLICK_TIME:
+					_toggle_tap()
+					_last_click_time = 0.0
+				else:
+					_last_click_time = now
+
+func _toggle_tap() -> void:
+	_is_tapped = !_is_tapped
+	var tween = create_tween()
+	tween.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
+	tween.tween_property(self, "rotation", deg_to_rad(90.0) if _is_tapped else 0.0, 0.2)
 
 func _toggle_enlarge() -> void:
 	_is_enlarged = !_is_enlarged
