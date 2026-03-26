@@ -29,7 +29,6 @@ func refresh_all_ui() -> void:
 	refresh_hand_ui()
 	refresh_board_ui()
 	refresh_deck_ui()
-	print_state_summary()
 
 func refresh_hand_ui() -> void:
 	var player = state.get_active_player()
