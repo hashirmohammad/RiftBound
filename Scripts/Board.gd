@@ -9,7 +9,11 @@ const COLOR_HAND   = Color(1, 1, 1, 0.05)
 const BORDER_W = 2;  const GAP = 6;  const FONT_SIZE = 11
 const MANA_X = 8;   const MANA_SIZE = 38;  const MANA_COL_W = 52
 const HAND_H = 130; const DIVIDER_H = 4;   const ARENA_H = 200
+const CARD_SCENE := preload("res://Scenes/Card.tscn")
+const NORMAL_SCALE := Vector2(0.4, 0.4)
 
+var _player_battlefield: Panel = null
+var _board_cards: Array = []
 var _hand_panel: Panel = null
 
 func _ready() -> void:
@@ -120,7 +124,12 @@ func build_player(y: float, flip: bool, ph: float) -> void:
 		var zw := float(z[3]);  var zh := float(z[4])
 		var fy = by + zy if not flip else by + (bh - zy - zh)
 		var p = add_panel(zname.replace(" ", "_"), Vector2(zx, fy), Vector2(zw, zh), make_style(), zname)
-		if zname == "RUNES": runes_ref = p
+
+		if zname == "RUNES":
+			runes_ref = p
+
+		if not flip and zname == "BATTLEFIELD":
+			_player_battlefield = p
 		if zname == "BASE":
 			add_image(p, tint_gold("res://Assets/RiftBoundLogo.jpg"),
 				-0.2, -0.5, 1.2, 1.5, 0.0, 0.0, 0.0, 0.0, Color(0.83, 0.68, 0.21, 0.55))
@@ -128,3 +137,36 @@ func build_player(y: float, flip: bool, ph: float) -> void:
 	if runes_ref:
 		add_image(runes_ref, tint_gold("res://Assets/runes.jpg"),
 			0.05, 0.2, 0.25, 1.0, 6.0, 1.0, 0.0, 0.0)
+
+func render_board(card_instances: Array) -> void:
+	_clear_board_visuals()
+
+	if _player_battlefield == null:
+		return
+
+	var count = card_instances.size()
+	if count == 0:
+		return
+
+	var spacing := 160.0
+	var total_width: float = float(count - 1) * spacing
+	var start_x: float = (_player_battlefield.size.x / 2.0) - (total_width / 2.0)
+
+	for i in range(count):
+		var inst = card_instances[i]
+
+		var card: RiftCard = CARD_SCENE.instantiate()
+		card.scale = NORMAL_SCALE
+		card.setup_from_instance(inst)
+		card.set_card_state(RiftCard.CardState.ON_BOARD)
+
+		_player_battlefield.add_child(card)
+		card.position = Vector2(start_x + i * spacing, _player_battlefield.size.y / 2.0 - 20.0)
+
+		_board_cards.append(card)
+
+func _clear_board_visuals() -> void:
+	for card in _board_cards:
+		if is_instance_valid(card):
+			card.queue_free()
+	_board_cards.clear()

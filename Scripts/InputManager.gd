@@ -31,4 +31,4 @@ func raycast_at_cursor():
 			if card_found and card_found.current_state != RiftCard.CardState.ON_BOARD:
 				card_manager_reference.start_drag(card_found)
 		elif result_collision_mask == COLLISION_MASK_DECK:
-			deck_reference.draw_card()
+			pass

@@ -102,29 +102,35 @@ static func end_turn(state: GameState) -> void:
 	
 	
 static func _play_card(state: GameState, action: GameAction) -> void:
-	# Only allow playing cards in MAIN phase
 	if state.phase != "MAIN":
 		state.add_event("Invalid PLAY_CARD: not in MAIN phase.")
 		return
 
 	var p := state.get_active_player()
 
-	# Validate index
-	if action.card_uid < 0 or action.card_uid >= p.hand.size():
-		state.add_event("Invalid PLAY_CARD: card index out of range.")
-		return	
+	var hand_index := -1
+	for i in range(p.hand.size()):
+		if p.hand[i].uid == action.card_uid:
+			hand_index = i
+			break
 
-	var card: CardInstance = p.hand[action.card_uid]
-	var cost := card.data.cost   # instead of 1
+	if hand_index == -1:
+		state.add_event("Invalid PLAY_CARD: card uid not found in hand.")
+		return
+
+	var card: CardInstance = p.hand[hand_index]
+	var cost := card.data.cost
+
 	if p.rune_count_in_pool() < cost:
 		state.add_event("P%d cannot play card: not enough runes." % p.id)
 		return
+
 	card.zone = CardInstance.Zone.BOARD
-	# Spend and move card from hand -> board
-	p.spend_runes(p.rune_pool.slice(0,cost))
-	p.hand.remove_at(action.card_uid)
+	p.spend_runes(p.rune_pool.slice(0, cost))
+	p.hand.remove_at(hand_index)
 	card.exhaust()
 	p.board.append(card)
+
 	state.add_event("P%d played %s (cost %d)." % [p.id, card.data.card_name, cost])
 	
 static func build_rune_deck(p: PlayerState, type_0: RuneInstance.RuneType, type_1: RuneInstance.RuneType, state:GameState) -> void:

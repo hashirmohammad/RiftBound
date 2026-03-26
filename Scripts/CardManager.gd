@@ -7,6 +7,7 @@ const DEFAULT_SCALE := Vector2(0.4, 0.4)
 const HOVER_SCALE   := Vector2(0.45, 0.45)
 const BOARD_SCALE   := Vector2(0.35, 0.35)
 
+var game_controller: Node = null
 var screen_size:           Vector2
 var card_being_dragged              = null
 var is_hovering_on_card:   bool     = false
@@ -18,7 +19,10 @@ var all_slots:             Array    = []
 func _ready() -> void:
 	screen_size  = get_viewport_rect().size
 	hand_manager = $"../HandManager"
-
+	game_controller = $"../GameController"
+	if game_controller == null:
+		push_error("CardManager: GameController node not found!")
+	
 	var slots_container = get_node_or_null("../CardSlots")
 	if slots_container:
 		all_slots = slots_container.get_children()
@@ -69,31 +73,16 @@ func finish_drag() -> void:
 
 	var slot = _raycast_slot()
 
-	
 	if slot:
-		var card          = card_being_dragged
+		var card = card_being_dragged
 		card_being_dragged = null
 
-		# Remove from CardManager before handing to slot
-		remove_child(card)
+		# Send action to backend instead of placing visually here
+		if game_controller:
+			game_controller.try_play_card(card.card_uid)
 
-		card.z_index = 100
-		card.card_slot_card_is_in = slot
-		card.get_node("Area2D/CollisionShape2D").disabled = true
-		card.set_card_state(RiftCard.CardState.ON_BOARD)
-		card.scale = Vector2(0.70, 0.70)  # scale down for board display
-
-		slot.add_card(card)
-		card.self_modulate = Color.WHITE
-		card.z_as_relative = false
-		card.z_index = 10
-		card._original_scale = card.scale  # ← add this, saves 0.8 so enlarge restores correctly
-
-
-
-		is_hovering_on_card = false
-
-		played_card_this_turn = true
+		# UI should now be rebuilt from backend state
+		# so do not manually slot.add_card(card) here
 
 	else:
 		var card = card_being_dragged
