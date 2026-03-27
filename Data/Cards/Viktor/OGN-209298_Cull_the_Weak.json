@@ -1,0 +1,14 @@
+{
+  "card_id": "OGN-209/298",
+  "set_code": "Origins",
+  "name": "Cull the Weak",
+  "cost": 2,
+  "might": 0,
+  "domain": "Order",
+  "type": "Spell",
+  "keywords": [],
+  "rules_text": "Each player kills one of their units.",
+  "rarity": "Common",
+  "artist": "Kudos Productions",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/49338a4b31727c6ef50e7dbc54e7004dcd2b6f4c-744x1039.png"
+}
