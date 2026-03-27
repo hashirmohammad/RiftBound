@@ -1,0 +1,57 @@
+[gd_scene format=3 uid="uid://e41fq15bgkw5"]
+
+[ext_resource type="Script" path="res://Scripts/integration_test_scene.gd" id="1_khlpe"]
+[ext_resource type="Script" path="res://Scripts/GameController.gd" id="2_php25"]
+[ext_resource type="Script" uid="uid://b6hu1scu45nvc" path="res://Scripts/HandManager.gd" id="3_gduy4"]
+[ext_resource type="PackedScene" uid="uid://i2v3j52mwfha" path="res://Scenes/Board.tscn" id="4_gduy4"]
+[ext_resource type="Script" uid="uid://bbn3edfjdvn2i" path="res://Scripts/Deck.gd" id="4_l1hs5"]
+[ext_resource type="Script" uid="uid://b407ds4aw5ilw" path="res://Scripts/Board.gd" id="5_l1hs5"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_php25"]
+size = Vector2(179, 265)
+
+[node name="IntegrationTestScene" type="Node2D" unique_id=1770032461]
+script = ExtResource("1_khlpe")
+
+[node name="GameController" type="Node" parent="." unique_id=1673430194]
+script = ExtResource("2_php25")
+
+[node name="ButtonEndTurn" type="Button" parent="." unique_id=1192376854]
+offset_right = 8.0
+offset_bottom = 8.0
+
+[node name="LabelStatus" type="Label" parent="." unique_id=1349134218]
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="Deck" type="Node2D" parent="." unique_id=4690650]
+position = Vector2(140, 955)
+scale = Vector2(0.8, 0.8)
+script = ExtResource("4_l1hs5")
+
+[node name="Sprite2D" type="Sprite2D" parent="Deck" unique_id=1811452502]
+z_index = -2
+
+[node name="Area2D" type="Area2D" parent="Deck" unique_id=408217080]
+collision_layer = 4
+collision_mask = 4
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Deck/Area2D" unique_id=11890041]
+position = Vector2(0.5, 0.5)
+shape = SubResource("RectangleShape2D_php25")
+
+[node name="RichTextLabel" type="RichTextLabel" parent="Deck" unique_id=325063042]
+modulate = Color(0, 0, 0, 1)
+z_index = -2
+offset_left = -9.0
+offset_top = -28.0
+offset_right = 31.0
+offset_bottom = 12.0
+scale = Vector2(2, 2)
+text = "0"
+
+[node name="Board" parent="." unique_id=272103127 instance=ExtResource("4_gduy4")]
+script = ExtResource("5_l1hs5")
+
+[node name="HandManager" type="Node2D" parent="." unique_id=483334593]
+script = ExtResource("3_gduy4")

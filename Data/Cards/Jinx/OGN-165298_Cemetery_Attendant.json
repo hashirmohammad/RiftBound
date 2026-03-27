@@ -1,0 +1,17 @@
+{
+  "card_id": "OGN-165/298",
+  "set_code": "Origins",
+  "name": "Cemetery Attendant",
+  "cost": 3,
+  "might": 3,
+  "domain": "Chaos",
+  "type": "Unit",
+  "keywords": [
+    "Dog",
+    "Shadow Isles"
+  ],
+  "rules_text": "When you play me, return a unit from your trash to your hand.",
+  "rarity": "Common",
+  "artist": "Bubble Cat Studio",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/6bbbe6923105c53fc6b2a44430db940e009609b6-744x1039.png"
+}

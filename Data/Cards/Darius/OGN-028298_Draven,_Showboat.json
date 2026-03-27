@@ -1,0 +1,17 @@
+{
+  "card_id": "OGN-028/298",
+  "set_code": "Origins",
+  "name": "Draven, Showboat",
+  "cost": 5,
+  "might": 3,
+  "domain": "Fury",
+  "type": "Champion Unit",
+  "keywords": [
+    "Draven",
+    "Noxus"
+  ],
+  "rules_text": "My Might is increased by your points.",
+  "rarity": "Rare",
+  "artist": "Six More Vodka",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/7600d6cea66e8146ea2202f72cb9035cb44608a3-744x1039.png"
+}

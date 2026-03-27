@@ -1,0 +1,14 @@
+{
+  "card_id": "OGN-233/298",
+  "set_code": "Origins",
+  "name": "Grand Strategem",
+  "cost": 6,
+  "might": 0,
+  "domain": "Order",
+  "type": "Spell",
+  "keywords": [],
+  "rules_text": "[Action] (Play on your turn or in showdowns.)Give friendly units +5 Might this turn.",
+  "rarity": "Rare",
+  "artist": "Kudos Productions",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/bda7514aefa94ac3f368690cdd2d0f955d44c089-744x1039.png"
+}

@@ -1,0 +1,14 @@
+{
+  "card_id": "OGN-046/298",
+  "set_code": "Origins",
+  "name": "En Garde",
+  "cost": 1,
+  "might": 0,
+  "domain": "Calm",
+  "type": "Spell",
+  "keywords": [],
+  "rules_text": "[Reaction] (Play any time, even before spells and abilities resolve.)Give a friendly unit +1 Might this turn, then an additional +1 Might this turn if it is the only unit you control there.",
+  "rarity": "Common",
+  "artist": "Kudos Productions",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/03c0ec7eaa5957a62869dad2a0ce40913fc874a9-744x1039.png"
+}

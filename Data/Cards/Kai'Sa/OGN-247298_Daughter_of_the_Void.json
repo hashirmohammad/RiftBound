@@ -1,0 +1,16 @@
+{
+  "card_id": "OGN-247/298",
+  "set_code": "Origins",
+  "name": "Daughter of the Void",
+  "cost": 0,
+  "might": 0,
+  "domain": "Fury",
+  "type": "Legend",
+  "keywords": [
+    "Kai'Sa"
+  ],
+  "rules_text": "Exhaust: [Reaction] — [Add] Rune Rainbow. Use only to play spells. (Abilities that add resources can't be reacted to.)",
+  "rarity": "Rare",
+  "artist": "Kudos Productions",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/3ea826277086945a2cdfda4e41b771075aa8b15b-744x1039.png"
+}

@@ -1,0 +1,17 @@
+{
+  "card_id": "OGN-056/298",
+  "set_code": "Origins",
+  "name": "Adaptatron",
+  "cost": 4,
+  "might": 3,
+  "domain": "Calm",
+  "type": "Unit",
+  "keywords": [
+    "Mech",
+    "Piltover"
+  ],
+  "rules_text": "When I conquer, you may kill a gear. If you do, buff me. (If I don't have a buff, I get a +1 Might buff.)",
+  "rarity": "Uncommon",
+  "artist": "Kudos Productions",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/a3ddb00a2a872eaceb96469739531414aa27455d-744x1039.png"
+}

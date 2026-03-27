@@ -1,0 +1,14 @@
+{
+  "card_id": "OGN-094/298",
+  "set_code": "Origins",
+  "name": "Sprite Call",
+  "cost": 3,
+  "might": 0,
+  "domain": "Mind",
+  "type": "Spell",
+  "keywords": [],
+  "rules_text": "[Hidden] (Hide now for Rune Rainbow to react with later for 0 Energy.)[Action] (Play on your turn or in showdowns.)Play a ready 3 Might Sprite unit token with [Temporary]. (Kill it at the start of its controller's Beginning Phase, before scoring.)",
+  "rarity": "Common",
+  "artist": "Envar Studio",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/ab3db48dcbb12b01151d3a08c2412020380b7ca5-744x1039.png"
+}

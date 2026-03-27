@@ -1,0 +1,17 @@
+{
+  "card_id": "OGS-001/024",
+  "set_code": "Proving Grounds",
+  "name": "Annie, Fiery",
+  "cost": 5,
+  "might": 4,
+  "domain": "Fury",
+  "type": "Champion Unit",
+  "keywords": [
+    "Annie",
+    "Noxus"
+  ],
+  "rules_text": "Your spells and abilities deal 1 Bonus Damage. (Each instance of damage the spell deals is increased by 1.)",
+  "rarity": "Epic",
+  "artist": "Polar Engine Studio",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/532d75dc36a16eb5954253a77366fcceac7aec62-744x1039.png"
+}
