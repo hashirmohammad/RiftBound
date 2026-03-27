@@ -1,0 +1,17 @@
+{
+  "card_id": "OGN-132/298",
+  "set_code": "Origins",
+  "name": "First Mate",
+  "cost": 3,
+  "might": 3,
+  "domain": "Body",
+  "type": "Unit",
+  "keywords": [
+    "Pirate",
+    "Bilgewater"
+  ],
+  "rules_text": "When you play me, ready another unit.",
+  "rarity": "Common",
+  "artist": "Slawomir Maniak",
+  "image_url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/85e2b436ea482d53563cc5fa955f2a867ee6c32f-744x1039.png"
+}
