@@ -1,15 +1,16 @@
 class_name GameAction
+extends RefCounted
 
-enum ActionType {
-	END_TURN,
-	PLAY_CARD
-}
-
-var type: ActionType
 var player_id: int
-var card_uid: int = -1  # which card in hand to play
 
-func _init(t: ActionType, pid: int, idx: int = -1):
-	type = t
-	player_id = pid
-	card_uid = idx
+func _init(_player_id: int = -1):
+	player_id = _player_id
+
+func validate(state: GameState) -> bool:
+	return true
+
+func execute(state: GameState) -> void:
+	pass
+
+func get_error_message() -> String:
+	return "Invalid action."

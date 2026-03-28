@@ -15,11 +15,6 @@ var cards_in_hand: Array = []
 func _ready() -> void:
 	global_position = Vector2(SCREEN_W / 2.0, SCREEN_H - HAND_H / 2.0)
 
-# Optional: keep only if you still need it temporarily for testing
-func deal_card(_data: CardData) -> RiftCard:
-	push_warning("HandManager.deal_card() is legacy and should not be used in backend-driven mode.")
-	return null
-
 func render_hand(card_instances: Array) -> void:
 	_clear_hand_visuals()
 
