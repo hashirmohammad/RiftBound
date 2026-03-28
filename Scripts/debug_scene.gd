@@ -6,15 +6,6 @@ const GameEngineScript = preload("res://Scripts/game_engine.gd")
 func _ready() -> void:
 	print_header("DEBUG SCENE START")
 
-	var cards = CardDatabase.get_all_cards()
-	print("Loaded cards: ", cards.size())
-	if cards.size() > 0:
-		print("First card: %s | cost=%d | might=%d" % [
-			cards[0].card_name,
-			cards[0].cost,
-			cards[0].might
-		])
-
 	var state = GameEngineScript.start_game()
 
 	# Wait for Player 0 to reach MAIN
@@ -61,7 +52,7 @@ func _ready() -> void:
 		var play_action = GameActionScript.new(
 			GameActionScript.ActionType.PLAY_CARD,
 			ap.id,
-			0
+			hand_card.uid
 		)
 		GameEngineScript.apply_action(state, play_action)
 
@@ -112,7 +103,7 @@ func print_player_snapshot(player) -> void:
 	print("  Hand Size: ", player.hand.size())
 	print("  Board Size: ", player.board.size())
 	print("  Deck Size: ", player.deck.size())
-	print("  Graveyard Size: ", player.graveyard.size())
+	print("  Trash Size: ", player.trash.size())
 	print("  Rune Deck Size: ", player.rune_deck.size())
 	print("  Rune Pool Count: ", player.rune_count_in_pool())
 

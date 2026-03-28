@@ -49,17 +49,13 @@ func _load_legend(deck_name: String) -> CardData:
 	dir.list_dir_begin()
 	while true:
 		var file_name := dir.get_next()
+
 		if file_name == "":
 			break
 		
-		if dir.current_is_dir():
-			continue
-
-		if not (file_name.ends_with(".tres") or file_name.ends_with(".res")):
-			continue
-		
 		var full_path = root.path_join(file_name)
 		var dictionary = _load_json_file_as_dictionary(full_path)
+		
 		if dictionary is Dictionary:
 			_legend = CardData.from_dict(dictionary)
 	return _legend
@@ -86,12 +82,6 @@ func _load_card_instances_from_folder(path: String)-> Array[CardData]:
 		if file_name == "":
 			break
 		
-		if dir.current_is_dir():
-			continue
-
-		if not (file_name.ends_with(".tres") or file_name.ends_with(".res")):
-			continue
-		
 		var full_path = path.path_join(file_name)
 		var dictionary = _load_json_file_as_dictionary(full_path)
 		if dictionary is Dictionary:
@@ -102,14 +92,12 @@ func _load_json_file_as_dictionary(path: String) -> Dictionary:
 	var file := FileAccess.open(path, FileAccess.READ)
 	if file == null:
 		push_error("CardDatabase: Failed to open %s" % path)
+		print(1)
 		return {}
 
 	var text    := file.get_as_text()
 	file.close()
 
 	var parsed = JSON.parse_string(text)
-	if parsed == null or not (parsed is Array):
-		push_error("CardDatabase: JSON root must be an Array in %s" % path)
-		return {}
 	
 	return parsed

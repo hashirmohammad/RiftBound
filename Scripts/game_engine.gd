@@ -58,7 +58,6 @@ static func start_game() -> GameState:
 	for i in range(len(p1_all_battlefields)):
 		var b1: CardData = p1_all_battlefields[i]
 		p1.battlefields.append(CardInstance.new(state.next_uid(), b1))	
-	
 	# Load legend
 	p0.legend = CardInstance.new(state.next_uid(), CardDatabase._load_legend("Jinx"))
 	p1.legend = CardInstance.new(state.next_uid(), CardDatabase._load_legend("Darius"))
@@ -83,9 +82,23 @@ static func start_game() -> GameState:
 	var p1_all_runes: Array[CardData] = CardDatabase._load_runes("Darius")
 	
 	# TEMP rune decks (FIFO queue)
-	build_rune_deck(p0, CardData.Rune.keys()[p0_all_runes[0]] , CardData.Rune.keys()[p0_all_runes[1]], state)
-	build_rune_deck(p1, CardData.Rune.keys()[p1_all_runes[0]], CardData.Rune.keys()[p0_all_runes[1]], state)
-
+	for i in range(6):
+		var p0_rune_0 := RuneInstance.new(state.next_uid(), p0_all_runes[0])
+		p0_rune_0.zone = RuneInstance.Zone.RUNE_DECK
+		p0.rune_deck.append(p0_rune_0)
+		var p0_rune_1 := RuneInstance.new(state.next_uid(), p0_all_runes[1])
+		p0_rune_1.zone = RuneInstance.Zone.RUNE_DECK
+		p0.rune_deck.append(p0_rune_1)
+		
+		var p1_rune_0 := RuneInstance.new(state.next_uid(), p1_all_runes[0])
+		p1_rune_0.zone = RuneInstance.Zone.RUNE_DECK
+		p1.rune_deck.append(p1_rune_0)
+		var p1_rune_1 := RuneInstance.new(state.next_uid(), p1_all_runes[1])
+		p1_rune_1.zone = RuneInstance.Zone.RUNE_DECK
+		p1.rune_deck.append(p1_rune_1)
+	p0.rune_deck.shuffle()
+	p1.rune_deck.shuffle()
+	
 	# Opening hands
 	for i in range(OPENING_HAND_SIZE):
 		state.turn_system._draw_card(p0)
@@ -129,6 +142,7 @@ static func _play_card(state: GameState, action: GameAction) -> void:
 	var p := state.get_active_player()
 
 	var hand_index := -1
+	
 	for i in range(p.hand.size()):
 		if p.hand[i].uid == action.card_uid:
 			hand_index = i
@@ -153,18 +167,3 @@ static func _play_card(state: GameState, action: GameAction) -> void:
 
 	state.add_event("P%d played %s (cost %d)." % [p.id, card.data.card_name, cost])
 	
-static func build_rune_deck(p: PlayerState, type_0: CardData.Rune, type_1: CardData.Rune, state:GameState) -> void:
-	p.rune_deck.clear()
-	p.rune_pool.clear()
-	
-	for i in range(6):
-		var rune_0 := RuneInstance.new(state.next_uid(), type_0)
-		rune_0.zone = RuneInstance.Zone.RUNE_DECK
-		p.rune_deck.append(rune_0)
-
-	for i in range(6):
-		var rune_1 := RuneInstance.new(state.next_uid(), type_1)
-		rune_1.zone = RuneInstance.Zone.RUNE_DECK
-		p.rune_deck.append(rune_1)
-
-	p.rune_deck.shuffle()

@@ -12,13 +12,13 @@ enum Zone {
 }
 
 var uid: int
-var rune_type: CardData.Rune
+var rune: CardData
 var state: State = State.AWAKEN
 var zone: Zone  = Zone.RUNE_DECK
 
-func _init(_uid: int, _rune_type: CardData.Rune) -> void:
+func _init(_uid: int, _rune: CardData) -> void:
 	uid = _uid
-	rune_type = _rune_type
+	rune = _rune
 
 func exhaust() -> void:
 	state = State.EXHAUSTED
@@ -30,4 +30,4 @@ func is_exhausted() -> bool:
 	return state == State.EXHAUSTED
 	
 func type_name() -> String:
-	return CardData.Rune.keys()[rune_type] 
+	return CardData.Rune.keys()[rune.rune] 
