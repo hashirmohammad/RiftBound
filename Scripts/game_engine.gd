@@ -48,23 +48,43 @@ static func start_game() -> GameState:
 	var p0 := PlayerState.new(0)
 	var p1 := PlayerState.new(1)
 	state.players = [p0, p1]
-
+	
+	# Load battlefields
+	var p0_all_battlefields: Array[CardData] = CardDatabase._load_battlefields("Jinx")
+	var p1_all_battlefields: Array[CardData] = CardDatabase._load_battlefields("Darius")
+	for i in range(len(p0_all_battlefields)):
+		var b0: CardData = p0_all_battlefields[i]
+		p0.battlefields.append(CardInstance.new(state.next_uid(), b0))	
+	for i in range(len(p1_all_battlefields)):
+		var b1: CardData = p1_all_battlefields[i]
+		p1.battlefields.append(CardInstance.new(state.next_uid(), b1))	
+	
+	# Load legend
+	p0.legend = CardInstance.new(state.next_uid(), CardDatabase._load_legend("Jinx"))
+	p1.legend = CardInstance.new(state.next_uid(), CardDatabase._load_legend("Darius"))
+	
 	# Load real cards
-	var all_cards: Array[CardData] = CardDatabase.get_all_cards()
+	var p0_all_cards: Array[CardData] = CardDatabase._load_cards("Jinx")
+	var p1_all_cards: Array[CardData] = CardDatabase._load_cards("Darius")
+	
 	# TEMP: build a 40-card deck by sampling from all_cards
 	for i in range(40):
-		var d0: CardData = all_cards[randi() % all_cards.size()]
-		var d1: CardData = all_cards[randi() % all_cards.size()]
+		var d0: CardData = p0_all_cards[randi() % p0_all_cards.size()]
+		var d1: CardData = p1_all_cards[randi() % p1_all_cards.size()]
 
 		p0.deck.append(CardInstance.new(state.next_uid(), d0))
 		p1.deck.append(CardInstance.new(state.next_uid(), d1))
 
 	p0.deck.shuffle()
 	p1.deck.shuffle()
-
+	
+	# Load runes
+	var p0_all_runes: Array[CardData] = CardDatabase._load_runes("Jinx")
+	var p1_all_runes: Array[CardData] = CardDatabase._load_runes("Darius")
+	
 	# TEMP rune decks (FIFO queue)
-	build_rune_deck(p0, RuneInstance.RuneType.BODY, RuneInstance.RuneType.FURY, state)
-	build_rune_deck(p1, RuneInstance.RuneType.CALM, RuneInstance.RuneType.MIND, state)
+	build_rune_deck(p0, CardData.Rune.keys()[p0_all_runes[0]] , CardData.Rune.keys()[p0_all_runes[1]], state)
+	build_rune_deck(p1, CardData.Rune.keys()[p1_all_runes[0]], CardData.Rune.keys()[p0_all_runes[1]], state)
 
 	# Opening hands
 	for i in range(OPENING_HAND_SIZE):
@@ -133,7 +153,7 @@ static func _play_card(state: GameState, action: GameAction) -> void:
 
 	state.add_event("P%d played %s (cost %d)." % [p.id, card.data.card_name, cost])
 	
-static func build_rune_deck(p: PlayerState, type_0: RuneInstance.RuneType, type_1: RuneInstance.RuneType, state:GameState) -> void:
+static func build_rune_deck(p: PlayerState, type_0: CardData.Rune, type_1: CardData.Rune, state:GameState) -> void:
 	p.rune_deck.clear()
 	p.rune_pool.clear()
 	

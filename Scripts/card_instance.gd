@@ -2,7 +2,7 @@ class_name CardInstance
 extends RefCounted
 
 enum CardState { AWAKEN, EXHAUSTED }
-enum Zone { DECK, HAND, BOARD, GRAVEYARD }
+enum Zone { DECK, HAND, BOARD, TRASH, ARENA }
 
 var uid: int
 var data: CardData

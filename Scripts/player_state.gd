@@ -6,10 +6,13 @@ var points: int = 0
 var deck: Array[CardInstance] = [] #cards that are not drawnn
 var hand: Array[CardInstance] = [] #cards on hand
 var board: Array[CardInstance] = [] #cards currently in play
-var graveyard: Array[CardInstance] = [] #cards removed from play
+var trash: Array[CardInstance] = [] #cards removed from play
 var battlefields: Array[CardInstance] = [] #battlefield cards
 var rune_deck: Array[RuneInstance] = [] #runes that are not drawnn
 var rune_pool: Array[RuneInstance] = [] #runes currently availablee
+var legend: CardInstance #legend card
+var champion: CardInstance #champion card
+var arena: CardInstance #fighting arena
 
 func _init(player_id: int):
 	id = player_id

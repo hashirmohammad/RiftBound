@@ -3,13 +3,13 @@ extends Resource
 
 # ── Enums ────────────────────────────────────────────────────────────────────
 
-enum Rarity   { COMMON, RARE, EPIC, LEGENDARY }
+enum Rarity   { COMMON, UNCOMMON, RARE, EPIC, OVERNUMBER }
 
 ## FIX: Added Domain enum — was missing, causing Tests.gd & card_database.gd to error
-enum Domain   { NONE, FURY, GRACE, CUNNING, DOMINION, WILD }
+enum Rune   { NONE, FURY, CALM, BODY, MIND, ORDER, CHAOS }
 
 ## FIX: Added CardType enum — was missing, CardManager and Tests.gd referenced it
-enum CardType { UNIT, SPELL, RUNE, CHAMPION }
+enum CardType { UNIT, SPELL, RUNE, CHAMPION, GEAR }
 
 # ── Exported fields ───────────────────────────────────────────────────────────
 
@@ -20,7 +20,7 @@ enum CardType { UNIT, SPELL, RUNE, CHAMPION }
 @export var might:       int    = 0
 @export var health:      int    = 0   ## FIX: added health so Card.gd Health label maps correctly
 
-@export var domain:      int = 0   ## 0=NONE,1=FURY,2=GRACE,3=CUNNING,4=DOMINION,5=WILD
+@export var rune:        int = 0   ## 0=NONE,1=FURY,2=CALM,3=BODY,4=MIND,5=ORDER,6=CHAOS
 @export var type:        int = 0   ## 0=UNIT,1=SPELL,2=RUNE,3=CHAMPION
 
 @export var keywords:    Array[String] = []
@@ -36,18 +36,19 @@ static func rarity_from_string(s: String) -> int:
 		"common":    return Rarity.COMMON
 		"rare":      return Rarity.RARE
 		"epic":      return Rarity.EPIC
-		"legendary": return Rarity.LEGENDARY
+		"uncommon": return Rarity.UNCOMMON
 		_:           return Rarity.COMMON
 
 ## FIX: new helper used by from_dict() and card_database.gd filtering
-static func domain_from_string(s: String) -> int:
+static func rune_from_string(s: String) -> int:
 	match s.strip_edges().to_lower():
-		"fury":     return Domain.FURY
-		"grace":    return Domain.GRACE
-		"cunning":  return Domain.CUNNING
-		"dominion": return Domain.DOMINION
-		"wild":     return Domain.WILD
-		_:          return Domain.NONE
+		"fury":     return Rune.FURY
+		"body":    	return Rune.BODY
+		"mind":  	return Rune.MIND
+		"calm": 	return Rune.CALM
+		"order":    return Rune.ORDER
+		"chaos":	return Rune.CHAOS
+		_:          return Rune.NONE
 
 ## FIX: new helper used by from_dict() and card_database.gd filtering
 static func type_from_string(s: String) -> int:
@@ -56,6 +57,7 @@ static func type_from_string(s: String) -> int:
 		"spell":    return CardType.SPELL
 		"rune":     return CardType.RUNE
 		"champion": return CardType.CHAMPION
+		"gear":		return CardType.GEAR
 		_:          return CardType.UNIT
 
 static func from_dict(d: Dictionary) -> CardData:
@@ -68,7 +70,7 @@ static func from_dict(d: Dictionary) -> CardData:
 	c.health    = int(d.get("health", d.get("defense", 0)))
 
 	## FIX: parse to enum values instead of storing raw strings
-	c.domain    = domain_from_string(str(d.get("domain", "")))
+	c.rune    	= rune_from_string(str(d.get("domain", "")))
 	c.type      = type_from_string(str(d.get("type", "")))
 
 	var kw = d.get("keywords", [])

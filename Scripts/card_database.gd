@@ -8,68 +8,101 @@ extends Node
 ## FIX: Added get_all_cards(), get_card(), get_cards_by_type(),
 ##      get_cards_by_domain() — all were called by Tests.gd but missing.
 
-const DATA_PATH := "res://Data/cards.json"
 
 ## Internal cache — populated on first access
 static var _cards: Array[CardData] = []
+static var _legend: CardData
+static var _battlefields: Array[CardData] = []
+static var _runes: Array[CardData] = []
 static var _loaded: bool = false
 
 # ── Autoload entry-point ──────────────────────────────────────────────────────
 
 ## Called automatically when registered as an Autoload node.
 func _ready() -> void:
-	_ensure_loaded()
+	pass
 
-# ── Private helpers ───────────────────────────────────────────────────────────
-
-static func _ensure_loaded() -> void:
-	if _loaded:
-		return
-	_cards = load_cards_from_json(DATA_PATH)
-	_loaded = true
-
-# ── Public API ────────────────────────────────────────────────────────────────
-
-## Returns every card in the database.
-static func get_all_cards() -> Array[CardData]:
-	_ensure_loaded()
+## Load battlefields
+func _load_battlefields(deck_name: String) -> Array[CardData]:
+	var root := "res://Data/Cards/%s/Battlefields" % deck_name
+	_battlefields = _load_card_instances_from_folder(root)
+	if _battlefields.is_empty():
+		return []
+	return _battlefields
+	
+## Load cards
+func _load_cards(deck_name: String) -> Array[CardData]:
+	var root := "res://Data/Cards/%s/Cards" % deck_name
+	_cards = _load_card_instances_from_folder(root)
+	if _cards.is_empty():
+		return []
 	return _cards
 
-## Returns the first card matching card_id, or null.
-## FIX: was missing — Tests.gd calls CardDatabase.get_card("OGN-001/298")
-static func get_card(card_id: String) -> CardData:
-	_ensure_loaded()
-	for c in _cards:
-		if c.card_id == card_id:
-			return c
-	return null
+## Load legend
+func _load_legend(deck_name: String) -> CardData:
+	var root := "res://Data/Cards/%s/Legend" % deck_name
+	var dir := DirAccess.open(root)
+	if dir == null:
+		push_error("Could not open folder %s" % root)
+		return
+	
+	dir.list_dir_begin()
+	while true:
+		var file_name := dir.get_next()
+		if file_name == "":
+			break
+		
+		if dir.current_is_dir():
+			continue
 
-## Returns all cards whose type matches the given CardData.CardType enum value.
-## FIX: was missing — Tests.gd calls CardDatabase.get_cards_by_type(CardData.CardType.UNIT)
-static func get_cards_by_type(type: int) -> Array[CardData]:
-	_ensure_loaded()
+		if not (file_name.ends_with(".tres") or file_name.ends_with(".res")):
+			continue
+		
+		var full_path = root.path_join(file_name)
+		var dictionary = _load_json_file_as_dictionary(full_path)
+		if dictionary is Dictionary:
+			_legend = CardData.from_dict(dictionary)
+	return _legend
+
+## Load runes
+func _load_runes(deck_name: String) -> Array[CardData]:
+	var root := "res://Data/Cards/%s/Runes" % deck_name
+	_runes = _load_card_instances_from_folder(root)
+	if _runes.is_empty():
+		return []
+	return _runes
+
+## Helper function
+func _load_card_instances_from_folder(path: String)-> Array[CardData]:
 	var result: Array[CardData] = []
-	for c in _cards:
-		if c.type == type:
-			result.append(c)
-	return result
+	var dir := DirAccess.open(path)
+	if dir == null:
+		push_error("Could not open folder %s" % path)
+		return result
+	
+	dir.list_dir_begin()
+	while true:
+		var file_name := dir.get_next()
+		if file_name == "":
+			break
+		
+		if dir.current_is_dir():
+			continue
 
-## Returns all cards whose domain matches the given CardData.Domain enum value.
-## FIX: was missing — Tests.gd calls CardDatabase.get_cards_by_domain(CardData.Domain.FURY)
-static func get_cards_by_domain(domain: int) -> Array[CardData]:
-	_ensure_loaded()
-	var result: Array[CardData] = []
-	for c in _cards:
-		if c.domain == domain:
-			result.append(c)
+		if not (file_name.ends_with(".tres") or file_name.ends_with(".res")):
+			continue
+		
+		var full_path = path.path_join(file_name)
+		var dictionary = _load_json_file_as_dictionary(full_path)
+		if dictionary is Dictionary:
+			result.append(CardData.from_dict(dictionary))
 	return result
-
-## Low-level JSON loader. Prefer the static methods above for gameplay code.
-static func load_cards_from_json(path: String = DATA_PATH) -> Array[CardData]:
+		
+func _load_json_file_as_dictionary(path: String) -> Dictionary:
 	var file := FileAccess.open(path, FileAccess.READ)
 	if file == null:
 		push_error("CardDatabase: Failed to open %s" % path)
-		return []
+		return {}
 
 	var text    := file.get_as_text()
 	file.close()
@@ -77,10 +110,6 @@ static func load_cards_from_json(path: String = DATA_PATH) -> Array[CardData]:
 	var parsed = JSON.parse_string(text)
 	if parsed == null or not (parsed is Array):
 		push_error("CardDatabase: JSON root must be an Array in %s" % path)
-		return []
-
-	var result: Array[CardData] = []
-	for entry in parsed:
-		if entry is Dictionary:
-			result.append(CardData.from_dict(entry))
-	return result
+		return {}
+	
+	return parsed
