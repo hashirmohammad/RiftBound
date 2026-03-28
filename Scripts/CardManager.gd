@@ -14,11 +14,13 @@ var played_card_this_turn: bool = false
 var drag_offset: Vector2 = Vector2.ZERO
 var all_slots: Array = []
 var dragged_card: RiftCard = null
+var board_reference: Node = null
 
 func _ready() -> void:
 	screen_size = get_viewport_rect().size
 	hand_manager = $"../HandManager"
 	game_controller = $"../GameController"
+	board_reference = $"../Board"
 
 	if game_controller == null:
 		push_error("CardManager: GameController node not found!")
@@ -64,11 +66,28 @@ func clear_dragged_card() -> void:
 	drag_offset = Vector2.ZERO
 
 func _highlight_slots(_card) -> void:
-	for slot in all_slots:
-		slot.highlight(true, true)
+	if board_reference == null:
+		return
+
+	var slots = board_reference._player_slot_nodes
+	var player = game_controller.state.get_active_player()
+
+	for i in range(slots.size()):
+		var slot = slots[i]
+		var valid := true
+
+		if i < player.board_slots.size() and player.board_slots[i] != null:
+			valid = false
+
+		slot.highlight(true, valid)
 
 func _clear_slot_highlights() -> void:
-	for slot in all_slots:
+	if board_reference == null:
+		return
+
+	var slots = board_reference._player_slot_nodes
+
+	for slot in slots:
 		slot.highlight(false)
 
 func connect_card_signals(card) -> void:

@@ -3,7 +3,7 @@ class_name GameEngine
 const OPENING_HAND_SIZE := 4
 const DEFAULT_RUNE_DECK_SIZE := 12  # placeholder; adjust later
 const DEBUG_FREE_RUNES := true
-const DEBUG_STARTING_RUNES := 6
+const DEBUG_STARTING_RUNES := 3
 
 static func _grant_debug_runes(player: PlayerState, amount: int) -> void:
 	for i in range(amount):
