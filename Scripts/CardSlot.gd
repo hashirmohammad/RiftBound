@@ -46,4 +46,13 @@ func _reposition_cards() -> void:
 		cards[i].position = Vector2(start_x + i * CARD_SPACING, 0.0)
 
 func highlight(on: bool, valid: bool = true) -> void:
-	pass
+	if not has_node("CardSlotImage"):
+		return
+
+	var img = $CardSlotImage
+
+	if on:
+		img.visible = true
+		img.modulate = Color(0, 1, 0, 0.4) if valid else Color(1, 0, 0, 0.4)
+	else:
+		img.visible = false
