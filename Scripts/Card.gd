@@ -7,6 +7,7 @@ signal texture_loaded
 
 @onready var card_back_image = get_node_or_null("CardBackImage")
 @onready var card_image: Sprite2D = $CardImage
+@onready var http_request: HTTPRequest = $HTTPRequest
 
 enum CardState {
 	IN_HAND,
@@ -24,22 +25,18 @@ var card_uid: int = -1
 var card_data: CardData = null
 var current_state: CardState = CardState.IN_HAND
 
-# Networking
-var _http_request: HTTPRequest
-
-# ─────────────────────────────────────────────────────────────
-# Setup
-# ─────────────────────────────────────────────────────────────
-
 func _ready() -> void:
-	_http_request = HTTPRequest.new()
-	add_child(_http_request)
-	_http_request.request_completed.connect(_on_image_request_completed)
+	if http_request == null:
+		push_error("Card.gd: HTTPRequest node missing.")
+	else:
+		if not http_request.request_completed.is_connected(_on_image_request_completed):
+			http_request.request_completed.connect(_on_image_request_completed)
 
-	card_image.visible = true
-	card_image.z_index = 10
+	if card_image != null:
+		card_image.visible = true
+		card_image.z_index = 10
 
-	if has_node("CardBackImage"):
+	if card_back_image != null:
 		card_back_image.visible = false
 
 func setup_from_instance(instance: CardInstance) -> void:
@@ -49,41 +46,36 @@ func setup_from_instance(instance: CardInstance) -> void:
 
 	card_uid = instance.uid
 	card_data = instance.data
-
 	update_visuals()
 
 func set_card_state(new_state: CardState) -> void:
 	current_state = new_state
-
-# ─────────────────────────────────────────────────────────────
-# Visuals
-# ─────────────────────────────────────────────────────────────
 
 func update_visuals() -> void:
 	if card_data == null:
 		push_error("RiftCard.update_visuals: card_data is null")
 		return
 
-	# Use preloaded texture if available
 	if card_data.texture != null:
 		_set_card_texture(card_data.texture)
 		return
 
-	# Otherwise load from URL
 	if card_data.image_url != "":
 		load_card_image_from_url(card_data.image_url)
+		return
 
-# ─────────────────────────────────────────────────────────────
-# Image Loading
-# ─────────────────────────────────────────────────────────────
+	push_error("RiftCard.update_visuals: no texture or image_url for card_uid %s" % card_uid)
 
 func load_card_image_from_url(url: String) -> void:
-	var err = _http_request.request(url)
+	if http_request == null:
+		push_error("Card.gd: HTTPRequest node not found.")
+		return
+
+	var err = http_request.request(url)
 	if err != OK:
-		push_error("Failed to request image")
+		push_error("Failed to request image URL: %s" % url)
 
 func _on_image_request_completed(result, response_code, headers, body) -> void:
-
 	if response_code != 200:
 		push_error("Image request failed: %s" % response_code)
 		return
@@ -101,10 +93,6 @@ func _on_image_request_completed(result, response_code, headers, body) -> void:
 	var tex := ImageTexture.create_from_image(image)
 	_set_card_texture(tex)
 	texture_loaded.emit()
-
-# ─────────────────────────────────────────────────────────────
-# Helpers
-# ─────────────────────────────────────────────────────────────
 
 func _set_card_texture(tex: Texture2D) -> void:
 	if card_image == null:

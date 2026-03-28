@@ -2,37 +2,33 @@ class_name GameEngine
 
 const OPENING_HAND_SIZE := 4
 const DEFAULT_RUNE_DECK_SIZE := 12  # placeholder; adjust later
+const DEBUG_FREE_RUNES := true
+const DEBUG_STARTING_RUNES := 6
 
-const GameActionScript = preload("res://Scripts/action.gd")
+static func _grant_debug_runes(player: PlayerState, amount: int) -> void:
+	for i in range(amount):
+		if player.rune_deck.is_empty():
+			return
+
+		var rune: RuneInstance = player.rune_deck.pop_back()
+		rune.zone = RuneInstance.Zone.RUNE_POOL
+		rune.awaken()
+		player.rune_pool.append(rune)
 
 # -------------------------
 # ACTION PIPELINE
 # -------------------------
-static func apply_action(state: GameState, action: GameAction) -> void:
-	# Validate: correct player's turn
-	if action.player_id != state.get_active_player().id:
-		state.add_event("Invalid action: Not this player's turn.")
-		return
+static func apply_action(state: GameState, action: GameAction) -> bool:
+	if action == null:
+		state.add_event("Invalid action: null action.")
+		return false
 
-	match action.type:
-		GameActionScript.ActionType.END_TURN:
-			# Only allow ending turn from MAIN phase
-			if state.phase != "MAIN":
-				state.add_event("Invalid END_TURN: not in MAIN phase.")
-				return
+	if not action.validate(state):
+		state.add_event(action.get_error_message())
+		return false
 
-			# Advance MAIN -> END (PlayerTurn handles END phase event)
-			if state.turn_system != null:
-				state.turn_system.next_phase()
-
-			# Swap active player + increment turn + start next turn
-			end_turn(state)
-
-		GameActionScript.ActionType.PLAY_CARD:
-			_play_card(state, action)
-
-		_:
-			state.add_event("Invalid action: Unknown action type.")
+	action.execute(state)
+	return true
 
 
 # -------------------------
@@ -117,6 +113,10 @@ static func start_game() -> GameState:
 
 
 static func start_turn(state: GameState) -> void:
+	var player := state.get_active_player()
+
+	if DEBUG_FREE_RUNES and player.rune_pool.is_empty():
+		_grant_debug_runes(player, DEBUG_STARTING_RUNES)
 	# Delegate phase flow to PlayerTurn
 	if state.turn_system == null:
 		state.add_event("ERROR: turn_system not initialized.")
@@ -132,38 +132,3 @@ static func end_turn(state: GameState) -> void:
 
 	# Start the next player's turn
 	start_turn(state)
-	
-	
-static func _play_card(state: GameState, action: GameAction) -> void:
-	if state.phase != "MAIN":
-		state.add_event("Invalid PLAY_CARD: not in MAIN phase.")
-		return
-
-	var p := state.get_active_player()
-
-	var hand_index := -1
-	
-	for i in range(p.hand.size()):
-		if p.hand[i].uid == action.card_uid:
-			hand_index = i
-			break
-
-	if hand_index == -1:
-		state.add_event("Invalid PLAY_CARD: card uid not found in hand.")
-		return
-
-	var card: CardInstance = p.hand[hand_index]
-	var cost := card.data.cost
-
-	if p.rune_count_in_pool() < cost:
-		state.add_event("P%d cannot play card: not enough runes." % p.id)
-		return
-
-	card.zone = CardInstance.Zone.BOARD
-	p.spend_runes(p.rune_pool.slice(0, cost))
-	p.hand.remove_at(hand_index)
-	card.exhaust()
-	p.board.append(card)
-
-	state.add_event("P%d played %s (cost %d)." % [p.id, card.data.card_name, cost])
-	
