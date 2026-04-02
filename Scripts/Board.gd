@@ -9,18 +9,94 @@ const COLOR_HAND   = Color(1, 1, 1, 0.05)
 const BORDER_W = 2;  const GAP = 6;  const FONT_SIZE = 11
 const MANA_X = 8;   const MANA_SIZE = 38;  const MANA_COL_W = 52
 const HAND_H = 130; const DIVIDER_H = 4;   const ARENA_H = 200
+const CARD_SCENE := preload("res://Scenes/Card.tscn")
+const NORMAL_SCALE := Vector2(0.4, 0.4)
 
+var _player_battlefield_panel: Panel = null
+var _opponent_battlefield_panel: Panel = null
+var _player_base_panel: Panel = null
+var _opponent_base_panel: Panel = null
+
+var _board_cards: Array = []
+var _battlefield_cards_visuals: Array = []
 var _hand_panel: Panel = null
+var _player_slot_nodes: Array = []
+
+var _player_champion_legend: Panel = null
+var _opponent_champion_legend: Panel = null
+var _player_main_deck: Panel = null
+var _player_rune_deck: Panel = null
+var _opponent_main_deck: Panel = null
+var _opponent_rune_deck: Panel = null
+
+var _player_runes_panel: Panel = null
+var _opponent_runes_panel: Panel = null
+var _rune_cards_visuals: Array = []
 
 func _ready() -> void:
 	add_rect(Vector2.ZERO, Vector2(SCREEN_W, SCREEN_H), COLOR_BG)
 	var ph = floor((SCREEN_H - DIVIDER_H * 2 - ARENA_H) / 2.0)
-	build_player(0.0,                              true,  ph)
-	add_rect(Vector2(0, ph),                       Vector2(SCREEN_W, DIVIDER_H), COLOR_DIV)
+	build_player(0.0, true, ph)
+	add_rect(Vector2(0, ph), Vector2(SCREEN_W, DIVIDER_H), COLOR_DIV)
 	var arena = add_panel("Arena", Vector2(0, ph + DIVIDER_H), Vector2(SCREEN_W, ARENA_H), make_style(), "ARENA", 18)
-	add_rect(Vector2(SCREEN_W / 2.0 - DIVIDER_H / 2.0, 0), Vector2(DIVIDER_H, ARENA_H), COLOR_BORDER, arena)
 	add_rect(Vector2(0, ph + DIVIDER_H + ARENA_H), Vector2(SCREEN_W, DIVIDER_H), COLOR_DIV)
-	build_player(ph + DIVIDER_H * 2 + ARENA_H,    false, ph)
+	build_player(ph + DIVIDER_H * 2 + ARENA_H, false, ph)
+
+	_cache_player_slots()
+
+func _cache_player_slots() -> void:
+	_player_slot_nodes.clear()
+
+	var slots_root = get_node_or_null("../CardSlots")
+	if slots_root == null:
+		push_warning("Board.gd: CardSlots node not found.")
+		return
+
+	if _player_base_panel == null:
+		push_warning("Board.gd: _player_base_panel is null.")
+		return
+
+	var base_rect = Rect2(
+		_player_base_panel.global_position,
+		_player_base_panel.size
+	)
+
+	var base_center_y: float = base_rect.position.y + (base_rect.size.y / 2.0)
+	var row_tolerance: float = 60.0
+
+	for child in slots_root.get_children():
+		if child is CardSlot:
+			if child.name.begins_with("Enemy"):
+				continue
+
+			var pos: Vector2 = child.global_position
+			var in_row: bool = abs(pos.y - base_center_y) <= row_tolerance
+			var in_x_range: bool = pos.x >= base_rect.position.x and pos.x <= (base_rect.position.x + base_rect.size.x)
+
+			if in_row and in_x_range:
+				_player_slot_nodes.append(child)
+
+	_player_slot_nodes.sort_custom(func(a, b): return a.global_position.x < b.global_position.x)
+
+	print("Cached base slots: ", _player_slot_nodes.size())
+	for i in range(_player_slot_nodes.size()):
+		print("slot ", i, " -> ", _player_slot_nodes[i].global_position)
+
+func get_slot_index_under_mouse() -> int:
+	var mouse_pos = get_global_mouse_position()
+	var slot_size := Vector2(140, 190)
+
+	for i in range(_player_slot_nodes.size()):
+		var slot = _player_slot_nodes[i]
+		if slot == null:
+			continue
+
+		var rect = Rect2(slot.global_position - slot_size / 2.0, slot_size)
+		if rect.has_point(mouse_pos):
+			print("Detected slot index: ", i, " / total slots: ", _player_slot_nodes.size())
+			return i
+
+	return -1
 
 func add_rect(pos: Vector2, size: Vector2, color: Color, parent: Node = self) -> void:
 	var r = ColorRect.new()
@@ -120,7 +196,40 @@ func build_player(y: float, flip: bool, ph: float) -> void:
 		var zw := float(z[3]);  var zh := float(z[4])
 		var fy = by + zy if not flip else by + (bh - zy - zh)
 		var p = add_panel(zname.replace(" ", "_"), Vector2(zx, fy), Vector2(zw, zh), make_style(), zname)
-		if zname == "RUNES": runes_ref = p
+
+		if zname == "RUNES":
+			runes_ref = p
+
+		if not flip and zname == "BATTLEFIELD":
+			_player_battlefield_panel = p
+		elif flip and zname == "BATTLEFIELD":
+			_opponent_battlefield_panel = p
+
+		if not flip and zname == "BASE":
+			_player_base_panel = p
+		elif flip and zname == "BASE":
+			_opponent_base_panel = p
+
+		if not flip and zname == "CHAMPION LEGEND":
+			_player_champion_legend = p
+		elif flip and zname == "CHAMPION LEGEND":
+			_opponent_champion_legend = p
+
+		if not flip and zname == "MAIN DECK":
+			_player_main_deck = p
+		elif flip and zname == "MAIN DECK":
+			_opponent_main_deck = p
+
+		if not flip and zname == "RUNE DECK":
+			_player_rune_deck = p
+		elif flip and zname == "RUNE DECK":
+			_opponent_rune_deck = p
+		
+		if not flip and zname == "RUNES":
+			_player_runes_panel = p
+		elif flip and zname == "RUNES":
+			_opponent_runes_panel = p
+	
 		if zname == "BASE":
 			add_image(p, tint_gold("res://Assets/RiftBoundLogo.jpg"),
 				-0.2, -0.5, 1.2, 1.5, 0.0, 0.0, 0.0, 0.0, Color(0.83, 0.68, 0.21, 0.55))
@@ -128,3 +237,237 @@ func build_player(y: float, flip: bool, ph: float) -> void:
 	if runes_ref:
 		add_image(runes_ref, tint_gold("res://Assets/runes.jpg"),
 			0.05, 0.2, 0.25, 1.0, 6.0, 1.0, 0.0, 0.0)
+
+func render_board(card_instances: Array) -> void:
+	var player = get_parent().get_node("GameController").state.get_active_player()
+
+	if player == null:
+		return
+
+	var slots = _player_slot_nodes
+
+	# Clear all slot visuals first
+	for slot in slots:
+		if slot == null:
+			continue
+
+		# Remove existing cards from slot
+		for child in slot.get_children():
+			if child is RiftCard:
+				child.queue_free()
+
+	# Now place cards based on board_slots
+	for i in range(player.board_slots.size()):
+		var card_instance = player.board_slots[i]
+		if card_instance == null:
+			continue
+
+		if i >= slots.size():
+			continue
+
+		var slot = slots[i]
+		if slot == null:
+			continue
+
+		var card: RiftCard = CARD_SCENE.instantiate()
+		slot.add_child(card)
+
+		card.position = Vector2.ZERO
+		card.scale = Vector2(0.8, 0.8)
+		card.z_index = 5
+
+		card.setup_from_instance(card_instance)
+		card.set_card_state(RiftCard.CardState.ON_BOARD)
+
+func _clear_board_visuals() -> void:
+	for card in _board_cards:
+		if is_instance_valid(card):
+			card.queue_free()
+	_board_cards.clear()
+
+func is_mouse_over_player_battlefield() -> bool:
+	if _player_battlefield_panel == null:
+		return false
+
+	var mouse_pos = get_global_mouse_position()
+	var rect = Rect2(
+		_player_battlefield_panel.global_position,
+		_player_battlefield_panel.size
+	)
+
+	return rect.has_point(mouse_pos)
+	
+func _clear_panel_images(panel: Panel) -> void:
+	if panel == null:
+		return
+
+	for child in panel.get_children():
+		if child is TextureRect:
+			child.queue_free()
+
+func _add_panel_texture(panel: Panel, tex: Texture2D, modulate_color := Color.WHITE) -> void:
+	if panel == null or tex == null:
+		return
+
+	var tr := TextureRect.new()
+	tr.texture = tex
+	tr.anchor_left = 0.0
+	tr.anchor_top = 0.0
+	tr.anchor_right = 1.0
+	tr.anchor_bottom = 1.0
+	tr.offset_left = 4.0
+	tr.offset_top = 4.0
+	tr.offset_right = -4.0
+	tr.offset_bottom = -4.0
+	tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	tr.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tr.modulate = modulate_color
+	panel.add_child(tr)
+
+func render_static_state(player: PlayerState, opponent: PlayerState) -> void:
+	var deck_tex: Texture2D = load("res://Assets/Deck.jpg")
+
+	if deck_tex != null:
+		_clear_panel_images(_player_main_deck)
+		_add_panel_texture(_player_main_deck, deck_tex)
+
+		_clear_panel_images(_player_rune_deck)
+		_add_panel_texture(_player_rune_deck, deck_tex)
+
+		_clear_panel_images(_opponent_main_deck)
+		_add_panel_texture(_opponent_main_deck, deck_tex)
+
+		_clear_panel_images(_opponent_rune_deck)
+		_add_panel_texture(_opponent_rune_deck, deck_tex)
+
+	_render_legend_panel(_player_champion_legend, player.legend)
+	_render_legend_panel(_opponent_champion_legend, opponent.legend)
+
+	_render_battlefields(_player_battlefield_panel, player.battlefields)
+	_render_battlefields(_opponent_battlefield_panel, opponent.battlefields)
+
+	_render_runes(_player_runes_panel, player.rune_pool)
+	_render_runes(_opponent_runes_panel, opponent.rune_pool)
+
+func _render_legend_panel(panel: Panel, legend_instance: CardInstance) -> void:
+	if panel == null or legend_instance == null or legend_instance.data == null:
+		return
+
+	_clear_panel_images(panel)
+
+	var url := legend_instance.data.image_url
+	if url == "":
+		if legend_instance.data.texture != null:
+			_add_panel_texture(panel, legend_instance.data.texture)
+		return
+
+	var card: RiftCard = CARD_SCENE.instantiate()
+	panel.add_child(card)
+	card.position = panel.size / 2.0
+	card.scale = Vector2(0.35, 0.35)
+	card.setup_from_instance(legend_instance)
+	card.set_card_state(RiftCard.CardState.ON_BOARD)
+	
+func _clear_battlefield_visuals() -> void:
+	for card in _battlefield_cards_visuals:
+		if is_instance_valid(card):
+			card.queue_free()
+	_battlefield_cards_visuals.clear()
+
+func _render_battlefields(panel: Panel, battlefield_instances: Array) -> void:
+	if panel == null:
+		return
+
+	# remove previous battlefield visuals from this panel
+	for child in panel.get_children():
+		if child is RiftCard:
+			child.queue_free()
+
+	if battlefield_instances.is_empty():
+		return
+
+	var count: int = battlefield_instances.size()
+	var spacing: float = 170.0
+	var total_width: float = float(count - 1) * spacing
+	var start_x: float = (panel.size.x / 2.0) - (total_width / 2.0)
+
+	for i in range(count):
+		var inst: CardInstance = battlefield_instances[i]
+		if inst == null:
+			continue
+
+		var card: RiftCard = CARD_SCENE.instantiate()
+		panel.add_child(card)
+
+		card.position = Vector2(start_x + i * spacing, panel.size.y / 2.0)
+		card.scale = Vector2(0.8, 0.8)
+		card.z_index = 5
+		card.setup_from_instance(inst)
+		card.set_card_state(RiftCard.CardState.ON_BOARD)
+		
+		var atk = card.get_node_or_null("Attack")
+		if atk:
+			atk.visible = false
+
+		var hp = card.get_node_or_null("Health")
+		if hp:
+			hp.visible = false
+
+		_battlefield_cards_visuals.append(card)
+
+func _clear_rune_visuals() -> void:
+	for card in _rune_cards_visuals:
+		if is_instance_valid(card):
+			card.queue_free()
+	_rune_cards_visuals.clear()
+
+func _render_runes(panel: Panel, runes: Array) -> void:
+	if panel == null:
+		return
+
+	for child in panel.get_children():
+		if child is RiftCard:
+			child.queue_free()
+
+	if runes.is_empty():
+		return
+
+	var count: int = runes.size()
+	var spacing: float = 120.0
+	var total_width: float = float(count - 1) * spacing
+	var start_x: float = (panel.size.x / 2.0) - (total_width / 2.0)
+
+	for i in range(count):
+		var rune_inst = runes[i]
+		if rune_inst == null:
+			continue
+		if rune_inst.rune == null:
+			continue
+
+		var card: RiftCard = CARD_SCENE.instantiate()
+		panel.add_child(card)
+
+		card.position = Vector2(start_x + i * spacing, panel.size.y / 2.0)
+		card.scale = Vector2(0.35, 0.35)
+		card.z_index = 5
+
+		card.card_uid = rune_inst.uid
+		card.card_data = rune_inst.rune
+		card.update_visuals()
+		card.set_card_state(RiftCard.CardState.ON_BOARD)
+
+		var atk = card.get_node_or_null("Attack")
+		if atk:
+			atk.visible = false
+
+		var hp = card.get_node_or_null("Health")
+		if hp:
+			hp.visible = false
+
+		if rune_inst.is_exhausted():
+			card.modulate = Color(0.7, 0.7, 0.7, 1.0)
+		else:
+			card.modulate = Color.WHITE
+
+		_rune_cards_visuals.append(card)

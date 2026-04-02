@@ -1,23 +1,29 @@
 extends Node2D
-## CardManager — Drag, drop, hover highlight, and slot placement.
 
-const COLLISION_MASK_CARD      := 1
+const COLLISION_MASK_CARD := 1
 const COLLISION_MASK_CARD_SLOT := 2
 const DEFAULT_SCALE := Vector2(0.4, 0.4)
-const HOVER_SCALE   := Vector2(0.45, 0.45)
-const BOARD_SCALE   := Vector2(0.35, 0.35)
+const HOVER_SCALE := Vector2(0.45, 0.45)
+const BOARD_SCALE := Vector2(0.35, 0.35)
 
-var screen_size:           Vector2
-var card_being_dragged              = null
-var is_hovering_on_card:   bool     = false
-var hand_manager:          Node     = null
-var played_card_this_turn: bool     = false
-var drag_offset:           Vector2  = Vector2.ZERO
-var all_slots:             Array    = []
+var game_controller: Node = null
+var screen_size: Vector2
+var is_hovering_on_card: bool = false
+var hand_manager: Node = null
+var played_card_this_turn: bool = false
+var drag_offset: Vector2 = Vector2.ZERO
+var all_slots: Array = []
+var dragged_card: RiftCard = null
+var board_reference: Node = null
 
 func _ready() -> void:
-	screen_size  = get_viewport_rect().size
+	screen_size = get_viewport_rect().size
 	hand_manager = $"../HandManager"
+	game_controller = $"../GameController"
+	board_reference = $"../Board"
+
+	if game_controller == null:
+		push_error("CardManager: GameController node not found!")
 
 	var slots_container = get_node_or_null("../CardSlots")
 	if slots_container:
@@ -25,110 +31,68 @@ func _ready() -> void:
 	else:
 		push_error("CardManager: CardSlots node not found!")
 
-	var input_mgr = get_node_or_null("../InputManager")
-	if input_mgr:
-		if not input_mgr.left_mouse_button_released.is_connected(_on_release):
-			input_mgr.connect("left_mouse_button_released", _on_release)
-	else:
-		push_error("CardManager: InputManager node not found!")
-
 func _process(_delta: float) -> void:
-	if card_being_dragged:
+	if dragged_card:
 		var mp = get_global_mouse_position()
-		card_being_dragged.global_position = Vector2(
+		dragged_card.global_position = Vector2(
 			clamp(mp.x - drag_offset.x, 0, screen_size.x),
 			clamp(mp.y - drag_offset.y, 0, screen_size.y)
 		)
-		_highlight_slots(card_being_dragged)
+		_highlight_slots(dragged_card)
 
-func start_drag(card) -> void:
-	card_being_dragged = card
+func start_drag(card: RiftCard) -> void:
+	dragged_card = card
+	drag_offset = get_global_mouse_position() - card.global_position
 	card.set_card_state(RiftCard.CardState.DRAGGING)
+	card.z_index = 100
 
-	if card.get_parent() != self:
-		var saved_global_pos = card.global_position
-		if card.card_slot_card_is_in:
-			card.card_slot_card_is_in.remove_card(card)
-			card.card_slot_card_is_in = null
-		else:
-			card.get_parent().remove_child(card)
-		add_child(card)
-		card.global_position = saved_global_pos
+func get_dragged_card() -> RiftCard:
+	return dragged_card
 
-		if hand_manager.cards_in_hand.has(card):
-			hand_manager.cards_in_hand.erase(card)
-			hand_manager._reposition_cards()
-
-	drag_offset  = get_global_mouse_position() - card.global_position
-	card.scale   = DEFAULT_SCALE
-	card.z_index = 10
-
-func finish_drag() -> void:
-	if not card_being_dragged:
+func return_dragged_card_to_hand() -> void:
+	if dragged_card == null:
 		return
 
-	var slot = _raycast_slot()
+	var card = dragged_card
+	dragged_card = null
 
-	
-	if slot:
-		var card          = card_being_dragged
-		card_being_dragged = null
+	_clear_slot_highlights()
+	drag_offset = Vector2.ZERO
+	hand_manager.return_card(card)
 
-		# Remove from CardManager before handing to slot
-		remove_child(card)
-
-		card.z_index = 100
-		card.card_slot_card_is_in = slot
-		card.get_node("Area2D/CollisionShape2D").disabled = true
-		card.set_card_state(RiftCard.CardState.ON_BOARD)
-		card.scale = Vector2(0.70, 0.70)  # scale down for board display
-
-		slot.add_card(card)
-		card.self_modulate = Color.WHITE
-		card.z_as_relative = false
-		card.z_index = 10
-		card._original_scale = card.scale  # ← add this, saves 0.8 so enlarge restores correctly
-
-
-
-		is_hovering_on_card = false
-
-		played_card_this_turn = true
-
-	else:
-		var card = card_being_dragged
-		card_being_dragged = null
-
-		if card.get_parent() != hand_manager:
-			card.get_parent().remove_child(card)
-			hand_manager.add_child(card)
-
-		if not hand_manager.cards_in_hand.has(card):
-			hand_manager.cards_in_hand.append(card)
-
-		card.set_card_state(RiftCard.CardState.IN_HAND)
-		card.z_index = 1
-		hand_manager._reposition_cards()
-		hand_manager._tween_return(card)
-
+func clear_dragged_card() -> void:
+	dragged_card = null
 	_clear_slot_highlights()
 	drag_offset = Vector2.ZERO
 
 func _highlight_slots(_card) -> void:
-	for slot in all_slots:
-		slot.highlight(true, true)
+	if board_reference == null:
+		return
+
+	var slots = board_reference._player_slot_nodes
+	var player = game_controller.state.get_active_player()
+
+	for i in range(slots.size()):
+		var slot = slots[i]
+		var valid := true
+
+		if i < player.board_slots.size() and player.board_slots[i] != null:
+			valid = false
+
+		slot.highlight(true, valid)
 
 func _clear_slot_highlights() -> void:
-	for slot in all_slots:
+	if board_reference == null:
+		return
+
+	var slots = board_reference._player_slot_nodes
+
+	for slot in slots:
 		slot.highlight(false)
 
 func connect_card_signals(card) -> void:
-	card.connect("hovered",     _on_hovered)
+	card.connect("hovered", _on_hovered)
 	card.connect("hovered_off", _on_hovered_off)
-
-func _on_release() -> void:
-	if card_being_dragged:
-		finish_drag()
 
 func _on_hovered(card) -> void:
 	if not is_hovering_on_card:
@@ -136,7 +100,7 @@ func _on_hovered(card) -> void:
 		_highlight(card, true)
 
 func _on_hovered_off(card) -> void:
-	if card_being_dragged:
+	if dragged_card:
 		return
 	if not card.card_slot_card_is_in:
 		_highlight(card, false)
@@ -147,14 +111,14 @@ func _on_hovered_off(card) -> void:
 			is_hovering_on_card = false
 
 func _highlight(card, on: bool) -> void:
-	card.scale   = HOVER_SCALE if on else DEFAULT_SCALE
-	card.z_index = 2           if on else 1
+	card.scale = HOVER_SCALE if on else DEFAULT_SCALE
+	card.z_index = 2 if on else 1
 
 func _raycast_slot():
 	var p = PhysicsPointQueryParameters2D.new()
-	p.position           = get_global_mouse_position()
+	p.position = get_global_mouse_position()
 	p.collide_with_areas = true
-	p.collision_mask     = COLLISION_MASK_CARD_SLOT
+	p.collision_mask = COLLISION_MASK_CARD_SLOT
 	var result = get_world_2d().direct_space_state.intersect_point(p)
 	if result.size() > 0:
 		return result[0].collider.get_parent()
@@ -162,9 +126,9 @@ func _raycast_slot():
 
 func _raycast_card():
 	var p = PhysicsPointQueryParameters2D.new()
-	p.position           = get_global_mouse_position()
+	p.position = get_global_mouse_position()
 	p.collide_with_areas = true
-	p.collision_mask     = COLLISION_MASK_CARD
+	p.collision_mask = COLLISION_MASK_CARD
 	var result = get_world_2d().direct_space_state.intersect_point(p)
 	if result.size() == 0:
 		return null
