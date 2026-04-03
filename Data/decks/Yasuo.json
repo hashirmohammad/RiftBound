@@ -1,0 +1,34 @@
+{
+  "legend": "Yasuo",
+  "legend_card": "OGN-259/298",
+  "battlefields": [
+    { "card_id": "OGN-298/298", "name": "Zaun Warrens", "count": 1 },
+    { "card_id": "OGN-297/298", "name": "Windswept Hillock", "count": 1 },
+    { "card_id": "OGN-289/298", "name": "Targon's Peak", "count": 1 }
+  ],
+  "runes": [
+    { "card_id": "OGN-042a/298", "name": "Calm Rune", "count": 6 },
+    { "card_id": "OGN-166a/298", "name": "Chaos Rune", "count": 6 }
+  ],
+  "cards": [
+    { "card_id": "OGN-199/298", "name": "Tideturner", "count": 2 },
+    { "card_id": "OGN-195/298", "name": "Rhasa the Sunderer", "count": 2 },
+    { "card_id": "OGN-192/298", "name": "Mindsplitter", "count": 3 },
+    { "card_id": "OGN-185/298", "name": "Traveling Merchant", "count": 3 },
+    { "card_id": "OGN-183/298", "name": "Stacked Deck", "count": 3 },
+    { "card_id": "OGN-182/298", "name": "Scrapheap", "count": 2 },
+    { "card_id": "OGN-172/298", "name": "Rebuke", "count": 1 },
+    { "card_id": "OGN-169/298", "name": "Gust", "count": 2 },
+    { "card_id": "OGN-168/298", "name": "Fight or Flight", "count": 2 },
+    { "card_id": "OGN-077/298", "name": "Zhonya's Hourglass", "count": 1 },
+    { "card_id": "OGN-076/298", "name": "Yasuo, Remorseful", "count": 1 },
+    { "card_id": "OGN-060/298", "name": "Mask of Foresight", "count": 1 },
+    { "card_id": "OGN-058/298", "name": "Discipline", "count": 3 },
+    { "card_id": "OGN-055/298", "name": "Wielder of Water", "count": 3 },
+    { "card_id": "OGN-052/298", "name": "Stalwart Poro", "count": 3 },
+    { "card_id": "OGN-046/298", "name": "En Garde", "count": 3 },
+    { "card_id": "OGN-045/298", "name": "Defy", "count": 2 },
+    { "card_id": "OGN-044/298", "name": "Clockwork Keeper", "count": 2 },
+    { "card_id": "OGN-043/298", "name": "Charm", "count": 1 }
+  ]
+}

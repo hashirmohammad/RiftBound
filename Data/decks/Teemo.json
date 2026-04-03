@@ -1,0 +1,33 @@
+{
+  "legend": "Teemo",
+  "legend_card": "OGN-263/298",
+  "battlefields": [
+    { "card_id": "OGN-292/298", "name": "The Dreaming Tree", "count": 1 },
+    { "card_id": "OGN-280/298", "name": "Grove of the God-Willow", "count": 1 },
+    { "card_id": "OGN-278/298", "name": "Bandle Tree", "count": 1 }
+  ],
+  "runes": [
+    { "card_id": "OGN-089a/298", "name": "Mind Rune", "count": 7 },
+    { "card_id": "OGN-166a/298", "name": "Chaos Rune", "count": 5 }
+  ],
+  "cards": [
+    { "card_id": "OGN-199/298", "name": "Tideturner", "count": 3 },
+    { "card_id": "OGN-197/298", "name": "Teemo, Scout", "count": 1 },
+    { "card_id": "OGN-183/298", "name": "Stacked Deck", "count": 3 },
+    { "card_id": "OGN-173/298", "name": "Ride the Wind", "count": 2 },
+    { "card_id": "OGN-172/298", "name": "Rebuke", "count": 1 },
+    { "card_id": "OGN-169/298", "name": "Gust", "count": 3 },
+    { "card_id": "OGN-168/298", "name": "Fight or Flight", "count": 3 },
+    { "card_id": "OGN-167/298", "name": "Ember Monk", "count": 3 },
+    { "card_id": "OGS-011/024", "name": "Flash", "count": 1 },
+    { "card_id": "OGN-116/298", "name": "Thousand-Tailed Watcher", "count": 2 },
+    { "card_id": "OGN-109/298", "name": "Dr. Mundo, Expert", "count": 3 },
+    { "card_id": "OGN-106/298", "name": "Sprite Mother", "count": 1 },
+    { "card_id": "OGN-105/298", "name": "Singularity", "count": 1 },
+    { "card_id": "OGN-104/298", "name": "Retreat", "count": 3 },
+    { "card_id": "OGN-103-P/298", "name": "Ravenbloom Student (Promo)", "count": 3 },
+    { "card_id": "OGN-095/298", "name": "Stupefy", "count": 3 },
+    { "card_id": "OGN-094/298", "name": "Sprite Call", "count": 2 },
+    { "card_id": "OGN-083/298", "name": "Consult the Past", "count": 2 }
+  ]
+}

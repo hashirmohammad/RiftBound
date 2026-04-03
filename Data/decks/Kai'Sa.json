@@ -1,0 +1,30 @@
+{
+  "legend": "Kai'Sa",
+  "legend_card": "OGN-247/298",
+  "battlefields": [
+    { "card_id": "OGN-290/298", "name": "The Arena's Greatest", "count": 1 },
+    { "card_id": "OGN-288/298", "name": "Startipped Peak", "count": 1 },
+    { "card_id": "OGN-285/298", "name": "Reaver's Row", "count": 1 }
+  ],
+  "runes": [
+    { "card_id": "OGN-089a/298", "name": "Mind Rune", "count": 6 },
+    { "card_id": "OGN-007a/298", "name": "Fury Rune", "count": 6 }
+  ],
+  "cards": [
+    { "card_id": "OGN-093/298", "name": "Smoke Screen", "count": 3 },
+    { "card_id": "OGN-122/298", "name": "Time Warp", "count": 1 },
+    { "card_id": "OGN-116/298", "name": "Thousand-Tailed Watcher", "count": 3 },
+    { "card_id": "OGN-104/298", "name": "Retreat", "count": 2 },
+    { "card_id": "OGN-103/298", "name": "Ravenbloom Student", "count": 3 },
+    { "card_id": "OGN-096/298", "name": "Watchful Sentry", "count": 3 },
+    { "card_id": "OGN-095/298", "name": "Stupefy", "count": 3 },
+    { "card_id": "OGN-004/298", "name": "Cleave", "count": 3 },
+    { "card_id": "OGN-039/298", "name": "Kai'Sa, Survivor", "count": 1 },
+    { "card_id": "OGN-029/298", "name": "Falling Star", "count": 3 },
+    { "card_id": "OGN-027/298", "name": "Darius, Trifarian", "count": 3 },
+    { "card_id": "OGN-024/298", "name": "Void Seeker", "count": 3 },
+    { "card_id": "OGN-013/298", "name": "Pouty Poro", "count": 3 },
+    { "card_id": "OGN-012/298", "name": "Noxus Hopeful", "count": 3 },
+    { "card_id": "OGN-009/298", "name": "Hextech Ray", "count": 3 }
+  ]
+}

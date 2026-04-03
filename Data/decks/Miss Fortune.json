@@ -1,0 +1,33 @@
+{
+  "legend": "Miss Fortune",
+  "legend_card": "OGN-267/298",
+  "battlefields": [
+    { "card_id": "OGN-295/298", "name": "Vilemaw's Lair", "count": 1 },
+    { "card_id": "OGN-284/298", "name": "Obelisk of Power", "count": 1 },
+    { "card_id": "OGN-276/298", "name": "Aspirant's Climb", "count": 1 }
+  ],
+  "runes": [
+    { "card_id": "OGN-126a/298", "name": "Body Rune", "count": 6 },
+    { "card_id": "OGN-166a/298", "name": "Chaos Rune", "count": 6 }
+  ],
+  "cards": [
+    { "card_id": "OGN-268/298", "name": "Bullet Time", "count": 2 },
+    { "card_id": "OGN-201/298", "name": "Invert Timelines", "count": 2 },
+    { "card_id": "OGN-196/298", "name": "Soulgorger", "count": 1 },
+    { "card_id": "OGN-192/298", "name": "Mindsplitter", "count": 3 },
+    { "card_id": "OGN-186/298", "name": "Treasure Trove", "count": 3 },
+    { "card_id": "OGN-183/298", "name": "Stacked Deck", "count": 3 },
+    { "card_id": "OGN-179/298", "name": "Acceptable Losses", "count": 2 },
+    { "card_id": "OGN-173/298", "name": "Ride the Wind", "count": 2 },
+    { "card_id": "OGN-169/298", "name": "Gust", "count": 3 },
+    { "card_id": "OGN-168/298", "name": "Fight or Flight", "count": 3 },
+    { "card_id": "OGN-162/298", "name": "Miss Fortune, Captain", "count": 1 },
+    { "card_id": "OGN-161/298", "name": "Deadbloom Predator", "count": 3 },
+    { "card_id": "OGN-160/298", "name": "Dazzling Aurora", "count": 3 },
+    { "card_id": "OGN-158/298", "name": "Volibear, Imposing", "count": 1 },
+    { "card_id": "OGN-154/298", "name": "Primal Strength", "count": 1 },
+    { "card_id": "OGN-142/298", "name": "Mountain Drake", "count": 1 },
+    { "card_id": "OGN-138/298", "name": "Catalyst of Aeons", "count": 3 },
+    { "card_id": "OGN-134/298", "name": "Mobilize", "count": 3 }
+  ]
+}

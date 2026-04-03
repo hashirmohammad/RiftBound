@@ -1,0 +1,33 @@
+{
+  "legend": "Lux",
+  "legend_card": "OGS-021/024",
+  "battlefields": [
+    { "card_id": "OGN-295/298", "name": "Vilemaw's Lair", "count": 1 },
+    { "card_id": "OGN-293/298", "name": "The Grand Plaza", "count": 1 },
+    { "card_id": "OGN-276/298", "name": "Aspirant's Climb", "count": 1 }
+  ],
+  "runes": [
+    { "card_id": "OGN-214a/298", "name": "Order Rune", "count": 6 },
+    { "card_id": "OGN-089a/298", "name": "Mind Rune", "count": 6 }
+  ],
+  "cards": [
+    { "card_id": "OGS-022/024", "name": "Final Spark", "count": 2 },
+    { "card_id": "OGS-015/024", "name": "Recruit the Vanguard", "count": 2 },
+    { "card_id": "OGS-014/024", "name": "Lux, Crownguard", "count": 1 },
+    { "card_id": "OGS-012/024", "name": "Blast of Power", "count": 3 },
+    { "card_id": "OGN-239/298", "name": "Machine Evangel", "count": 1 },
+    { "card_id": "OGN-234/298", "name": "Harnessed Dragon", "count": 1 },
+    { "card_id": "OGN-222/298", "name": "Noxian Drummer", "count": 3 },
+    { "card_id": "OGN-216/298", "name": "Soaring Scout", "count": 3 },
+    { "card_id": "OGN-213/298", "name": "Hidden Blade", "count": 2 },
+    { "card_id": "OGN-211/298", "name": "Faithful Manufactor", "count": 3 },
+    { "card_id": "OGN-210/298", "name": "Daring Poro", "count": 3 },
+    { "card_id": "OGN-209/298", "name": "Cull the Weak", "count": 3 },
+    { "card_id": "OGN-123/298", "name": "Unchecked Power", "count": 3 },
+    { "card_id": "OGN-122/298", "name": "Time Warp", "count": 1 },
+    { "card_id": "OGN-105/298", "name": "Singularity", "count": 3 },
+    { "card_id": "OGN-096/298", "name": "Watchful Sentry", "count": 2 },
+    { "card_id": "OGN-085/298", "name": "Falling Comet", "count": 3 },
+    { "card_id": "OGN-083/298", "name": "Consult the Past", "count": 1 }
+  ]
+}

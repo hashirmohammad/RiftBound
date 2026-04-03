@@ -1,0 +1,33 @@
+{
+  "legend": "Master Yi",
+  "legend_card": "OGS-019/024",
+  "battlefields": [
+    { "card_id": "OGN-295/298", "name": "Vilemaw's Lair", "count": 1 },
+    { "card_id": "OGN-284/298", "name": "Obelisk of Power", "count": 1 },
+    { "card_id": "OGN-276/298", "name": "Aspirant's Climb", "count": 1 }
+  ],
+  "runes": [
+    { "card_id": "OGN-042a/298", "name": "Calm Rune", "count": 6 },
+    { "card_id": "OGN-126a/298", "name": "Body Rune", "count": 6 }
+  ],
+  "cards": [
+    { "card_id": "OGS-009/024", "name": "Master Yi, Honed", "count": 1 },
+    { "card_id": "OGN-161/298", "name": "Deadbloom Predator", "count": 3 },
+    { "card_id": "OGN-160/298", "name": "Dazzling Aurora", "count": 3 },
+    { "card_id": "OGN-158/298", "name": "Volibear, Imposing", "count": 1 },
+    { "card_id": "OGN-156/298", "name": "Sabotage", "count": 1 },
+    { "card_id": "OGN-142/298", "name": "Mountain Drake", "count": 2 },
+    { "card_id": "OGN-138/298", "name": "Catalyst of Aeons", "count": 3 },
+    { "card_id": "OGN-134/298", "name": "Mobilize", "count": 3 },
+    { "card_id": "OGN-128/298", "name": "Challenge", "count": 1 },
+    { "card_id": "OGN-082/298", "name": "Whiteflame Protector", "count": 2 },
+    { "card_id": "OGN-077/298", "name": "Zhonya's Hourglass", "count": 3 },
+    { "card_id": "OGN-075/298", "name": "Tasty Faefolk", "count": 3 },
+    { "card_id": "OGN-064/298", "name": "Wind Wall", "count": 1 },
+    { "card_id": "OGN-058/298", "name": "Discipline", "count": 2 },
+    { "card_id": "OGN-050/298", "name": "Rune Prison", "count": 2 },
+    { "card_id": "OGN-047/298", "name": "Find Your Center", "count": 3 },
+    { "card_id": "OGN-045/298", "name": "Defy", "count": 3 },
+    { "card_id": "OGN-043/298", "name": "Charm", "count": 3 }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "legend": "Garen",
+  "legend_card": "OGS-023/024",
+  "battlefields": [
+    { "card_id": "OGN-287/298", "name": "Sigil of the Storm", "count": 1 },
+    { "card_id": "OGN-284/298", "name": "Obelisk of Power", "count": 1 },
+    { "card_id": "OGN-276/298", "name": "Aspirant's Climb", "count": 1 }
+  ],
+  "runes": [
+    { "card_id": "OGN-214a/298", "name": "Order Rune", "count": 6 },
+    { "card_id": "OGN-126a/298", "name": "Body Rune", "count": 6 }
+  ],
+  "cards": [
+    { "card_id": "OGS-012/024", "name": "Blast of Power", "count": 3 },
+    { "card_id": "OGS-007/024", "name": "Garen, Rugged", "count": 1 },
+    { "card_id": "OGN-245/298", "name": "Seal of Unity", "count": 1 },
+    { "card_id": "OGN-244/298", "name": "Divine Judgment", "count": 3 },
+    { "card_id": "OGN-234/298", "name": "Harnessed Dragon", "count": 3 },
+    { "card_id": "OGN-213/298", "name": "Hidden Blade", "count": 3 },
+    { "card_id": "OGN-212/298", "name": "Forge of the Future", "count": 1 },
+    { "card_id": "OGN-209/298", "name": "Cull the Weak", "count": 3 },
+    { "card_id": "OGN-161/298", "name": "Deadbloom Predator", "count": 3 },
+    { "card_id": "OGN-160/298", "name": "Dazzling Aurora", "count": 3 },
+    { "card_id": "OGN-154/298", "name": "Primal Strength", "count": 1 },
+    { "card_id": "OGN-149/298", "name": "Carnivorous Snapvine", "count": 2 },
+    { "card_id": "OGN-142/298", "name": "Mountain Drake", "count": 1 },
+    { "card_id": "OGN-138/298", "name": "Catalyst of Aeons", "count": 3 },
+    { "card_id": "OGN-137/298", "name": "Stormclaw Ursine", "count": 2 },
+    { "card_id": "OGN-134/298", "name": "Mobilize", "count": 3 },
+    { "card_id": "OGN-129/298", "name": "Confront", "count": 2 },
+    { "card_id": "OGN-128/298", "name": "Challenge", "count": 2 }
+  ]
+}
