@@ -1,0 +1,32 @@
+{
+  "legend": "Ahri",
+  "legend_card": "OGN-255/298",
+  "battlefields": [
+    { "card_id": "OGN-292/298", "name": "The Dreaming Tree", "count": 1 },
+    { "card_id": "OGN-280/298", "name": "Grove of the God-Willow", "count": 1 },
+    { "card_id": "OGN-276/298", "name": "Aspirant's Climb", "count": 1 }
+  ],
+  "runes": [
+    { "card_id": "OGN-089a/298", "name": "Mind Rune", "count": 7 },
+    { "card_id": "OGN-042a/298", "name": "Calm Rune", "count": 5 }
+  ],
+  "cards": [
+    { "card_id": "OGN-122/298", "name": "Time Warp", "count": 2 },
+    { "card_id": "OGN-116/298", "name": "Thousand-Tailed Watcher", "count": 3 },
+    { "card_id": "OGN-106/298", "name": "Sprite Mother", "count": 2 },
+    { "card_id": "OGN-104/298", "name": "Retreat", "count": 3 },
+    { "card_id": "OGN-103/298", "name": "Ravenbloom Student", "count": 3 },
+    { "card_id": "OGN-096/298", "name": "Watchful Sentry", "count": 2 },
+    { "card_id": "OGN-095/298", "name": "Stupefy", "count": 3 },
+    { "card_id": "OGN-087/298", "name": "Lecturing Yordle", "count": 2 },
+    { "card_id": "OGN-075/298", "name": "Tasty Faefolk", "count": 2 },
+    { "card_id": "OGN-073/298", "name": "Sona, Harmonious", "count": 2 },
+    { "card_id": "OGN-066/298", "name": "Ahri, Alluring", "count": 1 },
+    { "card_id": "OGN-064/298", "name": "Wind Wall", "count": 1 },
+    { "card_id": "OGN-058/298", "name": "Discipline", "count": 3 },
+    { "card_id": "OGN-052/298", "name": "Stalwart Poro", "count": 3 },
+    { "card_id": "OGN-047/298", "name": "Find Your Center", "count": 2 },
+    { "card_id": "OGN-046/298", "name": "En Garde", "count": 3 },
+    { "card_id": "OGN-045/298", "name": "Defy", "count": 3 }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "legend": "Viktor",
+  "legend_card": "OGN-265/298",
+  "battlefields": [
+    { "card_id": "OGN-295/298", "name": "Vilemaw's Lair", "count": 1 },
+    { "card_id": "OGN-294/298", "name": "Trifarian War Camp", "count": 1 },
+    { "card_id": "OGN-284/298", "name": "Obelisk of Power", "count": 1 }
+  ],
+  "runes": [
+    { "card_id": "OGN-089a/298", "name": "Mind Rune", "count": 7 },
+    { "card_id": "OGN-214a/298", "name": "Order Rune", "count": 5 }
+  ],
+  "cards": [
+    { "card_id": "OGN-246/298", "name": "Viktor, Leader", "count": 1 },
+    { "card_id": "OGN-239/298", "name": "Machine Evangel", "count": 3 },
+    { "card_id": "OGN-222/298", "name": "Noxian Drummer", "count": 3 },
+    { "card_id": "OGN-213/298", "name": "Hidden Blade", "count": 3 },
+    { "card_id": "OGN-211/298", "name": "Faithful Manufactor", "count": 3 },
+    { "card_id": "OGN-210/298", "name": "Daring Poro", "count": 3 },
+    { "card_id": "OGN-209/298", "name": "Cull the Weak", "count": 3 },
+    { "card_id": "OGN-207/298", "name": "Call to Glory", "count": 3 },
+    { "card_id": "OGN-116/298", "name": "Thousand-Tailed Watcher", "count": 3 },
+    { "card_id": "OGN-106/298", "name": "Sprite Mother", "count": 3 },
+    { "card_id": "OGN-105/298", "name": "Singularity", "count": 3 },
+    { "card_id": "OGN-103/298", "name": "Ravenbloom Student", "count": 1 },
+    { "card_id": "OGN-095/298", "name": "Stupefy", "count": 3 },
+    { "card_id": "OGN-092/298", "name": "Riptide Rex", "count": 3 },
+    { "card_id": "OGN-087/298", "name": "Lecturing Yordle", "count": 1 },
+    { "card_id": "OGS-016/024", "name": "Vanguard Attendant", "count": 1 }
+  ]
+}
