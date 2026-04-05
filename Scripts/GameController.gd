@@ -14,7 +14,7 @@ var state: GameState
 @onready var deck_ui  = $"../P0/P0_MainDeck"
 
 func _ready() -> void:
-	state = GameEngine.start_game()
+	state = GameEngine.start_game("Jinx", "Darius")
 	await wait_until_main()
 	refresh_all_ui()
 
