@@ -5,7 +5,10 @@ const POINTS_TO_WIN: int = 8
 var players: Array = []              # [PlayerState, PlayerState]
 var active_player_index: int = 0     # whose turn it is
 var turn_number: int = 1
-var phase: String = "START"          # keep as string for now (we’ll enum later)
+var phase: String = "START"          # keep as string for now (we'll enum later)
+
+# Stores the randomly picked deck name for each player
+var deck_names: Array[String] = ["", ""]
 
 # Event log for debugging / later replays
 var event_log: Array = []
@@ -38,4 +41,3 @@ func get_winner_index() -> int:
 
 func is_game_over() -> bool:
 	return get_winner_index() != -1
-	
