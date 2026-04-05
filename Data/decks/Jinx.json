@@ -2,29 +2,29 @@
   "legend": "Jinx",
   "legend_card": "OGN-251/298",
   "battlefields": [
-    { "card_id": "OGN-298/298", "name": "Zaun Warrens", "count": 1 },
-    { "card_id": "OGN-297/298", "name": "Windswept Hillock", "count": 1 },
-    { "card_id": "OGN-290/298", "name": "The Arena's Greatest", "count": 1 }
+	{ "card_id": "OGN-298/298", "name": "Zaun Warrens", "count": 1 },
+	{ "card_id": "OGN-297/298", "name": "Windswept Hillock", "count": 1 },
+	{ "card_id": "OGN-290/298", "name": "The Arena's Greatest", "count": 1 }
   ],
   "runes": [
-    { "card_id": "OGN-007a/298", "name": "Fury Rune", "count": 7 },
-    { "card_id": "OGN-166a/298", "name": "Chaos Rune", "count": 5 }
+	{ "card_id": "OGN-007a/298", "name": "Fury Rune", "count": 7 },
+	{ "card_id": "OGN-166a/298", "name": "Chaos Rune", "count": 5 }
   ],
   "cards": [
-    { "card_id": "OGN-252/298", "name": "Super Mega Death Rocket!", "count": 2 },
-    { "card_id": "OGN-202/298", "name": "Jinx, Rebel", "count": 3 },
-    { "card_id": "OGN-185/298", "name": "Traveling Merchant", "count": 3 },
-    { "card_id": "OGN-182/298", "name": "Scrapheap", "count": 3 },
-    { "card_id": "OGN-173/298", "name": "Ride the Wind", "count": 2 },
-    { "card_id": "OGN-168/298", "name": "Fight or Flight", "count": 2 },
-    { "card_id": "OGN-039/298", "name": "Kai'Sa, Survivor", "count": 2 },
-    { "card_id": "OGN-036/298", "name": "Vi, Destructive", "count": 2 },
-    { "card_id": "OGN-027/298", "name": "Darius, Trifarian", "count": 3 },
-    { "card_id": "OGN-023/298", "name": "Unlicensed Armory", "count": 3 },
-    { "card_id": "OGN-012/298", "name": "Noxus Hopeful", "count": 3 },
-    { "card_id": "OGN-010/298", "name": "Legion Rearguard", "count": 3 },
-    { "card_id": "OGN-006/298", "name": "Flame Chompers", "count": 3 },
-    { "card_id": "OGN-004/298", "name": "Cleave", "count": 3 },
-    { "card_id": "OGN-003/298", "name": "Chemtech Enforcer", "count": 3 }
+	{ "card_id": "OGN-252/298", "name": "Super Mega Death Rocket!", "count": 2 },
+	{ "card_id": "OGN-202/298", "name": "Jinx, Rebel", "count": 3 },
+	{ "card_id": "OGN-185/298", "name": "Traveling Merchant", "count": 3 },
+	{ "card_id": "OGN-182/298", "name": "Scrapheap", "count": 3 },
+	{ "card_id": "OGN-173/298", "name": "Ride the Wind", "count": 2 },
+	{ "card_id": "OGN-168/298", "name": "Fight or Flight", "count": 2 },
+	{ "card_id": "OGN-039/298", "name": "Kai'Sa, Survivor", "count": 2 },
+	{ "card_id": "OGN-036/298", "name": "Vi, Destructive", "count": 2 },
+	{ "card_id": "OGN-027/298", "name": "Darius, Trifarian", "count": 3 },
+	{ "card_id": "OGN-023/298", "name": "Unlicensed Armory", "count": 3 },
+	{ "card_id": "OGN-012/298", "name": "Noxus Hopeful", "count": 3 },
+	{ "card_id": "OGN-010/298", "name": "Legion Rearguard", "count": 3 },
+	{ "card_id": "OGN-006/298", "name": "Flame Chompers", "count": 3 },
+	{ "card_id": "OGN-004/298", "name": "Cleave", "count": 3 },
+	{ "card_id": "OGN-003/298", "name": "Chemtech Enforcer", "count": 3 }
   ]
 }

@@ -34,7 +34,7 @@ static func apply_action(state: GameState, action: GameAction) -> bool:
 # -------------------------
 # GAME LIFECYCLE
 # -------------------------
-static func start_game() -> GameState:
+static func start_game(p0_deck: String, p1_deck: String) -> GameState:
 	var state := GameState.new()
 
 	# Turn/phase controller

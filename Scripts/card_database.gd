@@ -161,3 +161,18 @@ func _load_json_file_as_dictionary(path: String) -> Dictionary:
 		push_error("CardDatabase: Failed to parse JSON at '%s'" % path)
 		return {}
 	return parsed
+
+func _find_path(id: String) -> String:
+	var card_id = id.replace("/", "")
+	var path = "res://Data/Cards/"
+	var dir = DirAccess.open(path)
+	dir.list_dir_begin()
+	var file_name = dir.get_next()
+	while file_name != "":
+		if not dir.current_is_dir():
+			if file_name.begins_with(card_id):
+				dir.list_dir_end()
+				return path.path_join(file_name)
+		file_name = dir.get_next()
+	dir.list_dir_end()
+	return ""
