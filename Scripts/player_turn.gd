@@ -34,7 +34,6 @@ func start_turn(game_state: GameState):
 	state = game_state
 	phase_index = 0
 	var player = state.get_active_player()
-	print("[PlayerTurn] start_turn() | player=P", player.id, " | turn=", state.turn_number)
 	emit_signal("turn_started", player.id)
 	_enter_phase()
 

@@ -390,8 +390,7 @@ func _clear_battlefield_visuals() -> void:
 	_battlefield_cards_visuals.clear()
 
 func _render_battlefields(panel: Panel, battlefield_instances: Array) -> void:
-	if panel == null:
-		return
+	pass
 
 	# remove previous battlefield visuals from this panel
 	for child in panel.get_children():

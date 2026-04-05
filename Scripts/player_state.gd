@@ -7,17 +7,25 @@ var deck: Array[CardInstance] = [] #cards that are not drawnn
 var hand: Array[CardInstance] = [] #cards on hand
 var board: Array[CardInstance] = [] #cards currently in play
 var trash: Array[CardInstance] = [] #cards removed from play
-var battlefields: Array[CardInstance] = [] #battlefield cards
+var battlefields: Array[BattlefieldInstance] = [] #battlefield cards
+var picked_battlefield: BattlefieldInstance
 var rune_deck: Array[RuneInstance] = [] #runes that are not drawnn
 var rune_pool: Array[RuneInstance] = [] #runes currently availablee
 var legend: CardInstance #legend card
 var champion: CardInstance #champion card
-var arena: CardInstance #fighting arena
-var board_slots: Array = [[], [], [], [], [], [], [], []]
+var arena_0: Array[CardInstance] = [] #fighting arena
+var arena_1: Array[CardInstance] = []
+var board_slots: Array = [null, null, null, null, null, null, null, null]
 
 func _init(player_id: int):
 	id = player_id
-
+	
+func pick_battlefield(index: int) -> void:
+	if not battlefields[index].is_picked():
+		for battlefield in battlefields:
+			battlefield.set_state(BattlefieldInstance.State.UNUSED)
+		battlefields[index].set_state(BattlefieldInstance.State.USED)
+		picked_battlefield = battlefields[index]
 # ---------- Rune helpers (FIFO queue behavior) ----------
 
 func rune_count_in_deck() -> int:
@@ -25,6 +33,13 @@ func rune_count_in_deck() -> int:
 
 func rune_count_in_pool() -> int:
 	return rune_pool.size()
+	
+func awaken_runes_count() -> int:
+	var count: int = 0
+	for i in range(len(rune_pool)):
+		if not rune_pool[i].is_exhausted():
+			count+=1
+	return count
 
 # Take the "top/front" rune (FIFO). Returns null if empty.
 func draw_rune() -> Variant:
@@ -40,7 +55,7 @@ func channel_runes(n: int) -> void:
 		if r == null:
 			return
 		r.zone = RuneInstance.Zone.RUNE_POOL
-		r.exhaust()
+		#r.exhaust()
 		rune_pool.append(r)
 
 # Spend N runes from the pool
