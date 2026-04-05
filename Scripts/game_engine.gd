@@ -44,58 +44,54 @@ static func start_game() -> GameState:
 	var p0 := PlayerState.new(0)
 	var p1 := PlayerState.new(1)
 	state.players = [p0, p1]
-	
-	# Load battlefields
-	var p0_all_battlefields: Array[CardData] = CardDatabase._load_battlefields("Jinx")
-	var p1_all_battlefields: Array[CardData] = CardDatabase._load_battlefields("Darius")
-	for i in range(len(p0_all_battlefields)):
-		var b0: CardData = p0_all_battlefields[i]
-		p0.battlefields.append(CardInstance.new(state.next_uid(), b0))	
-	for i in range(len(p1_all_battlefields)):
-		var b1: CardData = p1_all_battlefields[i]
-		p1.battlefields.append(CardInstance.new(state.next_uid(), b1))	
-	# Load legend
-	p0.legend = CardInstance.new(state.next_uid(), CardDatabase._load_legend("Jinx"))
-	p1.legend = CardInstance.new(state.next_uid(), CardDatabase._load_legend("Darius"))
-	
-	# Load real cards
-	var p0_all_cards: Array[CardData] = CardDatabase._load_cards("Jinx")
-	var p1_all_cards: Array[CardData] = CardDatabase._load_cards("Darius")
-	
-	# TEMP: build a 40-card deck by sampling from all_cards
-	for i in range(40):
-		var d0: CardData = p0_all_cards[randi() % p0_all_cards.size()]
-		var d1: CardData = p1_all_cards[randi() % p1_all_cards.size()]
 
-		p0.deck.append(CardInstance.new(state.next_uid(), d0))
-		p1.deck.append(CardInstance.new(state.next_uid(), d1))
+	# Pick a random preset deck for each player and store in state
+	var p0_deck_name: String = CardDatabase._random_deck_name()
+	var p1_deck_name: String = CardDatabase._random_deck_name()
+	state.deck_names[0] = p0_deck_name
+	state.deck_names[1] = p1_deck_name
+	state.add_event("P0 deck: %s | P1 deck: %s" % [p0_deck_name, p1_deck_name])
+
+	# ── Load legends ───────────────────────────────────────────────────────────
+	var p0_legend_data := CardDatabase._load_legend(p0_deck_name)
+	var p1_legend_data := CardDatabase._load_legend(p1_deck_name)
+	if p0_legend_data:
+		p0.legend = CardInstance.new(state.next_uid(), p0_legend_data)
+	if p1_legend_data:
+		p1.legend = CardInstance.new(state.next_uid(), p1_legend_data)
+
+	# ── Load battlefields ──────────────────────────────────────────────────────
+	for b in CardDatabase._load_battlefields_from_deck(p0_deck_name):
+		p0.battlefields.append(CardInstance.new(state.next_uid(), b))
+	for b in CardDatabase._load_battlefields_from_deck(p1_deck_name):
+		p1.battlefields.append(CardInstance.new(state.next_uid(), b))
+
+	# ── Build draw decks ───────────────────────────────────────────────────────
+	# Loads only the "cards" section of the deck JSON (no runes, no legend).
+	# count field is respected — e.g. count:3 adds 3 copies.
+	for cd in CardDatabase._load_cards_from_deck(p0_deck_name):
+		p0.deck.append(CardInstance.new(state.next_uid(), cd))
+	for cd in CardDatabase._load_cards_from_deck(p1_deck_name):
+		p1.deck.append(CardInstance.new(state.next_uid(), cd))
 
 	p0.deck.shuffle()
 	p1.deck.shuffle()
-	
-	# Load runes
-	var p0_all_runes: Array[CardData] = CardDatabase._load_runes("Jinx")
-	var p1_all_runes: Array[CardData] = CardDatabase._load_runes("Darius")
-	
-	# TEMP rune decks (FIFO queue)
-	for i in range(6):
-		var p0_rune_0 := RuneInstance.new(state.next_uid(), p0_all_runes[0])
-		p0_rune_0.zone = RuneInstance.Zone.RUNE_DECK
-		p0.rune_deck.append(p0_rune_0)
-		var p0_rune_1 := RuneInstance.new(state.next_uid(), p0_all_runes[1])
-		p0_rune_1.zone = RuneInstance.Zone.RUNE_DECK
-		p0.rune_deck.append(p0_rune_1)
-		
-		var p1_rune_0 := RuneInstance.new(state.next_uid(), p1_all_runes[0])
-		p1_rune_0.zone = RuneInstance.Zone.RUNE_DECK
-		p1.rune_deck.append(p1_rune_0)
-		var p1_rune_1 := RuneInstance.new(state.next_uid(), p1_all_runes[1])
-		p1_rune_1.zone = RuneInstance.Zone.RUNE_DECK
-		p1.rune_deck.append(p1_rune_1)
+
+	# ── Build rune decks ───────────────────────────────────────────────────────
+	for rd in CardDatabase._load_runes_from_deck(p0_deck_name):
+		var rune := RuneInstance.new(state.next_uid(), rd)
+		rune.zone = RuneInstance.Zone.RUNE_DECK
+		p0.rune_deck.append(rune)
+	for rd in CardDatabase._load_runes_from_deck(p1_deck_name):
+		var rune := RuneInstance.new(state.next_uid(), rd)
+		rune.zone = RuneInstance.Zone.RUNE_DECK
+		p1.rune_deck.append(rune)
+
 	p0.rune_deck.shuffle()
 	p1.rune_deck.shuffle()
-	
-	# Opening hands
+
+	# ── Opening hands ──────────────────────────────────────────────────────────
+	# Draws 4 cards each from the draw deck only (runes are separate).
 	for i in range(OPENING_HAND_SIZE):
 		state.turn_system._draw_card(p0)
 		state.turn_system._draw_card(p1)

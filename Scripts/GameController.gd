@@ -21,7 +21,8 @@ func refresh_all_ui() -> void:
 	var opponent = state.players[1 - state.active_player_index]
 
 	print(
-		"Turn: ", state.turn_number,
+		"P0: ", state.deck_names[0], " | P1: ", state.deck_names[1],
+		" | Turn: ", state.turn_number,
 		" | Active Player: P", player.id,
 		" | Phase: ", state.phase,
 		" | Hand: ", player.hand.size(),

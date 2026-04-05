@@ -2,30 +2,30 @@
   "legend": "Sett",
   "legend_card": "OGN-269/298",
   "battlefields": [
-    { "card_id": "OGN-291/298", "name": "The Candlelit Sanctum", "count": 1 },
-    { "card_id": "OGN-283/298", "name": "Navori Fighting Pit", "count": 1 },
-    { "card_id": "OGN-282/298", "name": "Monastery of Hirana", "count": 1 }
+	{ "card_id": "OGN-291/298", "name": "The Candlelit Sanctum", "count": 1 },
+	{ "card_id": "OGN-283/298", "name": "Navori Fighting Pit", "count": 1 },
+	{ "card_id": "OGN-282/298", "name": "Monastery of Hirana", "count": 1 }
   ],
   "runes": [
-    { "card_id": "OGN-214a/298", "name": "Order Rune", "count": 6 },
-    { "card_id": "OGN-126a/298", "name": "Body Rune", "count": 6 }
+	{ "card_id": "OGN-214a/298", "name": "Order Rune", "count": 6 },
+	{ "card_id": "OGN-126a/298", "name": "Body Rune", "count": 6 }
   ],
   "cards": [
-    { "card_id": "OGN-270/298", "name": "Showstopper", "count": 3 },
-    { "card_id": "OGN-244/298", "name": "Divine Judgment", "count": 1 },
-    { "card_id": "OGN-240/298", "name": "Sett, Kingpin", "count": 1 },
-    { "card_id": "OGN-235/298", "name": "Karma, Channeler", "count": 3 },
-    { "card_id": "OGN-232/298", "name": "Fiora, Victorious", "count": 3 },
-    { "card_id": "OGN-217/298", "name": "Trifarian Gloryseeker", "count": 3 },
-    { "card_id": "OGN-213/298", "name": "Hidden Blade", "count": 3 },
-    { "card_id": "OGN-207/298", "name": "Call to Glory", "count": 3 },
-    { "card_id": "OGN-164/298", "name": "Sett, Brawler", "count": 3 },
-    { "card_id": "OGN-156/298", "name": "Sabotage", "count": 1 },
-    { "card_id": "OGN-154/298", "name": "Primal Strength", "count": 2 },
-    { "card_id": "OGN-139/298", "name": "Cithria of Cloudfield", "count": 3 },
-    { "card_id": "OGN-136/298", "name": "Pit Rookie", "count": 3 },
-    { "card_id": "OGN-135-P/298", "name": "Pakaa Cub (Promo)", "count": 3 },
-    { "card_id": "OGN-132/298", "name": "First Mate", "count": 3 },
-    { "card_id": "OGN-128-P/298", "name": "Challenge (Promo)", "count": 2 }
+	{ "card_id": "OGN-270/298", "name": "Showstopper", "count": 3 },
+	{ "card_id": "OGN-244/298", "name": "Divine Judgment", "count": 1 },
+	{ "card_id": "OGN-240/298", "name": "Sett, Kingpin", "count": 1 },
+	{ "card_id": "OGN-235/298", "name": "Karma, Channeler", "count": 3 },
+	{ "card_id": "OGN-232/298", "name": "Fiora, Victorious", "count": 3 },
+	{ "card_id": "OGN-217/298", "name": "Trifarian Gloryseeker", "count": 3 },
+	{ "card_id": "OGN-213/298", "name": "Hidden Blade", "count": 3 },
+	{ "card_id": "OGN-207/298", "name": "Call to Glory", "count": 3 },
+	{ "card_id": "OGN-164/298", "name": "Sett, Brawler", "count": 3 },
+	{ "card_id": "OGN-156/298", "name": "Sabotage", "count": 1 },
+	{ "card_id": "OGN-154/298", "name": "Primal Strength", "count": 2 },
+	{ "card_id": "OGN-139/298", "name": "Cithria of Cloudfield", "count": 3 },
+	{ "card_id": "OGN-136/298", "name": "Pit Rookie", "count": 3 },
+	{ "card_id": "OGN-135-P/298", "name": "Pakaa Cub (Promo)", "count": 3 },
+	{ "card_id": "OGN-132/298", "name": "First Mate", "count": 3 },
+	{ "card_id": "OGN-128-P/298", "name": "Challenge (Promo)", "count": 2 }
   ]
 }

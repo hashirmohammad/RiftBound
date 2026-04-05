@@ -16,14 +16,18 @@ func update_status() -> void:
 		status_label.text = "State not ready"
 		return
 
-	var player = game_controller.state.get_active_player()
+	var state = game_controller.state
+	var player = state.get_active_player()
+	var opponent = state.players[1 - state.active_player_index]
 
 	status_label.text = (
-		"Turn: %d\nActive Player: P%d\nPhase: %s\nHand: %d\nBoard: %d\nDeck: %d\nRunes: %d"
+		"P0 Deck: %s | P1 Deck: %s\nTurn: %d\nActive Player: P%d\nPhase: %s\nHand: %d\nBoard: %d\nDeck: %d\nRunes: %d"
 		% [
-			game_controller.state.turn_number,
-			game_controller.state.active_player_index,
-			game_controller.state.phase,
+			state.deck_names[0],
+			state.deck_names[1],
+			state.turn_number,
+			state.active_player_index,
+			state.phase,
 			player.hand.size(),
 			player.board.size(),
 			player.deck.size(),
