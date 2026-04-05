@@ -6,7 +6,7 @@ const GameEngineScript = preload("res://Scripts/game_engine.gd")
 func _ready() -> void:
 	print_header("DEBUG SCENE START")
 
-	var state = GameEngineScript.start_game()
+	var state = GameEngineScript.start_game("Jinx", "Darius")
 
 	# Wait for Player 0 to reach MAIN
 	await wait_until_main(state)
@@ -14,7 +14,7 @@ func _ready() -> void:
 	print_header("SNAPSHOT: START OF P0 MAIN")
 	print_turn_snapshot(state)
 	print_all_players(state)
-
+"""
 	print_header("END TURN: P0 -> P1")
 	var end_action = GameActionScript.new(
 		GameActionScript.ActionType.END_TURN,
@@ -48,7 +48,7 @@ func _ready() -> void:
 
 		print("Before PLAY_CARD:")
 		print_player_snapshot(ap)
-
+		
 		var play_action = GameActionScript.new(
 			GameActionScript.ActionType.PLAY_CARD,
 			ap.id,
@@ -79,7 +79,7 @@ func _ready() -> void:
 		print(" - ", e)
 
 	print_header("DEBUG SCENE END")
-
+"""
 
 func wait_until_main(state: GameState) -> void:
 	while state.phase != "MAIN":
