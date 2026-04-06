@@ -29,5 +29,5 @@ func awaken() -> void:
 func is_exhausted() -> bool:
 	return state == State.EXHAUSTED
 	
-func type_name() -> String:
-	return CardData.Rune.keys()[rune.rune] 
+func name() -> String:
+	return rune.card_name

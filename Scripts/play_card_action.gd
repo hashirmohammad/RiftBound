@@ -29,12 +29,9 @@ func validate(state: GameState) -> bool:
 		_error_message = "Invalid PLAY_CARD: card uid not found in hand."
 		return false
 
-	# Cost check skipped in debug mode
-	if not DEBUG_FREE_PLAY:
-		if p.rune_count_in_pool() < card.data.cost:
-			_error_message = "P%d cannot play card: not enough runes." % p.id
-			return false
-
+	if p.awaken_rune_count() < card.data.cost:
+		_error_message = "P%d cannot play card: not enough runes." % p.id
+		return false
 	if slot_index < 0 or slot_index >= p.board_slots.size():
 		_error_message = "Invalid PLAY_CARD: slot index out of range."
 		return false

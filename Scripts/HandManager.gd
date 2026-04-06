@@ -24,7 +24,7 @@ func render_hand(card_instances: Array) -> void:
 		card.modulate = Color.WHITE
 		add_child(card)
 
-		card.setup_from_instance(inst)
+		card.setup_from_card_instance(inst)
 		card.set_card_state(RiftCard.CardState.IN_HAND)
 
 		cards_in_hand.append(card)

@@ -25,15 +25,24 @@ func refresh_all_ui() -> void:
 	for slot in player.board_slots:
 		board_count += slot.size()
 
-	print(
-		"P0: ", state.deck_names[0], " | P1: ", state.deck_names[1],
-		" | Turn: ", state.turn_number,
+	print("P0: ", state.deck_names[0], " | P1: ", state.deck_names[1],	)
+	print(" | Turn: ", state.turn_number,
 		" | Active Player: P", player.id,
 		" | Phase: ", state.phase,
+		" | Picked battlefield: ", player.picked_battlefield.name(),
 		" | Hand: ", player.hand.size(),
 		" | Board: ", board_count,
-		" | Deck: ", player.deck.size()
-	)
+		" | Deck: ", player.deck.size())
+	
+	print("  Rune Pool:")
+	print("  Awaken runes count: ", player.awaken_rune_count())
+	print_rune_array(player.rune_pool)
+
+	print("  Board:")
+	print_board_array(player.board)
+
+	print("  Hand:")
+	print_hand_array(player.hand)
 
 	if board.has_method("render_static_state"):
 		board.render_static_state(player, opponent)
@@ -41,7 +50,50 @@ func refresh_all_ui() -> void:
 	refresh_hand_ui()
 	refresh_board_ui()
 	refresh_deck_ui()
+func print_rune_array(runes: Array) -> void:
+	if runes.is_empty():
+		print("    <empty>")
+		return
 
+	for rune in runes:
+		print("    uid=%d | type=%s | state=%s | zone=%s" % [
+			rune.uid,
+			rune.name(),
+			rune_state_name(rune.state),
+			rune_zone_name(rune.zone)
+		])
+
+
+func print_board_array(cards: Array) -> void:
+	if cards.is_empty():
+		print("    <empty>")
+		return
+
+	for card in cards:
+		print("    uid=%d | name=%s | cost=%d | state=%s | zone=%s" % [
+			card.uid,
+			card.data.card_name,
+			card.data.cost,
+			card_state_name(card.state),
+			card_zone_name(card.zone)
+		])
+
+
+func print_hand_array(cards: Array) -> void:
+	if cards.is_empty():
+		print("    <empty>")
+		return
+
+	for i in range(cards.size()):
+		var card = cards[i]
+		print("    [%d] uid=%d | name=%s | cost=%d | state=%s | zone=%s" % [
+			i,
+			card.uid,
+			card.data.card_name,
+			card.data.cost,
+			card_state_name(card.state),
+			card_zone_name(card.zone)
+		])
 func refresh_hand_ui() -> void:
 	var player = state.get_active_player()
 	hand_manager.render_hand(player.hand)
@@ -116,3 +168,18 @@ func wait_until_main() -> void:
 
 	if state.phase != "MAIN":
 		push_warning("wait_until_main() timed out. Current phase: %s" % state.phase)
+
+func rune_state_name(state_value: int) -> String:
+	return RuneInstance.State.keys()[state_value]
+
+
+func rune_zone_name(zone_value: int) -> String:
+	return RuneInstance.Zone.keys()[zone_value]
+
+
+func card_state_name(state_value: int) -> String:
+	return CardInstance.CardState.keys()[state_value]
+
+
+func card_zone_name(zone_value: int) -> String:
+	return CardInstance.Zone.keys()[zone_value]

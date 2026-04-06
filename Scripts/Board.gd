@@ -99,9 +99,7 @@ func _cache_player_slots() -> void:
 
 	_player_slot_nodes.sort_custom(func(a, b): return a.global_position.x < b.global_position.x)
 
-	print("Cached base slots: ", _player_slot_nodes.size())
-	for i in range(_player_slot_nodes.size()):
-		print("slot ", i, " -> ", _player_slot_nodes[i].global_position)
+	
 
 func get_slot_index_under_mouse() -> int:
 	var mouse_pos = get_global_mouse_position()
@@ -286,7 +284,7 @@ func render_board(card_instances: Array) -> void:
 			card.scale = Vector2(0.8, 0.8)
 			card.z_index = 5
 			slot.add_card(card)
-			card.setup_from_instance(card_instance)
+			card.setup_from_card_instance(card_instance)
 			card.set_card_state(RiftCard.CardState.ON_BOARD)
 			# Rotate card if exhausted (not yet awakened)
 			if card_instance.is_exhausted():
@@ -306,7 +304,7 @@ func render_slot(player: PlayerState, slot_index: int) -> void:
 		card.scale = Vector2(0.8, 0.8)
 		card.z_index = 5
 		slot.add_card(card)
-		card.setup_from_instance(card_instance)
+		card.setup_from_card_instance(card_instance)
 		card.set_card_state(RiftCard.CardState.ON_BOARD)
 		# Rotate card if exhausted (not yet awakened)
 		if card_instance.is_exhausted():
@@ -401,7 +399,7 @@ func _render_legend_panel(panel: Panel, legend_instance: CardInstance) -> void:
 	panel.add_child(card)
 	card.position = panel.size / 2.0
 	card.scale = Vector2(0.35, 0.35)
-	card.setup_from_instance(legend_instance)
+	card.setup_from_card_instance(legend_instance)
 	card.set_card_state(RiftCard.CardState.ON_BOARD)
 	
 func _clear_battlefield_visuals() -> void:
@@ -411,8 +409,7 @@ func _clear_battlefield_visuals() -> void:
 	_battlefield_cards_visuals.clear()
 
 func _render_battlefields(panel: Panel, battlefield_instances: Array) -> void:
-	if panel == null:
-		return
+	pass
 
 	# remove previous battlefield visuals from this panel
 	for child in panel.get_children():
@@ -428,7 +425,7 @@ func _render_battlefields(panel: Panel, battlefield_instances: Array) -> void:
 	var start_x: float = (panel.size.x / 2.0) - (total_width / 2.0)
 
 	for i in range(count):
-		var inst: CardInstance = battlefield_instances[i]
+		var inst: BattlefieldInstance = battlefield_instances[i]
 		if inst == null:
 			continue
 
@@ -438,7 +435,7 @@ func _render_battlefields(panel: Panel, battlefield_instances: Array) -> void:
 		card.position = Vector2(start_x + i * spacing, panel.size.y / 2.0)
 		card.scale = Vector2(0.8, 0.8)
 		card.z_index = 5
-		card.setup_from_instance(inst)
+		card.setup_from_battlefield_instance(inst)
 		card.set_card_state(RiftCard.CardState.ON_BOARD)
 		_battlefield_cards_visuals.append(card)
 

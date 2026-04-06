@@ -39,13 +39,22 @@ func _ready() -> void:
 	if card_back_image != null:
 		card_back_image.visible = false
 
-func setup_from_instance(instance: CardInstance) -> void:
+func setup_from_card_instance(instance: CardInstance) -> void:
 	if instance == null:
 		push_error("RiftCard.setup_from_instance: instance is null")
 		return
 
 	card_uid = instance.uid
 	card_data = instance.data
+	update_visuals()
+	
+func setup_from_battlefield_instance(instance: BattlefieldInstance) -> void:
+	if instance == null:
+		push_error("RiftCard.setup_from_instance: instance is null")
+		return
+
+	card_uid = instance.uid
+	card_data = instance.battlefield
 	update_visuals()
 
 func set_card_state(new_state: CardState) -> void:
