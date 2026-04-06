@@ -8,7 +8,7 @@ var uid: int
 var data: CardData
 
 var zone: Zone = Zone.DECK
-var state: CardState = CardState.AWAKEN
+var state: CardState = CardState.EXHAUSTED
 
 
 func _init(_uid: int, _data: CardData):

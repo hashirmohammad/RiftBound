@@ -267,6 +267,11 @@ func render_board(card_instances: Array) -> void:
 			slot.add_card(card)
 			card.setup_from_instance(card_instance)
 			card.set_card_state(RiftCard.CardState.ON_BOARD)
+			# Rotate card if exhausted (not yet awakened)
+			if card_instance.is_exhausted():
+				card.rotation_degrees = 90.0
+			else:
+				card.rotation_degrees = 0.0
 
 func render_slot(player: PlayerState, slot_index: int) -> void:
 	if slot_index >= _player_slot_nodes.size():
@@ -282,6 +287,11 @@ func render_slot(player: PlayerState, slot_index: int) -> void:
 		slot.add_card(card)
 		card.setup_from_instance(card_instance)
 		card.set_card_state(RiftCard.CardState.ON_BOARD)
+		# Rotate card if exhausted (not yet awakened)
+		if card_instance.is_exhausted():
+			card.rotation_degrees = 90.0
+		else:
+			card.rotation_degrees = 0.0
 
 func _clear_board_visuals() -> void:
 	for card in _board_cards:
