@@ -39,7 +39,7 @@ func start_turn(game_state: GameState):
 
 func end_turn():
 	var player = state.get_active_player()
-	print("[PlayerTurn] end_turn() | switching away from P", player.id)
+	#print("[PlayerTurn] end_turn() | switching away from P", player.id)
 	emit_signal("turn_ended", player.id)
 	# Hand off to GameEngine to switch active player and start next turn
 	GameEngine.end_turn(state)
@@ -55,7 +55,7 @@ func _enter_phase():
 	current_phase = phase_order[phase_index]
 	var player = state.get_active_player()
 	state.phase = _phase_name(current_phase)
-	print("[PlayerTurn] _enter_phase() | phase=", state.phase, " | player=P", player.id, " | phase_index=", phase_index)
+	#print("[PlayerTurn] _enter_phase() | phase=", state.phase, " | player=P", player.id, " | phase_index=", phase_index)
 	emit_signal("phase_started", state.phase, player.id)
 
 	match current_phase:
@@ -68,8 +68,9 @@ func _enter_phase():
 
 		Phase.CHANNEL:
 			var runes_to_channel := 2
-			if state.turn_number == 2 and player.id == 1:
+			if state.turn_number == 2:
 				runes_to_channel = 3
+			#runes_to_channel = 5
 			player.channel_runes(runes_to_channel)
 			state.add_event("P%d channels %d rune(s)." % [player.id, runes_to_channel])
 
@@ -78,26 +79,27 @@ func _enter_phase():
 			state.add_event("P%d draws a card." % player.id)
 
 		Phase.MAIN:
-			print("[PlayerTurn] Reached MAIN phase — waiting for player input")
+			pass
+			#print("[PlayerTurn] Reached MAIN phase — waiting for player input")
 
 		Phase.END:
 			_end_phase(player)
 
 	# Only MAIN waits for player input — everything else auto-advances
 	if current_phase != Phase.MAIN:
-		print("[PlayerTurn] auto-advancing past phase=", state.phase, " via call_deferred")
+		#print("[PlayerTurn] auto-advancing past phase=", state.phase, " via call_deferred")
 		call_deferred("next_phase")
 	else:
 		print("[PlayerTurn] stopping at MAIN — waiting for EndTurnAction")
 
 func next_phase():
 	var player = state.get_active_player()
-	print("[PlayerTurn] next_phase() called | current=", _phase_name(current_phase), " | phase_index=", phase_index)
+	#print("[PlayerTurn] next_phase() called | current=", _phase_name(current_phase), " | phase_index=", phase_index)
 	emit_signal("phase_ended", _phase_name(current_phase), player.id)
 
 	phase_index += 1
 	if phase_index >= phase_order.size():
-		print("[PlayerTurn] all phases done — calling end_turn()")
+		#print("[PlayerTurn] all phases done — calling end_turn()")
 		end_turn()
 		return
 
@@ -120,12 +122,12 @@ func _awaken_phase(player: PlayerState):
 			r.awaken()
 			rune_count += 1
 
-	print("[PlayerTurn] _awaken_phase() | awakened cards=", card_count, " runes=", rune_count)
+	#print("[PlayerTurn] _awaken_phase() | awakened cards=", card_count, " runes=", rune_count)
 	state.add_event("P%d awakens %d cards." % [player.id, card_count])
 	state.add_event("P%d awakens %d runes." % [player.id, rune_count])
 
 func _end_phase(player: PlayerState):
-	print("[PlayerTurn] _end_phase() for P", player.id)
+	#print("[PlayerTurn] _end_phase() for P", player.id)
 	state.add_event("P%d ends turn." % player.id)
 
 func _draw_card(player: PlayerState):

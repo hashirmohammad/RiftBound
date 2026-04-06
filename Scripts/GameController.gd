@@ -12,7 +12,7 @@ var state: GameState
 @onready var deck_ui = $"../Deck"
 
 func _ready() -> void:
-	state = GameEngine.start_game("Jinx", "Darius")
+	state = GameEngine.start_game()
 	await wait_until_main()
 	refresh_all_ui()
 
@@ -25,17 +25,17 @@ func refresh_all_ui() -> void:
 	for slot in player.board_slots:
 		board_count += slot.size()
 
-	print(
-		"P0: ", state.deck_names[0], " | P1: ", state.deck_names[1],
-		" | Turn: ", state.turn_number,
+	print("P0: ", state.deck_names[0], " | P1: ", state.deck_names[1],	)
+	print(" | Turn: ", state.turn_number,
 		" | Active Player: P", player.id,
 		" | Phase: ", state.phase,
+		" | Picked battlefield: ", player.picked_battlefield.name(),
 		" | Hand: ", player.hand.size(),
 		" | Board: ", board_count,
-		" | Deck: ", player.deck.size()
-	)
-
+		" | Deck: ", player.deck.size())
+	
 	print("  Rune Pool:")
+	print("  Awaken runes count: ", player.awaken_rune_count())
 	print_rune_array(player.rune_pool)
 
 	print("  Board:")
