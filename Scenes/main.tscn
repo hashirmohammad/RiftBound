@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://d10inoh50ig7f" path="res://Scripts/CardManager.gd" id="1_21xkr"]
 [ext_resource type="PackedScene" uid="uid://i2v3j52mwfha" path="res://Scenes/Board.tscn" id="1_344ge"]
-[ext_resource type="Script" uid="uid://qq14kdatojop" path="res://Scenes/main.gd" id="1_hptm8"]
+[ext_resource type="Script" uid="uid://qq14kdatojop" path="res://main.gd" id="1_hptm8"]
 [ext_resource type="Script" uid="uid://nm1xostfv6gs" path="res://Scripts/CardSlot.gd" id="1_kry3j"]
 [ext_resource type="Script" uid="uid://b407ds4aw5ilw" path="res://Scripts/Board.gd" id="2_hptm8"]
 [ext_resource type="PackedScene" uid="uid://bdtm88erd1wam" path="res://Scenes/CardSlot.tscn" id="2_jjvhh"]
