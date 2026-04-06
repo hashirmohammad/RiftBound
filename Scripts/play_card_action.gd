@@ -35,10 +35,7 @@ func validate(state: GameState) -> bool:
 		_error_message = "Invalid PLAY_CARD: slot index out of range."
 		return false
 
-	if p.board_slots[slot_index] != null:
-		_error_message = "Invalid PLAY_CARD: target slot already occupied."
-		return false
-	print("slot_index=", slot_index, " board_slots.size()=", p.board_slots.size())
+
 	return true
 
 func execute(state: GameState) -> void:
@@ -57,7 +54,7 @@ func execute(state: GameState) -> void:
 	p.hand.remove_at(hand_index)
 	card.exhaust()
 
-	p.board_slots[slot_index] = card
+	p.board_slots[slot_index].append(card)
 
 	# Temporary compatibility with existing code
 	if not p.board.has(card):

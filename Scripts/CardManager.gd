@@ -74,12 +74,8 @@ func _highlight_slots(_card) -> void:
 
 	for i in range(slots.size()):
 		var slot = slots[i]
-		var valid := true
-
-		if i < player.board_slots.size() and player.board_slots[i] != null:
-			valid = false
-
-		slot.highlight(true, valid)
+		var count: int = player.board_slots[i].size() if i < player.board_slots.size() else 0
+		slot.highlight(true, true, count)
 
 func _clear_slot_highlights() -> void:
 	if board_reference == null:

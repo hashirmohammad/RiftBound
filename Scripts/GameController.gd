@@ -79,10 +79,16 @@ func try_play_card(card_uid: int) -> void:
 	var action = PlayCardAction.new(player.id, card_uid)
 	apply_backend_action(action)
 
-func try_play_card_to_slot(card_uid: int, slot_index: int) -> void:
+func try_play_card_to_slot(card_uid: int, slot_index: int) -> bool:
 	var player = state.get_active_player()
 	var action = PlayCardAction.new(player.id, card_uid, slot_index)
-	apply_backend_action(action)
+	var success := GameEngine.apply_action(state, action)
+	if not success:
+		print("Action failed: ", action.get_error_message())
+		return false
+	refresh_hand_ui()
+	board.render_slot(state.get_active_player(), slot_index)
+	return true
 
 func try_end_turn() -> void:
 	var player = state.get_active_player()
