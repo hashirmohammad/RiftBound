@@ -33,6 +33,10 @@ var _player_runes_panel: Panel = null
 var _opponent_runes_panel: Panel = null
 var _rune_cards_visuals: Array = []
 
+const END_BTN_W := 160.0
+var _arena_p0_panel: Panel = null
+var _arena_p1_panel: Panel = null
+
 func _ready() -> void:
 	add_rect(Vector2.ZERO, Vector2(SCREEN_W, SCREEN_H), COLOR_BG)
 	var ph = floor((SCREEN_H - DIVIDER_H * 2 - ARENA_H) / 2.0)
@@ -40,24 +44,16 @@ func _ready() -> void:
 	add_rect(Vector2(0, ph), Vector2(SCREEN_W, DIVIDER_H), COLOR_DIV)
 
 	# --- Arena split ---
-	var END_BTN_W = 160.0                          # room for End Turn button
 	var half_w = (SCREEN_W - END_BTN_W) / 2.0
 	var arena_y = ph + DIVIDER_H
 
-	# Opponent half (left)
-	add_panel("Arena_ONE", Vector2(0, arena_y),
-		Vector2(half_w, ARENA_H), make_style(), "ARENA ONE", 18)
-
-	# Divider line down the middle
+	# Labels start as P0 left, P1 right — they update dynamically each render
+	_arena_p0_panel = add_panel("Arena_P0", Vector2(0, arena_y),
+		Vector2(half_w, ARENA_H), make_style(), "P0 ARENA", 18)
 	add_rect(Vector2(half_w, arena_y), Vector2(DIVIDER_H, ARENA_H), COLOR_DIV)
-
-	# Player half (right of center)
-	add_panel("Arena_TWO", Vector2(half_w + DIVIDER_H, arena_y),
-		Vector2(half_w - DIVIDER_H, ARENA_H), make_style(), "ARENA TWO", 18)
-
-	# End Turn column (far right)
-	add_rect(Vector2(SCREEN_W - END_BTN_W, arena_y),
-		Vector2(1, ARENA_H), COLOR_DIV)               # thin separator line
+	_arena_p1_panel = add_panel("Arena_P1", Vector2(half_w + DIVIDER_H, arena_y),
+		Vector2(half_w - DIVIDER_H, ARENA_H), make_style(), "P1 ARENA", 18)
+	add_rect(Vector2(SCREEN_W - END_BTN_W, arena_y), Vector2(1, ARENA_H), COLOR_DIV)
 
 	# --- End divider + bottom half ---
 	add_rect(Vector2(0, ph + DIVIDER_H + ARENA_H), Vector2(SCREEN_W, DIVIDER_H), COLOR_DIV)
@@ -99,7 +95,9 @@ func _cache_player_slots() -> void:
 
 	_player_slot_nodes.sort_custom(func(a, b): return a.global_position.x < b.global_position.x)
 
-	
+	print("Cached base slots: ", _player_slot_nodes.size())
+	for i in range(_player_slot_nodes.size()):
+		print("slot ", i, " -> ", _player_slot_nodes[i].global_position)
 
 func get_slot_index_under_mouse() -> int:
 	var mouse_pos = get_global_mouse_position()
@@ -242,12 +240,12 @@ func build_player(y: float, flip: bool, ph: float) -> void:
 			_player_rune_deck = p
 		elif flip and zname == "RUNE DECK":
 			_opponent_rune_deck = p
-		
+
 		if not flip and zname == "RUNES":
 			_player_runes_panel = p
 		elif flip and zname == "RUNES":
 			_opponent_runes_panel = p
-	
+
 		if zname == "BASE":
 			add_image(p, tint_gold("res://Assets/RiftBoundLogo.jpg"),
 				-0.2, -0.5, 1.2, 1.5, 0.0, 0.0, 0.0, 0.0, Color(0.83, 0.68, 0.21, 0.55))
@@ -286,7 +284,6 @@ func render_board(card_instances: Array) -> void:
 			slot.add_card(card)
 			card.setup_from_card_instance(card_instance)
 			card.set_card_state(RiftCard.CardState.ON_BOARD)
-			# Rotate card if exhausted (not yet awakened)
 			if card_instance.is_exhausted():
 				card.rotation_degrees = 90.0
 			else:
@@ -306,7 +303,6 @@ func render_slot(player: PlayerState, slot_index: int) -> void:
 		slot.add_card(card)
 		card.setup_from_card_instance(card_instance)
 		card.set_card_state(RiftCard.CardState.ON_BOARD)
-		# Rotate card if exhausted (not yet awakened)
 		if card_instance.is_exhausted():
 			card.rotation_degrees = 90.0
 		else:
@@ -329,7 +325,7 @@ func is_mouse_over_player_battlefield() -> bool:
 	)
 
 	return rect.has_point(mouse_pos)
-	
+
 func _clear_panel_images(panel: Panel) -> void:
 	if panel == null:
 		return
@@ -358,6 +354,9 @@ func _add_panel_texture(panel: Panel, tex: Texture2D, modulate_color := Color.WH
 	tr.modulate = modulate_color
 	panel.add_child(tr)
 
+# player is always the active player, opponent is always the other.
+# GameController passes state.players[0] as player on P0's turn and
+# state.players[1] as player on P1's turn, so the labels follow the cards.
 func render_static_state(player: PlayerState, opponent: PlayerState) -> void:
 	var deck_tex: Texture2D = load("res://Assets/Deck.jpg")
 
@@ -377,8 +376,12 @@ func render_static_state(player: PlayerState, opponent: PlayerState) -> void:
 	_render_legend_panel(_player_champion_legend, player.legend)
 	_render_legend_panel(_opponent_champion_legend, opponent.legend)
 
-	_render_battlefields(_player_battlefield_panel, player.battlefields)
-	_render_battlefields(_opponent_battlefield_panel, opponent.battlefields)
+	_render_battlefields(_player_battlefield_panel, player.battlefields, player.picked_battlefield)
+	_render_battlefields(_opponent_battlefield_panel, opponent.battlefields, opponent.picked_battlefield)
+
+	# Pass the correct player label so it travels with the card each turn
+	_render_arena_pick(_arena_p0_panel, player.picked_battlefield, "P%d ARENA" % player.id)
+	_render_arena_pick(_arena_p1_panel, opponent.picked_battlefield, "P%d ARENA" % opponent.id)
 
 	_render_runes(_player_runes_panel, player.rune_pool)
 	_render_runes(_opponent_runes_panel, opponent.rune_pool)
@@ -401,20 +404,24 @@ func _render_legend_panel(panel: Panel, legend_instance: CardInstance) -> void:
 	card.scale = Vector2(0.35, 0.35)
 	card.setup_from_card_instance(legend_instance)
 	card.set_card_state(RiftCard.CardState.ON_BOARD)
-	
+
 func _clear_battlefield_visuals() -> void:
 	for card in _battlefield_cards_visuals:
 		if is_instance_valid(card):
 			card.queue_free()
 	_battlefield_cards_visuals.clear()
 
-func _render_battlefields(panel: Panel, battlefield_instances: Array) -> void:
-	pass
+func _render_battlefields(panel: Panel, battlefield_instances: Array, pick: BattlefieldInstance) -> void:
+	if panel == null:
+		return
 
-	# remove previous battlefield visuals from this panel
 	for child in panel.get_children():
 		if child is RiftCard:
 			child.queue_free()
+
+	# If a pick has been made, battlefield panel stays empty
+	if pick != null:
+		return
 
 	if battlefield_instances.is_empty():
 		return
@@ -428,16 +435,39 @@ func _render_battlefields(panel: Panel, battlefield_instances: Array) -> void:
 		var inst: BattlefieldInstance = battlefield_instances[i]
 		if inst == null:
 			continue
-
 		var card: RiftCard = CARD_SCENE.instantiate()
 		panel.add_child(card)
-
 		card.position = Vector2(start_x + i * spacing, panel.size.y / 2.0)
 		card.scale = Vector2(0.8, 0.8)
 		card.z_index = 5
 		card.setup_from_battlefield_instance(inst)
 		card.set_card_state(RiftCard.CardState.ON_BOARD)
 		_battlefield_cards_visuals.append(card)
+
+# Render a picked battlefield card centred in its arena panel.
+# player_label is passed in so the label always matches whichever
+# player's card is currently shown in this panel.
+func _render_arena_pick(panel: Panel, pick: BattlefieldInstance, player_label: String) -> void:
+	if panel == null or pick == null:
+		return
+
+	for child in panel.get_children():
+		if child is RiftCard:
+			child.queue_free()
+
+	# Update the panel label to follow the card
+	var label = panel.get_child(0) as Label
+	if label:
+		label.text = player_label
+
+	var card: RiftCard = CARD_SCENE.instantiate()
+	panel.add_child(card)
+	card.position = panel.size / 2.0
+	card.scale = Vector2(0.8, 0.8)
+	card.z_index = 5
+	card.setup_from_battlefield_instance(pick)
+	card.set_card_state(RiftCard.CardState.ON_BOARD)
+	_battlefield_cards_visuals.append(card)
 
 func _clear_rune_visuals() -> void:
 	for card in _rune_cards_visuals:
