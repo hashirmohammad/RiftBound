@@ -13,7 +13,7 @@ var rune_pool: Array[RuneInstance] = [] #runes currently availablee
 var legend: CardInstance #legend card
 var champion: CardInstance #champion card
 var arena: CardInstance #fighting arena
-var board_slots: Array = [null, null, null, null, null, null, null, null]
+var board_slots: Array = [[], [], [], [], [], [], [], []]
 
 func _init(player_id: int):
 	id = player_id

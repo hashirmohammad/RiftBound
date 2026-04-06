@@ -84,16 +84,15 @@ func _cache_player_slots() -> void:
 
 func get_slot_index_under_mouse() -> int:
 	var mouse_pos = get_global_mouse_position()
-	var slot_size := Vector2(140, 190)
 
 	for i in range(_player_slot_nodes.size()):
 		var slot = _player_slot_nodes[i]
 		if slot == null:
 			continue
 
-		var rect = Rect2(slot.global_position - slot_size / 2.0, slot_size)
-		if rect.has_point(mouse_pos):
-			print("Detected slot index: ", i, " / total slots: ", _player_slot_nodes.size())
+		var local_mouse: Vector2 = slot.to_local(mouse_pos)
+		var half: Vector2 = slot._get_collision_size() / 2.0
+		if abs(local_mouse.x) <= half.x and abs(local_mouse.y) <= half.y:
 			return i
 
 	return -1
@@ -250,18 +249,10 @@ func render_board(card_instances: Array) -> void:
 	for slot in slots:
 		if slot == null:
 			continue
-
-		# Remove existing cards from slot
-		for child in slot.get_children():
-			if child is RiftCard:
-				child.queue_free()
+		slot.clear_cards()
 
 	# Now place cards based on board_slots
 	for i in range(player.board_slots.size()):
-		var card_instance = player.board_slots[i]
-		if card_instance == null:
-			continue
-
 		if i >= slots.size():
 			continue
 
@@ -269,13 +260,26 @@ func render_board(card_instances: Array) -> void:
 		if slot == null:
 			continue
 
-		var card: RiftCard = CARD_SCENE.instantiate()
-		slot.add_child(card)
+		for card_instance in player.board_slots[i]:
+			var card: RiftCard = CARD_SCENE.instantiate()
+			card.scale = Vector2(0.8, 0.8)
+			card.z_index = 5
+			slot.add_card(card)
+			card.setup_from_instance(card_instance)
+			card.set_card_state(RiftCard.CardState.ON_BOARD)
 
-		card.position = Vector2.ZERO
+func render_slot(player: PlayerState, slot_index: int) -> void:
+	if slot_index >= _player_slot_nodes.size():
+		return
+	var slot = _player_slot_nodes[slot_index]
+	if slot == null:
+		return
+	slot.clear_cards()
+	for card_instance in player.board_slots[slot_index]:
+		var card: RiftCard = CARD_SCENE.instantiate()
 		card.scale = Vector2(0.8, 0.8)
 		card.z_index = 5
-
+		slot.add_card(card)
 		card.setup_from_instance(card_instance)
 		card.set_card_state(RiftCard.CardState.ON_BOARD)
 
@@ -405,15 +409,6 @@ func _render_battlefields(panel: Panel, battlefield_instances: Array) -> void:
 		card.z_index = 5
 		card.setup_from_instance(inst)
 		card.set_card_state(RiftCard.CardState.ON_BOARD)
-		
-		var atk = card.get_node_or_null("Attack")
-		if atk:
-			atk.visible = false
-
-		var hp = card.get_node_or_null("Health")
-		if hp:
-			hp.visible = false
-
 		_battlefield_cards_visuals.append(card)
 
 func _clear_rune_visuals() -> void:
@@ -456,14 +451,6 @@ func _render_runes(panel: Panel, runes: Array) -> void:
 		card.card_data = rune_inst.rune
 		card.update_visuals()
 		card.set_card_state(RiftCard.CardState.ON_BOARD)
-
-		var atk = card.get_node_or_null("Attack")
-		if atk:
-			atk.visible = false
-
-		var hp = card.get_node_or_null("Health")
-		if hp:
-			hp.visible = false
 
 		if rune_inst.is_exhausted():
 			card.modulate = Color(0.7, 0.7, 0.7, 1.0)

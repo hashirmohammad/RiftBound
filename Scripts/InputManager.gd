@@ -42,8 +42,11 @@ func _try_release_dragged_card() -> void:
 	var slot_index : int = board_reference.get_slot_index_under_mouse()
 
 	if slot_index != -1:
-		game_controller.try_play_card_to_slot(dragged_card.card_uid, slot_index)
-		card_manager_reference.clear_dragged_card()
+		var success: bool = game_controller.try_play_card_to_slot(dragged_card.card_uid, slot_index)
+		if success:
+			card_manager_reference.clear_dragged_card()
+		else:
+			card_manager_reference.return_dragged_card_to_hand()
 	else:
 		card_manager_reference.return_dragged_card_to_hand()
 
