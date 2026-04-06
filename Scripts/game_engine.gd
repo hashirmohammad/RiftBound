@@ -24,7 +24,7 @@ static func apply_action(state: GameState, action: GameAction) -> bool:
 # -------------------------
 # GAME LIFECYCLE
 # -------------------------
-static func start_game(p0_deck: String, p1_deck: String) -> GameState:
+static func start_game() -> GameState:
 	var state := GameState.new()
 
 	# Turn/phase controller
@@ -52,10 +52,12 @@ static func start_game(p0_deck: String, p1_deck: String) -> GameState:
 
 	# ── Load battlefields ──────────────────────────────────────────────────────
 	for b in CardDatabase._load_battlefields_from_deck(p0_deck_name):
-		p0.battlefields.append(CardInstance.new(state.next_uid(), b))
+		p0.battlefields.append(BattlefieldInstance.new(state.next_uid(), b))
 	for b in CardDatabase._load_battlefields_from_deck(p1_deck_name):
-		p1.battlefields.append(CardInstance.new(state.next_uid(), b))
-
+		p1.battlefields.append(BattlefieldInstance.new(state.next_uid(), b))
+	p0.pick_random_battlefield()
+	p1.pick_random_battlefield()		
+	
 	# ── Build draw decks ───────────────────────────────────────────────────────
 	# Loads only the "cards" section of the deck JSON (no runes, no legend).
 	# count field is respected — e.g. count:3 adds 3 copies.
@@ -101,8 +103,8 @@ static func start_game(p0_deck: String, p1_deck: String) -> GameState:
 static func start_turn(state: GameState) -> void:
 	var player := state.get_active_player()
 
-	if DEBUG_FREE_RUNES and player.rune_pool.is_empty():
-		_grant_debug_runes(player, DEBUG_STARTING_RUNES)
+	#if DEBUG_FREE_RUNES and player.rune_pool.is_empty():
+	#	_grant_debug_runes(player, DEBUG_STARTING_RUNES)
 
 	# Delegate phase flow to PlayerTurn
 	if state.turn_system == null:
