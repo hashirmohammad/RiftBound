@@ -690,3 +690,24 @@ func _render_runes(panel: Panel, runes: Array) -> void:
 		card.set_card_state(RiftCard.CardState.ON_BOARD)
 		card.modulate = Color(0.7, 0.7, 0.7, 1.0) if rune_inst.is_exhausted() else Color.WHITE
 		_rune_cards_visuals.append(card)
+
+func setup_rune_deck_click(callback: Callable) -> void:
+	if _player_rune_deck == null:
+		return
+	var btn = Button.new()
+	btn.anchor_left = 0.0
+	btn.anchor_top = 0.0
+	btn.anchor_right = 1.0
+	btn.anchor_bottom = 1.0
+	btn.flat = true
+	btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	btn.pressed.connect(func(): callback.call())
+	_player_rune_deck.add_child(btn)
+
+func update_rune_deck_counter(count: int) -> void:
+	if _player_rune_deck == null:
+		return
+	for child in _player_rune_deck.get_children():
+		if child is Label:
+			child.text = "RUNE DECK\n%d" % count
+			return

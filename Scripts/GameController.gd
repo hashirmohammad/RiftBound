@@ -17,6 +17,8 @@ func _ready() -> void:
 	state = GameEngine.start_game()
 	await wait_until_main()
 	refresh_all_ui()
+	if board.has_method("setup_rune_deck_click"):
+		board.setup_rune_deck_click(_on_rune_deck_clicked)
 
 func refresh_all_ui() -> void:
 	var p0 = state.players[0]
@@ -174,3 +176,13 @@ func card_state_name(state_value: int) -> String:
 
 func card_zone_name(zone_value: int) -> String:
 	return CardInstance.Zone.keys()[zone_value]
+
+func _on_rune_deck_clicked() -> void:
+	var player = state.get_active_player()
+	if player.rune_deck.is_empty():
+		print("Rune deck is empty!")
+		return
+	player.channel_runes(1)
+	if board.has_method("update_rune_deck_counter"):
+		board.update_rune_deck_counter(player.rune_deck.size())
+	refresh_all_ui()
