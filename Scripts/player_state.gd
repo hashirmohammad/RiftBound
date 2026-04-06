@@ -43,18 +43,18 @@ func channel_runes(n: int) -> void:
 		r.exhaust()
 		rune_pool.append(r)
 
-# Spend N runes from the pool (simple version: remove from end)
+# Spend N runes from the pool
 func spend_runes(selected_runes: Array[RuneInstance]) -> bool:
 	for rune in selected_runes:
 		if rune == null:
 			return false
 		if not rune_pool.has(rune):
 			return false
-		if rune.is_exhausted():
-			return false
 
 	for rune in selected_runes:
-		rune.exhaust()
+		rune_pool.erase(rune)
+		rune.zone = RuneInstance.Zone.RUNE_DECK
+		rune_deck.append(rune)
 
 	return true
 
