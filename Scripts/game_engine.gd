@@ -91,13 +91,13 @@ static func start_game() -> GameState:
 	p1.rune_deck.shuffle()
 
 	# ── Opening hands ──────────────────────────────────────────────────────────
-	# Draws 4 cards each from the draw deck only (runes are separate).
+	# Draws 4 cards each from the draw deck only (runes are separate)
 	for i in range(OPENING_HAND_SIZE):
 		state.turn_system._draw_card(p0)
 		state.turn_system._draw_card(p1)
 
 	# Start player 0 by default
-	state.active_player_index = 0
+	state.active_player_index = 1
 	state.turn_number = 1
 	state.phase = "START"
 
@@ -113,6 +113,7 @@ static func start_turn(state: GameState) -> void:
 
 	if DEBUG_FREE_RUNES and player.rune_pool.is_empty():
 		_grant_debug_runes(player, DEBUG_STARTING_RUNES)
+
 	# Delegate phase flow to PlayerTurn
 	if state.turn_system == null:
 		state.add_event("ERROR: turn_system not initialized.")
@@ -122,7 +123,12 @@ static func start_turn(state: GameState) -> void:
 
 
 static func end_turn(state: GameState) -> void:
-	# GameEngine is the owner of switching turns
+	# NOTE: Do NOT awaken cards here. Awakening is handled at the start of the
+	# next player's turn by _awaken_phase() in PlayerTurn, which iterates
+	# board_slots — the authoritative card store. Doing it here as well would
+	# cause a double-awaken and would use the stale `player.board` flat list.
+
+	# Switch active player
 	state.active_player_index = 1 - state.active_player_index
 	state.turn_number += 1
 

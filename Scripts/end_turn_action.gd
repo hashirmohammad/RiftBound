@@ -18,10 +18,12 @@ func validate(state: GameState) -> bool:
 	return true
 
 func execute(state: GameState) -> void:
+	# Advance from MAIN to END phase, which triggers the full end-of-turn
+	# phase chain in PlayerTurn. That chain handles switching players and
+	# calling start_turn() internally — do NOT call GameEngine.end_turn()
+	# here as well or the turn will fire twice.
 	if state.turn_system != null:
 		state.turn_system.next_phase()
-
-	GameEngine.end_turn(state)
 
 func get_error_message() -> String:
 	return _error_message
