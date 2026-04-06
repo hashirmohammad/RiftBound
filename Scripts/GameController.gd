@@ -20,13 +20,18 @@ func refresh_all_ui() -> void:
 	var player = state.get_active_player()
 	var opponent = state.players[1 - state.active_player_index]
 
+	# Count board cards across all slots
+	var board_count := 0
+	for slot in player.board_slots:
+		board_count += slot.size()
+
 	print(
 		"P0: ", state.deck_names[0], " | P1: ", state.deck_names[1],
 		" | Turn: ", state.turn_number,
 		" | Active Player: P", player.id,
 		" | Phase: ", state.phase,
 		" | Hand: ", player.hand.size(),
-		" | Board: ", player.board.size(),
+		" | Board: ", board_count,
 		" | Deck: ", player.deck.size()
 	)
 
@@ -76,12 +81,17 @@ func apply_backend_action_and_wait(action: GameAction) -> void:
 
 func try_play_card(card_uid: int) -> void:
 	var player = state.get_active_player()
-	var action = PlayCardAction.new(player.id, card_uid)
+	var action = PlayCardAction.new()
+	action.player_id = player.id
+	action.card_uid = card_uid
 	apply_backend_action(action)
 
 func try_play_card_to_slot(card_uid: int, slot_index: int) -> bool:
 	var player = state.get_active_player()
-	var action = PlayCardAction.new(player.id, card_uid, slot_index)
+	var action = PlayCardAction.new()
+	action.player_id = player.id
+	action.card_uid = card_uid
+	action.slot_index = slot_index
 	var success := GameEngine.apply_action(state, action)
 	if not success:
 		print("Action failed: ", action.get_error_message())
@@ -92,7 +102,8 @@ func try_play_card_to_slot(card_uid: int, slot_index: int) -> bool:
 
 func try_end_turn() -> void:
 	var player = state.get_active_player()
-	var action = EndTurnAction.new(player.id)
+	var action = EndTurnAction.new()
+	action.player_id = player.id
 	await apply_backend_action_and_wait(action)
 
 func wait_until_main() -> void:
