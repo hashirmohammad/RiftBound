@@ -20,27 +20,24 @@ func refresh_all_ui() -> void:
 	var player = state.get_active_player()
 	var opponent = state.players[1 - state.active_player_index]
 
-	# Count board cards across all slots
 	var board_count := 0
 	for slot in player.board_slots:
 		board_count += slot.size()
 
-	print("P0: ", state.deck_names[0], " | P1: ", state.deck_names[1],	)
+	print("P0: ", state.deck_names[0], " | P1: ", state.deck_names[1])
 	print(" | Turn: ", state.turn_number,
 		" | Active Player: P", player.id,
 		" | Phase: ", state.phase,
-		" | Picked battlefield: ", player.picked_battlefield.name(),
+		" | Picked battlefield: ", player.picked_battlefield.name() if player.picked_battlefield else "none",
 		" | Hand: ", player.hand.size(),
 		" | Board: ", board_count,
 		" | Deck: ", player.deck.size())
-	
+
 	print("  Rune Pool:")
 	print("  Awaken runes count: ", player.awaken_rune_count())
 	print_rune_array(player.rune_pool)
-
 	print("  Board:")
 	print_board_array(player.board)
-
 	print("  Hand:")
 	print_hand_array(player.hand)
 
@@ -50,57 +47,42 @@ func refresh_all_ui() -> void:
 	refresh_hand_ui()
 	refresh_board_ui()
 	refresh_deck_ui()
+
 func print_rune_array(runes: Array) -> void:
 	if runes.is_empty():
 		print("    <empty>")
 		return
-
 	for rune in runes:
 		print("    uid=%d | type=%s | state=%s | zone=%s" % [
-			rune.uid,
-			rune.name(),
-			rune_state_name(rune.state),
-			rune_zone_name(rune.zone)
+			rune.uid, rune.name(), rune_state_name(rune.state), rune_zone_name(rune.zone)
 		])
-
 
 func print_board_array(cards: Array) -> void:
 	if cards.is_empty():
 		print("    <empty>")
 		return
-
 	for card in cards:
 		print("    uid=%d | name=%s | cost=%d | state=%s | zone=%s" % [
-			card.uid,
-			card.data.card_name,
-			card.data.cost,
-			card_state_name(card.state),
-			card_zone_name(card.zone)
+			card.uid, card.data.card_name, card.data.cost,
+			card_state_name(card.state), card_zone_name(card.zone)
 		])
-
 
 func print_hand_array(cards: Array) -> void:
 	if cards.is_empty():
 		print("    <empty>")
 		return
-
 	for i in range(cards.size()):
 		var card = cards[i]
 		print("    [%d] uid=%d | name=%s | cost=%d | state=%s | zone=%s" % [
-			i,
-			card.uid,
-			card.data.card_name,
-			card.data.cost,
-			card_state_name(card.state),
-			card_zone_name(card.zone)
+			i, card.uid, card.data.card_name, card.data.cost,
+			card_state_name(card.state), card_zone_name(card.zone)
 		])
+
 func refresh_hand_ui() -> void:
-	var player = state.get_active_player()
-	hand_manager.render_hand(player.hand)
+	hand_manager.render_hand(state.get_active_player().hand)
 
 func refresh_board_ui() -> void:
-	var player = state.get_active_player()
-	board.render_board(player.board)
+	board.render_board(state.get_active_player().board)
 
 func refresh_deck_ui() -> void:
 	var player = state.get_active_player()
@@ -110,9 +92,7 @@ func refresh_deck_ui() -> void:
 func print_state_summary() -> void:
 	var player = state.get_active_player()
 	print("Turn: %d | Active Player: P%d | Phase: %s" % [
-		state.turn_number,
-		player.id,
-		state.phase
+		state.turn_number, player.id, state.phase
 	])
 
 func apply_backend_action(action: GameAction) -> void:
@@ -127,7 +107,6 @@ func apply_backend_action_and_wait(action: GameAction) -> void:
 		print("Action failed: ", action.get_error_message())
 		refresh_all_ui()
 		return
-
 	await wait_until_main()
 	refresh_all_ui()
 
@@ -161,25 +140,20 @@ func try_end_turn() -> void:
 func wait_until_main() -> void:
 	var max_frames := 300
 	var frames := 0
-
 	while state.phase != "MAIN" and frames < max_frames:
 		await get_tree().process_frame
 		frames += 1
-
 	if state.phase != "MAIN":
 		push_warning("wait_until_main() timed out. Current phase: %s" % state.phase)
 
 func rune_state_name(state_value: int) -> String:
 	return RuneInstance.State.keys()[state_value]
 
-
 func rune_zone_name(zone_value: int) -> String:
 	return RuneInstance.Zone.keys()[zone_value]
 
-
 func card_state_name(state_value: int) -> String:
 	return CardInstance.CardState.keys()[state_value]
-
 
 func card_zone_name(zone_value: int) -> String:
 	return CardInstance.Zone.keys()[zone_value]
