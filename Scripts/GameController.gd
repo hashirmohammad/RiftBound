@@ -113,8 +113,7 @@ func try_play_card_to_slot(card_uid: int, slot_index: int) -> bool:
 	if not success:
 		print("Action failed: ", action.get_error_message())
 		return false
-	refresh_hand_ui()
-	board.render_slot(state.get_active_player(), slot_index)
+	refresh_all_ui()
 	return true
 
 ## Drag a card from the board into the active player's arena battlefield slot.
