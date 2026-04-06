@@ -38,7 +38,28 @@ func _ready() -> void:
 	var ph = floor((SCREEN_H - DIVIDER_H * 2 - ARENA_H) / 2.0)
 	build_player(0.0, true, ph)
 	add_rect(Vector2(0, ph), Vector2(SCREEN_W, DIVIDER_H), COLOR_DIV)
-	var arena = add_panel("Arena", Vector2(0, ph + DIVIDER_H), Vector2(SCREEN_W, ARENA_H), make_style(), "ARENA", 18)
+
+	# --- Arena split ---
+	var END_BTN_W = 160.0                          # room for End Turn button
+	var half_w = (SCREEN_W - END_BTN_W) / 2.0
+	var arena_y = ph + DIVIDER_H
+
+	# Opponent half (left)
+	add_panel("Arena_ONE", Vector2(0, arena_y),
+		Vector2(half_w, ARENA_H), make_style(), "ARENA ONE", 18)
+
+	# Divider line down the middle
+	add_rect(Vector2(half_w, arena_y), Vector2(DIVIDER_H, ARENA_H), COLOR_DIV)
+
+	# Player half (right of center)
+	add_panel("Arena_TWO", Vector2(half_w + DIVIDER_H, arena_y),
+		Vector2(half_w - DIVIDER_H, ARENA_H), make_style(), "ARENA TWO", 18)
+
+	# End Turn column (far right)
+	add_rect(Vector2(SCREEN_W - END_BTN_W, arena_y),
+		Vector2(1, ARENA_H), COLOR_DIV)               # thin separator line
+
+	# --- End divider + bottom half ---
 	add_rect(Vector2(0, ph + DIVIDER_H + ARENA_H), Vector2(SCREEN_W, DIVIDER_H), COLOR_DIV)
 	build_player(ph + DIVIDER_H * 2 + ARENA_H, false, ph)
 
