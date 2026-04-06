@@ -65,10 +65,10 @@ text = "0"
 script = ExtResource("6_344ge")
 
 [node name="EndTurnButton" type="Button" parent="." unique_id=283290533]
-offset_left = 300.0
-offset_top = 570.0
-offset_right = 378.0
-offset_bottom = 601.0
+offset_left = 1763.6774
+offset_top = 443.0
+offset_right = 1920.0
+offset_bottom = 639.0
 text = "End Turn"
 
 [node name="GameController" type="Node" parent="." unique_id=540227294]
