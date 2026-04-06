@@ -38,11 +38,11 @@ func rune_count_in_deck() -> int:
 func rune_count_in_pool() -> int:
 	return rune_pool.size()
 	
-func awaken_runes_count() -> int:
-	var count: int = 0
-	for i in range(len(rune_pool)):
-		if not rune_pool[i].is_exhausted():
-			count+=1
+func awaken_rune_count() -> int:
+	var count = 0
+	for r in rune_pool:
+		if not r.is_exhausted():
+			count += 1
 	return count
 
 func awaken_rune_count() -> int:
