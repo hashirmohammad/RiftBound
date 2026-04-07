@@ -17,18 +17,14 @@ func _ready() -> void:
 
 func render_hand(card_instances: Array) -> void:
 	_clear_hand_visuals()
-
 	for inst in card_instances:
 		var card: RiftCard = CARD_SCENE.instantiate()
 		card.scale = NORMAL_SCALE
 		card.modulate = Color.WHITE
 		add_child(card)
-
 		card.setup_from_card_instance(inst)
 		card.set_card_state(RiftCard.CardState.IN_HAND)
-
 		cards_in_hand.append(card)
-
 	_reposition_cards()
 
 func _clear_hand_visuals() -> void:
@@ -50,7 +46,6 @@ func return_card(card) -> void:
 		if card.get_parent() != self:
 			card.get_parent().remove_child(card)
 			add_child(card)
-
 	card.set_card_state(RiftCard.CardState.IN_HAND)
 	card.z_index = 1
 	_reposition_cards()
@@ -69,17 +64,10 @@ func _reposition_cards() -> void:
 	var count: int = cards_in_hand.size()
 	if count == 0:
 		return
-
 	var total_width: float = float(count - 1) * float(CARD_SPACING)
 	var start_x: float = -total_width / 2.0
-
 	for i in range(count):
 		cards_in_hand[i].position = Vector2(start_x + float(i) * float(CARD_SPACING), 40.0)
-
-func _tween_deal(card) -> void:
-	var tween = create_tween()
-	tween.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
-	tween.tween_property(card, "scale", NORMAL_SCALE, DEAL_SPEED).from(NORMAL_SCALE * 0.6)
 
 func _tween_return(card) -> void:
 	var tween = create_tween()

@@ -64,40 +64,11 @@ func _ready() -> void:
 func _cache_player_slots() -> void:
 	_player_slot_nodes.clear()
 
-	var slots_root = get_node_or_null("../CardSlots")
-	if slots_root == null:
-		push_warning("Board.gd: CardSlots node not found.")
-		return
-
-	if _player_base_panel == null:
-		push_warning("Board.gd: _player_base_panel is null.")
-		return
-
-	var base_rect = Rect2(
-		_player_base_panel.global_position,
-		_player_base_panel.size
-	)
-
-	var base_center_y: float = base_rect.position.y + (base_rect.size.y / 2.0)
-	var row_tolerance: float = 60.0
-
-	for child in slots_root.get_children():
-		if child is CardSlot:
-			if child.name.begins_with("Enemy"):
-				continue
-
-			var pos: Vector2 = child.global_position
-			var in_row: bool = abs(pos.y - base_center_y) <= row_tolerance
-			var in_x_range: bool = pos.x >= base_rect.position.x and pos.x <= (base_rect.position.x + base_rect.size.x)
-
-			if in_row and in_x_range:
-				_player_slot_nodes.append(child)
-
-	_player_slot_nodes.sort_custom(func(a, b): return a.global_position.x < b.global_position.x)
-
-	print("Cached base slots: ", _player_slot_nodes.size())
-	for i in range(_player_slot_nodes.size()):
-		print("slot ", i, " -> ", _player_slot_nodes[i].global_position)
+	var p0_base = get_node_or_null("../P0/P0_Base")
+	if p0_base and p0_base is CardSlot:
+		_player_slot_nodes.append(p0_base)
+	else:
+		push_warning("Board.gd: P0_Base not found or not a CardSlot.")
 
 func get_slot_index_under_mouse() -> int:
 	var mouse_pos = get_global_mouse_position()
