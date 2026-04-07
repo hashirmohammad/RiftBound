@@ -18,18 +18,18 @@ var board_reference: Node = null
 
 func _ready() -> void:
 	screen_size = get_viewport_rect().size
-	hand_manager = $"../HandManager"
+	hand_manager = $"../P0/P0_Hand"
 	game_controller = $"../GameController"
 	board_reference = $"../Board"
 
 	if game_controller == null:
 		push_error("CardManager: GameController node not found!")
 
-	var slots_container = get_node_or_null("../CardSlots")
-	if slots_container:
-		all_slots = slots_container.get_children()
+	var p0_base = get_node_or_null("../P0/P0_Base")
+	if p0_base:
+		all_slots = [p0_base]
 	else:
-		push_error("CardManager: CardSlots node not found!")
+		push_error("CardManager: P0_Base not found!")
 
 func _process(_delta: float) -> void:
 	if dragged_card:
@@ -58,7 +58,10 @@ func return_dragged_card_to_hand() -> void:
 
 	_clear_slot_highlights()
 	drag_offset = Vector2.ZERO
-	hand_manager.return_card(card)
+	var active_id: int = game_controller.state.get_active_player().id
+	var active_hand = get_node_or_null("../P0/P0_Hand") if active_id == 0 else get_node_or_null("../P1/P1_Hand")
+	if active_hand:
+		active_hand.return_card(card)
 
 func clear_dragged_card() -> void:
 	dragged_card = null
@@ -69,8 +72,8 @@ func _highlight_slots(_card) -> void:
 	if board_reference == null:
 		return
 
-	var slots = board_reference._player_slot_nodes
 	var player = game_controller.state.get_active_player()
+	var slots = board_reference._player_slot_nodes if player.id == 0 else board_reference._p1_slot_nodes
 
 	for i in range(slots.size()):
 		var slot = slots[i]
@@ -81,7 +84,8 @@ func _clear_slot_highlights() -> void:
 	if board_reference == null:
 		return
 
-	var slots = board_reference._player_slot_nodes
+	var player = game_controller.state.get_active_player()
+	var slots = board_reference._player_slot_nodes if player.id == 0 else board_reference._p1_slot_nodes
 
 	for slot in slots:
 		slot.highlight(false)

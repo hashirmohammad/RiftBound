@@ -7,9 +7,10 @@ const EndTurnAction = preload("res://Scripts/end_turn_action.gd")
 
 var state: GameState
 
-@onready var hand_manager = $"../HandManager"
-@onready var board = $"../Board"
-@onready var deck_ui = $"../Deck"
+@onready var hand_manager    = $"../P0/P0_Hand"
+@onready var hand_manager_p1 = $"../P1/P1_Hand"
+@onready var board    = $"../Board"
+@onready var deck_ui  = $"../P0/P0_MainDeck"
 
 func _ready() -> void:
 	state = GameEngine.start_game()
@@ -17,32 +18,16 @@ func _ready() -> void:
 	refresh_all_ui()
 
 func refresh_all_ui() -> void:
-	var player = state.get_active_player()
-	var opponent = state.players[1 - state.active_player_index]
-
-	var board_count := 0
-	for slot in player.board_slots:
-		board_count += slot.size()
+	var p0 = state.players[0]
+	var p1 = state.players[1]
 
 	print("P0: ", state.deck_names[0], " | P1: ", state.deck_names[1])
 	print(" | Turn: ", state.turn_number,
-		" | Active Player: P", player.id,
-		" | Phase: ", state.phase,
-		" | Picked battlefield: ", player.picked_battlefield.name() if player.picked_battlefield else "none",
-		" | Hand: ", player.hand.size(),
-		" | Board: ", board_count,
-		" | Deck: ", player.deck.size())
-
-	print("  Rune Pool:")
-	print("  Awaken runes count: ", player.awaken_rune_count())
-	print_rune_array(player.rune_pool)
-	print("  Board:")
-	print_board_array(player.board)
-	print("  Hand:")
-	print_hand_array(player.hand)
+		" | Active Player: P", state.get_active_player().id,
+		" | Phase: ", state.phase)
 
 	if board.has_method("render_static_state"):
-		board.render_static_state(player, opponent)
+		board.render_static_state(p0, p1)
 
 	refresh_hand_ui()
 	refresh_board_ui()
@@ -79,15 +64,15 @@ func print_hand_array(cards: Array) -> void:
 		])
 
 func refresh_hand_ui() -> void:
-	hand_manager.render_hand(state.get_active_player().hand)
+	hand_manager.render_hand(state.players[0].hand)
+	hand_manager_p1.render_hand(state.players[1].hand)
 
 func refresh_board_ui() -> void:
-	board.render_board(state.get_active_player().board)
+	board.render_board()
 
 func refresh_deck_ui() -> void:
-	var player = state.get_active_player()
 	if deck_ui.has_method("set_count"):
-		deck_ui.set_count(player.deck.size())
+		deck_ui.set_count(state.players[0].deck.size())
 
 func print_state_summary() -> void:
 	var player = state.get_active_player()
