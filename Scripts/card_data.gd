@@ -9,7 +9,7 @@ enum Rarity   { COMMON, UNCOMMON, RARE, EPIC, OVERNUMBER }
 enum Rune   { NONE, FURY, CALM, BODY, MIND, ORDER, CHAOS }
 
 ## FIX: Added CardType enum — was missing, CardManager and Tests.gd referenced it
-enum CardType { UNIT, SPELL, RUNE, CHAMPION, GEAR }
+enum CardType { UNIT, SPELL, RUNE, CHAMPION, GEAR, BATTLEFIELD, LEGEND }
 
 # ── Exported fields ───────────────────────────────────────────────────────────
 
@@ -53,12 +53,14 @@ static func rune_from_string(s: String) -> int:
 ## FIX: new helper used by from_dict() and card_database.gd filtering
 static func type_from_string(s: String) -> int:
 	match s.strip_edges().to_lower():
-		"unit":     return CardType.UNIT
-		"spell":    return CardType.SPELL
-		"rune":     return CardType.RUNE
-		"champion": return CardType.CHAMPION
-		"gear":		return CardType.GEAR
-		_:          return CardType.UNIT
+		"unit":                      return CardType.UNIT
+		"spell":                     return CardType.SPELL
+		"rune", "basic rune":        return CardType.RUNE
+		"champion", "champion unit": return CardType.CHAMPION
+		"gear":                      return CardType.GEAR
+		"battlefield":               return CardType.BATTLEFIELD
+		"legend":                    return CardType.LEGEND
+		_:                           return CardType.UNIT
 
 static func from_dict(d: Dictionary) -> CardData:
 	var c := CardData.new()
