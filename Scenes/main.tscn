@@ -21,6 +21,10 @@
 [node name="Main" type="Node2D" unique_id=1554237704]
 script = ExtResource("1_hptm8")
 
+[node name="Board" parent="." unique_id=272103127 instance=ExtResource("1_344ge")]
+z_index = -1
+script = ExtResource("2_hptm8")
+
 [node name="CardManager" type="Node2D" parent="." unique_id=1015727202]
 script = ExtResource("1_21xkr")
 
@@ -88,10 +92,7 @@ position = Vector2(952, 895)
 position = Vector2(1784, 895)
 
 [node name="P0_Hand" parent="P0" unique_id=1713076396 instance=ExtResource("4_d1ilt")]
-offset_left = 960.0
-offset_top = 1015.0
-offset_right = 2880.0
-offset_bottom = 1145.0
+position = Vector2(960, 65)
 
 [node name="P1" type="Node2D" parent="." unique_id=548828831]
 
@@ -139,7 +140,7 @@ scale = Vector2(0.49, 0.49)
 position = Vector2(1784, 284)
 
 [node name="P1_RuneDeck" parent="P1" unique_id=100000006 instance=ExtResource("11_h1bgf")]
-position = Vector2(140, 125)
+position = Vector2(140, 245)
 scale = Vector2(0.8000001, 0.8000001)
 
 [node name="P1_Runes" parent="P1" unique_id=151080046 instance=ExtResource("4_hptm8")]
@@ -149,10 +150,7 @@ position = Vector2(953, 185)
 position = Vector2(1784, 185)
 
 [node name="P1_Hand" parent="P1" unique_id=698325425 instance=ExtResource("4_d1ilt")]
-offset_left = 960.0
-offset_top = 65.0
-offset_right = 2880.0
-offset_bottom = 195.0
+position = Vector2(960, 1015)
 
 [node name="EndTurnButton" type="Button" parent="." unique_id=283290533]
 offset_left = 1763.6774
@@ -163,7 +161,3 @@ text = "End Turn"
 
 [node name="GameController" type="Node" parent="." unique_id=540227294]
 script = ExtResource("9_ynf5e")
-
-[node name="Board" parent="." unique_id=272103127 instance=ExtResource("1_344ge")]
-z_index = -1
-script = ExtResource("2_hptm8")
