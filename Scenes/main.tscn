@@ -3,19 +3,20 @@
 [ext_resource type="Script" uid="uid://d10inoh50ig7f" path="res://Scripts/CardManager.gd" id="1_21xkr"]
 [ext_resource type="PackedScene" uid="uid://i2v3j52mwfha" path="res://Scenes/Board.tscn" id="1_344ge"]
 [ext_resource type="Script" uid="uid://qq14kdatojop" path="res://Scripts/main.gd" id="1_hptm8"]
+[ext_resource type="PackedScene" uid="uid://d30bkc8l8s6ad" path="res://Scenes/Arena.tscn" id="2_h1bgf"]
 [ext_resource type="Script" uid="uid://b407ds4aw5ilw" path="res://Scripts/Board.gd" id="2_hptm8"]
 [ext_resource type="PackedScene" uid="uid://bdtm88erd1wam" path="res://Scenes/CardSlot.tscn" id="2_jjvhh"]
 [ext_resource type="PackedScene" uid="uid://nb0qalao5ivo" path="res://Scenes/Battlefield.tscn" id="4_6iyac"]
-[ext_resource type="PackedScene" uid="uid://bcd6w6o1ruqom" path="res://Scenes/HandManager.tscn" id="4_d1ilt"]
+[ext_resource type="PackedScene" uid="uid://bcd6w6o1ruqom" path="res://Scenes/Hand.tscn" id="4_d1ilt"]
 [ext_resource type="PackedScene" uid="uid://buvl4rweh6dr6" path="res://Scenes/Champion.tscn" id="4_fdnlq"]
 [ext_resource type="PackedScene" uid="uid://w81buurym63b" path="res://Scenes/Runes.tscn" id="4_hptm8"]
-[ext_resource type="Script" uid="uid://bbn3edfjdvn2i" path="res://Scripts/Deck.gd" id="5_6bp64"]
+[ext_resource type="PackedScene" uid="uid://bi6khoh054nvq" path="res://Scenes/Point.tscn" id="4_k12tt"]
 [ext_resource type="PackedScene" uid="uid://4jxghshc0u46" path="res://Scenes/Legend.tscn" id="5_6iyac"]
 [ext_resource type="Script" uid="uid://dbj7q7e1mye34" path="res://Scripts/InputManager.gd" id="6_344ge"]
 [ext_resource type="Script" uid="uid://b4t67171v1thf" path="res://Scripts/GameController.gd" id="9_ynf5e"]
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_21xkr"]
-size = Vector2(243.75005, 112.50018)
+[ext_resource type="PackedScene" uid="uid://bjwex4dl6gep7" path="res://Scenes/RuneDeck.tscn" id="11_h1bgf"]
+[ext_resource type="PackedScene" uid="uid://23ypgw1gnlhb" path="res://Scenes/MainDeck.tscn" id="11_wsu2k"]
+[ext_resource type="PackedScene" uid="uid://cscpai8v2fbek" path="res://Scenes/Trash.tscn" id="12_k12tt"]
 
 [node name="Main" type="Node2D" unique_id=1554237704]
 script = ExtResource("1_hptm8")
@@ -26,43 +27,132 @@ script = ExtResource("1_21xkr")
 [node name="InputManager" type="Node2D" parent="." unique_id=208591127]
 script = ExtResource("6_344ge")
 
-[node name="Player1" type="Node2D" parent="." unique_id=246826101]
+[node name="P0_Arena" parent="." unique_id=372592103 instance=ExtResource("2_h1bgf")]
+position = Vector2(440, 540)
 
-[node name="Champion" parent="Player1" unique_id=387825937 instance=ExtResource("4_fdnlq")]
-position = Vector2(1784, 698)
+[node name="P1_Arena" parent="." unique_id=2089672518 instance=ExtResource("2_h1bgf")]
+position = Vector2(1324, 540)
 
-[node name="Battlefield" parent="Player1" unique_id=737844258 instance=ExtResource("4_6iyac")]
+[node name="P0" type="Node2D" parent="." unique_id=246826101]
+
+[node name="P0_Points" type="Node2D" parent="P0" unique_id=84179518]
+
+[node name="P0_Point1" parent="P0/P0_Points" unique_id=858870301 instance=ExtResource("4_k12tt")]
+position = Vector2(27, 931)
+
+[node name="P0_Point2" parent="P0/P0_Points" unique_id=811101513 instance=ExtResource("4_k12tt")]
+position = Vector2(27, 893)
+
+[node name="P0_Point3" parent="P0/P0_Points" unique_id=327160036 instance=ExtResource("4_k12tt")]
+position = Vector2(27, 854)
+
+[node name="P0_Point4" parent="P0/P0_Points" unique_id=1361892046 instance=ExtResource("4_k12tt")]
+position = Vector2(27, 816)
+
+[node name="P0_Point5" parent="P0/P0_Points" unique_id=1176661728 instance=ExtResource("4_k12tt")]
+position = Vector2(27, 778)
+
+[node name="P0_Point6" parent="P0/P0_Points" unique_id=1253753202 instance=ExtResource("4_k12tt")]
+position = Vector2(27, 740)
+
+[node name="P0_Point7" parent="P0/P0_Points" unique_id=1191016440 instance=ExtResource("4_k12tt")]
+position = Vector2(27, 701)
+
+[node name="P0_Point8" parent="P0/P0_Points" unique_id=822467084 instance=ExtResource("4_k12tt")]
+position = Vector2(27, 663)
+
+[node name="P0_Battlefield" parent="P0" unique_id=737844258 instance=ExtResource("4_6iyac")]
 position = Vector2(717, 698)
 
-[node name="Legend" parent="Player1" unique_id=1188493574 instance=ExtResource("5_6iyac")]
+[node name="P0_Legend" parent="P0" unique_id=1188493574 instance=ExtResource("5_6iyac")]
 position = Vector2(1518, 698)
 
-[node name="Base" parent="Player1" unique_id=402928220 instance=ExtResource("2_jjvhh")]
+[node name="P0_Champion" parent="P0" unique_id=387825937 instance=ExtResource("4_fdnlq")]
+position = Vector2(1784, 698)
+
+[node name="P0_Base" parent="P0" unique_id=402928220 instance=ExtResource("2_jjvhh")]
 position = Vector2(850, 796)
 scale = Vector2(0.49, 0.49)
 
-[node name="Runes" parent="Player1" unique_id=1761847097 instance=ExtResource("4_hptm8")]
+[node name="P0_MainDeck" parent="P0" unique_id=189259472 instance=ExtResource("11_wsu2k")]
+position = Vector2(1784, 796)
+
+[node name="P0_RuneDeck" parent="P0" unique_id=2020144502 instance=ExtResource("11_h1bgf")]
+position = Vector2(140.00006, 955.00006)
+scale = Vector2(0.8000001, 0.8000001)
+
+[node name="P0_Runes" parent="P0" unique_id=1761847097 instance=ExtResource("4_hptm8")]
 position = Vector2(952, 895)
 
-[node name="HandManager" parent="Player1" unique_id=1713076396 instance=ExtResource("4_d1ilt")]
-position = Vector2(960, 1015)
+[node name="P0_Trash" parent="P0" unique_id=685272223 instance=ExtResource("12_k12tt")]
+position = Vector2(1784, 895)
 
-[node name="Deck" type="Node2D" parent="Player1" unique_id=1400586426]
-position = Vector2(140, 955)
-scale = Vector2(0.8, 0.8)
-script = ExtResource("5_6bp64")
+[node name="P0_Hand" parent="P0" unique_id=1713076396 instance=ExtResource("4_d1ilt")]
+offset_left = 960.0
+offset_top = 1015.0
+offset_right = 2880.0
+offset_bottom = 1145.0
 
-[node name="Sprite2D" type="Sprite2D" parent="Player1/Deck" unique_id=381168899]
-z_index = -2
+[node name="P1" type="Node2D" parent="." unique_id=548828831]
 
-[node name="Area2D" type="Area2D" parent="Player1/Deck" unique_id=997231302]
-collision_layer = 4
-collision_mask = 4
+[node name="P1_Points" type="Node2D" parent="P1" unique_id=507618386]
+position = Vector2(0, -514)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Player1/Deck/Area2D" unique_id=810865358]
-position = Vector2(14.375, -75)
-scale = Vector2(0.9999995, 0.9999995)
-shape = SubResource("RectangleShape2D_21xkr")
+[node name="P1_Point1" parent="P1/P1_Points" unique_id=1084306714 instance=ExtResource("4_k12tt")]
+position = Vector2(27, 931)
+
+[node name="P1_Point2" parent="P1/P1_Points" unique_id=100000010 instance=ExtResource("4_k12tt")]
+position = Vector2(27, 893)
+
+[node name="P1_Point3" parent="P1/P1_Points" unique_id=100000011 instance=ExtResource("4_k12tt")]
+position = Vector2(27, 854)
+
+[node name="P1_Point4" parent="P1/P1_Points" unique_id=100000012 instance=ExtResource("4_k12tt")]
+position = Vector2(27, 816)
+
+[node name="P1_Point5" parent="P1/P1_Points" unique_id=100000013 instance=ExtResource("4_k12tt")]
+position = Vector2(27, 778)
+
+[node name="P1_Point6" parent="P1/P1_Points" unique_id=100000014 instance=ExtResource("4_k12tt")]
+position = Vector2(27, 740)
+
+[node name="P1_Point7" parent="P1/P1_Points" unique_id=100000015 instance=ExtResource("4_k12tt")]
+position = Vector2(27, 701)
+
+[node name="P1_Point8" parent="P1/P1_Points" unique_id=100000016 instance=ExtResource("4_k12tt")]
+position = Vector2(27, 663)
+
+[node name="P1_Battlefield" parent="P1" unique_id=100000001 instance=ExtResource("4_6iyac")]
+position = Vector2(717, 382)
+
+[node name="P1_Legend" parent="P1" unique_id=100000002 instance=ExtResource("5_6iyac")]
+position = Vector2(1518, 382)
+
+[node name="P1_Champion" parent="P1" unique_id=100000003 instance=ExtResource("4_fdnlq")]
+position = Vector2(1784, 382)
+
+[node name="P1_Base" parent="P1" unique_id=100000004 instance=ExtResource("2_jjvhh")]
+position = Vector2(850, 284)
+scale = Vector2(0.49, 0.49)
+
+[node name="P1_MainDeck" parent="P1" unique_id=100000005 instance=ExtResource("11_wsu2k")]
+position = Vector2(1784, 284)
+
+[node name="P1_RuneDeck" parent="P1" unique_id=100000006 instance=ExtResource("11_h1bgf")]
+position = Vector2(140, 125)
+scale = Vector2(0.8000001, 0.8000001)
+
+[node name="P1_Runes" parent="P1" unique_id=151080046 instance=ExtResource("4_hptm8")]
+position = Vector2(953, 185)
+
+[node name="P1_Trash" parent="P1" unique_id=886760367 instance=ExtResource("12_k12tt")]
+position = Vector2(1784, 185)
+
+[node name="P1_Hand" parent="P1" unique_id=698325425 instance=ExtResource("4_d1ilt")]
+offset_left = 960.0
+offset_top = 65.0
+offset_right = 2880.0
+offset_bottom = 195.0
 
 [node name="EndTurnButton" type="Button" parent="." unique_id=283290533]
 offset_left = 1763.6774

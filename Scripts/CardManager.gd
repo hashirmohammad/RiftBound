@@ -18,18 +18,18 @@ var board_reference: Node = null
 
 func _ready() -> void:
 	screen_size = get_viewport_rect().size
-	hand_manager = $"../HandManager"
+	hand_manager = $"../P0/P0_Hand"
 	game_controller = $"../GameController"
 	board_reference = $"../Board"
 
 	if game_controller == null:
 		push_error("CardManager: GameController node not found!")
 
-	var slots_container = get_node_or_null("../CardSlots")
-	if slots_container:
-		all_slots = slots_container.get_children()
+	var p0_base = get_node_or_null("../P0/P0_Base")
+	if p0_base:
+		all_slots = [p0_base]
 	else:
-		push_error("CardManager: CardSlots node not found!")
+		push_error("CardManager: P0_Base node not found!")
 
 func _process(_delta: float) -> void:
 	if dragged_card:
