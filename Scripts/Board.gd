@@ -21,6 +21,7 @@ var _board_cards: Array = []
 var _battlefield_cards_visuals: Array = []
 var _hand_panel: Panel = null
 var _player_slot_nodes: Array = []
+var _p1_slot_nodes: Array = []
 
 var _player_champion_legend: Panel = null
 var _opponent_champion_legend: Panel = null
@@ -63,50 +64,29 @@ func _ready() -> void:
 
 func _cache_player_slots() -> void:
 	_player_slot_nodes.clear()
+	_p1_slot_nodes.clear()
 
-	var slots_root = get_node_or_null("../CardSlots")
-	if slots_root == null:
-		push_warning("Board.gd: CardSlots node not found.")
-		return
+	var p0_base = get_node_or_null("../P0/P0_Base")
+	if p0_base and p0_base is CardSlot:
+		_player_slot_nodes.append(p0_base)
+	else:
+		push_warning("Board.gd: P0_Base not found or not a CardSlot.")
 
-	if _player_base_panel == null:
-		push_warning("Board.gd: _player_base_panel is null.")
-		return
-
-	var base_rect = Rect2(
-		_player_base_panel.global_position,
-		_player_base_panel.size
-	)
-
-	var base_center_y: float = base_rect.position.y + (base_rect.size.y / 2.0)
-	var row_tolerance: float = 60.0
-
-	for child in slots_root.get_children():
-		if child is CardSlot:
-			if child.name.begins_with("Enemy"):
-				continue
-
-			var pos: Vector2 = child.global_position
-			var in_row: bool = abs(pos.y - base_center_y) <= row_tolerance
-			var in_x_range: bool = pos.x >= base_rect.position.x and pos.x <= (base_rect.position.x + base_rect.size.x)
-
-			if in_row and in_x_range:
-				_player_slot_nodes.append(child)
-
-	_player_slot_nodes.sort_custom(func(a, b): return a.global_position.x < b.global_position.x)
-
-	print("Cached base slots: ", _player_slot_nodes.size())
-	for i in range(_player_slot_nodes.size()):
-		print("slot ", i, " -> ", _player_slot_nodes[i].global_position)
+	var p1_base = get_node_or_null("../P1/P1_Base")
+	if p1_base and p1_base is CardSlot:
+		_p1_slot_nodes.append(p1_base)
+	else:
+		push_warning("Board.gd: P1_Base not found or not a CardSlot.")
 
 func get_slot_index_under_mouse() -> int:
-	var mouse_pos = get_global_mouse_position()
+	var active_id: int = get_parent().get_node("GameController").state.get_active_player().id
+	var slots := _player_slot_nodes if active_id == 0 else _p1_slot_nodes
+	var mouse_pos := get_global_mouse_position()
 
-	for i in range(_player_slot_nodes.size()):
-		var slot = _player_slot_nodes[i]
+	for i in range(slots.size()):
+		var slot = slots[i]
 		if slot == null:
 			continue
-
 		var local_mouse: Vector2 = slot.to_local(mouse_pos)
 		var half: Vector2 = slot._get_collision_size() / 2.0
 		if abs(local_mouse.x) <= half.x and abs(local_mouse.y) <= half.y:
@@ -254,29 +234,23 @@ func build_player(y: float, flip: bool, ph: float) -> void:
 		add_image(runes_ref, tint_gold("res://Assets/runes.jpg"),
 			0.05, 0.2, 0.25, 1.0, 6.0, 1.0, 0.0, 0.0)
 
-func render_board(card_instances: Array) -> void:
-	var player = get_parent().get_node("GameController").state.get_active_player()
+func render_board() -> void:
+	var state = get_parent().get_node("GameController").state
+	_render_player_slots(state.players[0], _player_slot_nodes)
+	_render_player_slots(state.players[1], _p1_slot_nodes)
 
+func _render_player_slots(player: PlayerState, slots: Array) -> void:
 	if player == null:
 		return
-
-	var slots = _player_slot_nodes
-
-	# Clear all slot visuals first
 	for slot in slots:
-		if slot == null:
-			continue
-		slot.clear_cards()
-
-	# Now place cards based on board_slots
+		if slot != null:
+			slot.clear_cards()
 	for i in range(player.board_slots.size()):
 		if i >= slots.size():
 			continue
-
 		var slot = slots[i]
 		if slot == null:
 			continue
-
 		for card_instance in player.board_slots[i]:
 			var card: RiftCard = CARD_SCENE.instantiate()
 			card.scale = Vector2(0.8, 0.8)
@@ -284,15 +258,13 @@ func render_board(card_instances: Array) -> void:
 			slot.add_card(card)
 			card.setup_from_card_instance(card_instance)
 			card.set_card_state(RiftCard.CardState.ON_BOARD)
-			if card_instance.is_exhausted():
-				card.rotation_degrees = 90.0
-			else:
-				card.rotation_degrees = 0.0
+			card.rotation_degrees = 90.0 if card_instance.is_exhausted() else 0.0
 
 func render_slot(player: PlayerState, slot_index: int) -> void:
-	if slot_index >= _player_slot_nodes.size():
+	var slots = _player_slot_nodes if player.id == 0 else _p1_slot_nodes
+	if slot_index >= slots.size():
 		return
-	var slot = _player_slot_nodes[slot_index]
+	var slot = slots[slot_index]
 	if slot == null:
 		return
 	slot.clear_cards()
@@ -303,10 +275,7 @@ func render_slot(player: PlayerState, slot_index: int) -> void:
 		slot.add_card(card)
 		card.setup_from_card_instance(card_instance)
 		card.set_card_state(RiftCard.CardState.ON_BOARD)
-		if card_instance.is_exhausted():
-			card.rotation_degrees = 90.0
-		else:
-			card.rotation_degrees = 0.0
+		card.rotation_degrees = 90.0 if card_instance.is_exhausted() else 0.0
 
 func _clear_board_visuals() -> void:
 	for card in _board_cards:
