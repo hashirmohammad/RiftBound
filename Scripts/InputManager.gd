@@ -13,7 +13,7 @@ var game_controller
 
 func _ready() -> void:
 	card_manager_reference = $"../CardManager"
-	deck_reference = $"../P0/P0_MainDeck"
+	deck_reference = $"../Deck"
 	board_reference = $"../Board"
 	game_controller = $"../GameController"
 

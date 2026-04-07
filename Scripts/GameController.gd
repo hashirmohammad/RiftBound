@@ -7,9 +7,9 @@ const EndTurnAction = preload("res://Scripts/end_turn_action.gd")
 
 var state: GameState
 
-@onready var hand_manager = $"../P0/P0_Hand"
+@onready var hand_manager = $"../HandManager"
 @onready var board = $"../Board"
-@onready var deck_ui = $"../P0/P0_MainDeck"
+@onready var deck_ui = $"../Deck"
 
 func _ready() -> void:
 	state = GameEngine.start_game()
