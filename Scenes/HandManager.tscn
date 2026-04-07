@@ -71,5 +71,13 @@ func _tween_return(card: RiftCard) -> void:
 	tween.tween_property(card, \"scale\", NORMAL_SCALE, RETURN_SPEED)
 "
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_r0y0a"]
+size = Vector2(1916, 126)
+
 [node name="HandManager" type="Node2D" unique_id=1713076396]
 script = SubResource("GDScript_r0y0a")
+
+[node name="Area2D" type="Area2D" parent="." unique_id=1517975263]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=132136725]
+shape = SubResource("RectangleShape2D_r0y0a")

@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://nm1xostfv6gs" path="res://Scripts/CardSlot.gd" id="1_enycx"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_mt86f"]
-size = Vector2(3246.5, 180)
+size = Vector2(3247.7397, 180)
 
 [node name="CardSlot" type="Node2D" unique_id=402928220]
 script = ExtResource("1_enycx")

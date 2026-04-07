@@ -1,0 +1,11 @@
+[gd_scene format=3 uid="uid://4jxghshc0u46"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_7rfmr"]
+size = Vector2(256, 88)
+
+[node name="Legend" type="Node2D" unique_id=1188493574]
+
+[node name="Area2D" type="Area2D" parent="." unique_id=1341355636]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=1010855392]
+shape = SubResource("RectangleShape2D_7rfmr")
