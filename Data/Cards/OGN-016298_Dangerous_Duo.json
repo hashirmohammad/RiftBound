@@ -7,7 +7,7 @@
   "domain": "Fury",
   "type": "Unit",
   "keywords": [
-    "Mech",
+	"Mech",
     "Bandle City"
   ],
   "rules_text": "[Legion] — When you play me, give a unit +2 Might this turn. (Get the effect if you've played another card this turn.)",

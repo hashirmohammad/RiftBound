@@ -7,7 +7,7 @@
   "domain": "Fury",
   "type": "Unit",
   "keywords": [
-    "Trifarian",
+	"Trifarian",
     "Noxus"
   ],
   "rules_text": "Your opponents' [Hidden] cards can't be revealed here.",

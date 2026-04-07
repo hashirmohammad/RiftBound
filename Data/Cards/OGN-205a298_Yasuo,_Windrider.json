@@ -7,7 +7,7 @@
   "domain": "Chaos",
   "type": "Champion Unit",
   "keywords": [
-    "Yasuo",
+	"Yasuo",
     "Ionia"
   ],
   "rules_text": "[Ganking] (I can move from battlefield to battlefield.)The third time I move in a turn, you score 1 point.",

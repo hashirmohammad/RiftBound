@@ -7,7 +7,7 @@
   "domain": "Chaos",
   "type": "Champion Unit",
   "keywords": [
-    "Jinx",
+	"Jinx",
     "Zaun"
   ],
   "rules_text": "When you discard one or more cards, ready me and give me +1 Might this turn.",

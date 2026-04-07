@@ -7,7 +7,7 @@
   "domain": "Order",
   "type": "Champion Unit",
   "keywords": [
-    "Leona",
+	"Leona",
     "Mount Targon"
   ],
   "rules_text": "[Shield] (+1 Might while I'm a defender.)When I attack, stun an enemy unit here. (It doesn't deal combat damage this turn.)",
