@@ -55,6 +55,7 @@ func execute(state: GameState) -> void:
 		return
 
 	state.awaiting_rune_payment = true
+	state.pending_payment_player_id = p.id
 	state.pending_card_uid = card.uid
 	state.pending_slot_index = slot_index
 	state.pending_card_cost = card.data.cost

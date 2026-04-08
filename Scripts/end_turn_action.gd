@@ -7,6 +7,10 @@ func _init(_player_id: int = -1):
 	super(_player_id)
 
 func validate(state: GameState) -> bool:
+	if state.awaiting_rune_payment:
+		_error_message = "Cannot end turn while paying runes."
+		return false
+
 	if player_id != state.get_active_player().id:
 		_error_message = "Invalid END_TURN: not this player's turn."
 		return false

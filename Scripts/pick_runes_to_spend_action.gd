@@ -22,11 +22,15 @@ func validate(state: GameState) -> bool:
 		_error_message = "Invalid RUNE_PICKED: not in MAIN phase."
 		return false
 
-	var p := state.get_active_player()
+	var p : PlayerState = state.players[state.pending_payment_player_id]
 	var rune := _find_rune_in_pool(p)
 	
 	if not state.awaiting_rune_payment:
 		_error_message = "Invalid RUNE_PICKED: no card is waiting for payment."
+		return false
+
+	if player_id != state.pending_payment_player_id:
+		_error_message = "Invalid RUNE_PICKED: wrong paying player."
 		return false
 	
 	if rune == null:
@@ -40,7 +44,8 @@ func validate(state: GameState) -> bool:
 	return true
 
 func execute(state: GameState) -> void:
-	var p := state.get_active_player()
+	var p : PlayerState = state.players[state.pending_payment_player_id]
+
 	var rune: RuneInstance = _find_rune_in_pool(p)
 	if rune == null:
 		return
@@ -68,7 +73,8 @@ func execute(state: GameState) -> void:
 		_finalize_pending_card_play(state)
 
 func _finalize_pending_card_play(state: GameState) -> void:
-	var p := state.get_active_player()
+	var p : PlayerState = state.players[state.pending_payment_player_id]
+
 	var hand_index := _find_pending_card_index(p, state.pending_card_uid)
 
 	if hand_index == -1:
@@ -100,6 +106,7 @@ func _find_pending_card_index(player: PlayerState, target_uid: int) -> int:
 
 func _clear_pending_payment(state: GameState) -> void:
 	state.awaiting_rune_payment = false
+	state.pending_payment_player_id = -1
 	state.pending_card_uid = -1
 	state.pending_slot_index = -1
 	state.pending_card_cost = 0
