@@ -12,11 +12,14 @@ var state: GameState
 @onready var hand_manager_p1 = $"../P1/P1_Hand"
 @onready var board    = $"../Board"
 @onready var deck_ui  = $"../P0/P0_MainDeck"
+@onready var cancel_payment_button = $"../CancelPaymentButton"
 
 func _ready() -> void:
 	state = GameEngine.start_game()
 	await wait_until_main()
 	refresh_all_ui()
+	cancel_payment_button.pressed.connect(_on_cancel_payment_pressed)
+	cancel_payment_button.visible = false
 
 func refresh_all_ui() -> void:
 	var p0 = state.players[0]
@@ -76,6 +79,13 @@ func refresh_deck_ui() -> void:
 	if deck_ui.has_method("set_count"):
 		deck_ui.set_count(state.players[0].deck.size())
 
+func refresh_payment_ui() -> void:
+	var p0: PlayerState = state.players[0]
+	var p1: PlayerState = state.players[1]
+
+	board.render_rune_panels(p0, p1)
+	_update_status_label()
+
 func print_state_summary() -> void:
 	var player = state.get_active_player()
 	print("Turn: %d | Active Player: P%d | Phase: %s" % [
@@ -107,17 +117,21 @@ func try_play_card(card_uid: int) -> void:
 func try_play_card_to_slot(card_uid: int, slot_index: int) -> bool:
 	var player = state.get_active_player()
 	var action = PlayCardAction.new()
-	action.player_id  = player.id
-	action.card_uid   = card_uid
+	action.player_id = player.id
+	action.card_uid = card_uid
 	action.slot_index = slot_index
-	var success := GameEngine.apply_action(state, action)
+
+	var success: bool = GameEngine.apply_action(state, action)
 	if not success:
 		status_label.text = action.get_error_message()
 		print("Action failed: ", action.get_error_message())
 		return false
-	refresh_hand_ui()
-	board.render_slot(state.get_active_player(), slot_index)
-	_update_status_label()
+
+	if state.awaiting_rune_payment:
+		refresh_payment_ui()
+	else:
+		refresh_all_ui()
+
 	return true
 
 func try_pick_runes_to_spend(rune_uid: int) -> bool:
@@ -127,14 +141,19 @@ func try_pick_runes_to_spend(rune_uid: int) -> bool:
 	print("  rune_uid:", rune_uid)
 
 	var action = PickRuneAction.new(player.id, rune_uid)
-	var success = GameEngine.apply_action(state, action)
+	var success: bool = GameEngine.apply_action(state, action)
 
 	print("  success:", success)
 	if not success:
 		print("PickRuneAction failed: ", action.get_error_message())
+		status_label.text = action.get_error_message()
 		return false
 
-	refresh_all_ui()
+	if state.awaiting_rune_payment:
+		refresh_payment_ui()
+	else:
+		refresh_all_ui()
+
 	return true
 
 ## Drag a card from the board into the active player's arena battlefield slot.
@@ -170,6 +189,10 @@ func try_return_from_battlefield(card_uid: int, battlefield_index: int, slot_ind
 	return true
 
 func try_end_turn() -> void:
+	if state.awaiting_rune_payment:
+		status_label.text = "Finish or cancel rune payment first."
+		return
+
 	var player = state.get_active_player()
 	var action = EndTurnAction.new()
 	action.player_id = player.id
@@ -197,21 +220,40 @@ func card_zone_name(zone_value: int) -> String:
 	return CardInstance.Zone.keys()[zone_value]
 	
 func _update_status_label() -> void:
-	var state = self.state
+	var state: GameState = self.state
 
-	# Case 1: waiting for rune payment
 	if state.awaiting_rune_payment:
-		var remaining : int = state.pending_card_cost - state.selected_rune_uids.size()
-		var card_name := _get_pending_card_name()
+		var remaining: int = state.pending_card_cost - state.selected_rune_uids.size()
+		var card_name: String = _get_pending_card_name()
 
-		status_label.text = "Select %d more rune(s) to play %s" % [
-			remaining,
-			card_name
-		]
+		status_label.text = "Select %d more rune(s) to play %s" % [remaining, card_name]
+		cancel_payment_button.visible = true
 		return
 
-	# Case 2: normal state
 	status_label.text = ""
+	cancel_payment_button.visible = false
+
+func _on_cancel_payment_pressed() -> void:
+	if not state.awaiting_rune_payment:
+		return
+
+	var player := state.get_active_player()
+
+	# Un-exhaust runes that were selected during this payment.
+	for rune_uid in state.selected_rune_uids:
+		for rune in player.rune_pool:
+			if rune.uid == rune_uid:
+				rune.awaken()
+
+	_clear_pending_payment_ui_state()
+	refresh_all_ui()
+
+func _clear_pending_payment_ui_state() -> void:
+	state.awaiting_rune_payment = false
+	state.pending_card_uid = -1
+	state.pending_slot_index = -1
+	state.pending_card_cost = 0
+	state.selected_rune_uids.clear()
 
 func _get_pending_card_name() -> String:
 	var player = state.get_active_player()

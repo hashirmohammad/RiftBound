@@ -155,8 +155,8 @@ position = Vector2(960, 65)
 [node name="EndTurnButton" type="Button" parent="." unique_id=283290533]
 offset_left = 1763.6774
 offset_top = 443.0
-offset_right = 1920.0
-offset_bottom = 639.0
+offset_right = 1920.0004
+offset_bottom = 541.0
 text = "End Turn"
 
 [node name="GameController" type="Node" parent="." unique_id=540227294]
@@ -165,3 +165,10 @@ script = ExtResource("9_ynf5e")
 [node name="StatusLabel" type="Label" parent="." unique_id=1649308434]
 offset_right = 40.0
 offset_bottom = 23.0
+
+[node name="CancelPaymentButton" type="Button" parent="." unique_id=355363713]
+offset_left = 1763.677
+offset_top = 541.0
+offset_right = 1920.0
+offset_bottom = 639.0
+text = "Cancel"
