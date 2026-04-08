@@ -2,10 +2,18 @@ class_name GameState
 
 const POINTS_TO_WIN: int = 8
 
+# -1 = no controller, 0 = P0 controls, 1 = P1 controls
+# Index matches battlefield slot: battlefield_control[0] is the first battlefield
+const NO_CONTROL := -1
+
 var players: Array = []              # [PlayerState, PlayerState]
 var active_player_index: int = 0     # whose turn it is
 var turn_number: int = 1
 var phase: String = "START"          # keep as string for now (we'll enum later)
+
+# Who controls each contested battlefield. Size = number of battlefields in play.
+# Populated by CombatResolver after each showdown.
+var battlefield_control: Array[int] = []
 
 # Stores the randomly picked deck name for each player
 var deck_names: Array[String] = ["", ""]
@@ -31,6 +39,24 @@ func get_opponent() -> PlayerState:
 
 func add_event(msg: String) -> void:
 	event_log.append(msg)
+
+# Call once during setup to register how many battlefields are in play.
+func init_battlefield_control(count: int) -> void:
+	battlefield_control.clear()
+	for i in range(count):
+		battlefield_control.append(NO_CONTROL)
+
+# Set controller for a battlefield slot and award 1 point if control changed.
+func set_battlefield_control(slot: int, player_index: int) -> void:
+	if slot < 0 or slot >= battlefield_control.size():
+		return
+	var previous := battlefield_control[slot]
+	battlefield_control[slot] = player_index
+	if previous != player_index:
+		players[player_index].points += 1
+		add_event("P%d captured battlefield %d (+1 point, total: %d)" % [
+			player_index, slot, players[player_index].points
+		])
 
 func get_winner_index() -> int:
 	if players[0].points >= POINTS_TO_WIN:
