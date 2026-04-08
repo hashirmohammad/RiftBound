@@ -659,6 +659,7 @@ func _clear_rune_visuals() -> void:
 	_rune_cards_visuals.clear()
 
 func _render_runes(panel: Panel, runes: Array) -> void:
+	
 	if panel == null:
 		return
 
@@ -686,6 +687,7 @@ func _render_runes(panel: Panel, runes: Array) -> void:
 		card.z_index = 5
 		card.card_uid = rune_inst.uid
 		card.card_data = rune_inst.rune
+		card.rotation_degrees = 90.0 if rune_inst.is_exhausted() else 0.0
 		card.update_visuals()
 		card.set_card_state(RiftCard.CardState.ON_BOARD)
 		card.modulate = Color(0.7, 0.7, 0.7, 1.0) if rune_inst.is_exhausted() else Color.WHITE

@@ -7,7 +7,7 @@ const MoveToBattlefieldAction     = preload("res://Scripts/move_to_battlefield_a
 const ReturnFromBattlefieldAction = preload("res://Scripts/return_from_battlefield_action.gd")
 
 var state: GameState
-
+@onready var status_label = $"../StatusLabel"
 @onready var hand_manager    = $"../P0/P0_Hand"
 @onready var hand_manager_p1 = $"../P1/P1_Hand"
 @onready var board    = $"../Board"
@@ -33,6 +33,7 @@ func refresh_all_ui() -> void:
 	refresh_hand_ui()
 	refresh_board_ui()
 	refresh_deck_ui()
+	_update_status_label()
 
 func print_rune_array(runes: Array) -> void:
 	if runes.is_empty():
@@ -111,10 +112,29 @@ func try_play_card_to_slot(card_uid: int, slot_index: int) -> bool:
 	action.slot_index = slot_index
 	var success := GameEngine.apply_action(state, action)
 	if not success:
+		status_label.text = action.get_error_message()
 		print("Action failed: ", action.get_error_message())
 		return false
 	refresh_hand_ui()
 	board.render_slot(state.get_active_player(), slot_index)
+	_update_status_label()
+	return true
+
+func try_pick_runes_to_spend(rune_uid: int) -> bool:
+	var player = state.get_active_player()
+	print("GameController.try_pick_runes_to_spend")
+	print("  player:", player.id)
+	print("  rune_uid:", rune_uid)
+
+	var action = PickRuneAction.new(player.id, rune_uid)
+	var success = GameEngine.apply_action(state, action)
+
+	print("  success:", success)
+	if not success:
+		print("PickRuneAction failed: ", action.get_error_message())
+		return false
+
+	refresh_all_ui()
 	return true
 
 ## Drag a card from the board into the active player's arena battlefield slot.
@@ -175,3 +195,29 @@ func card_state_name(state_value: int) -> String:
 
 func card_zone_name(zone_value: int) -> String:
 	return CardInstance.Zone.keys()[zone_value]
+	
+func _update_status_label() -> void:
+	var state = self.state
+
+	# Case 1: waiting for rune payment
+	if state.awaiting_rune_payment:
+		var remaining : int = state.pending_card_cost - state.selected_rune_uids.size()
+		var card_name := _get_pending_card_name()
+
+		status_label.text = "Select %d more rune(s) to play %s" % [
+			remaining,
+			card_name
+		]
+		return
+
+	# Case 2: normal state
+	status_label.text = ""
+
+func _get_pending_card_name() -> String:
+	var player = state.get_active_player()
+
+	for card in player.hand:
+		if card.uid == state.pending_card_uid:
+			return card.data.card_name
+
+	return "card"
