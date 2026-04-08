@@ -1,3 +1,4 @@
+class_name GameController
 extends Node
 
 const GameEngine                  = preload("res://Scripts/game_engine.gd")

@@ -96,7 +96,9 @@ func next_phase():
 
 	phase_index += 1
 	if phase_index >= phase_order.size():
-		end_turn()
+		# Defer the turn switch so the engine gets a frame to breathe
+		# between turns — prevents infinite recursion at startup.
+		call_deferred("end_turn")
 		return
 
 	_enter_phase()

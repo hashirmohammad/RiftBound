@@ -83,5 +83,5 @@ static func from_dict(d: Dictionary) -> CardData:
 
 	c.rules_text = str(d.get("rules_text", ""))
 	c.image_url  = str(d.get("image_url",  ""))
-	c.rarity     = rarity_from_string(str(d.get("rarity", "Common")))
+	c.rarity     = rarity_from_string(str(d.get("rarity", "Common"))) as Rarity
 	return c

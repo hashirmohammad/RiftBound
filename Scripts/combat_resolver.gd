@@ -1,4 +1,5 @@
 class_name CombatResolver
+extends RefCounted
 
 # -------------------------
 # SHOWDOWN RESOLUTION
@@ -55,8 +56,8 @@ static func _resolve_slot(state: GameState, slot_index: int) -> void:
 	_distribute_damage(p1_units, p0_might)
 	_distribute_damage(p0_units, p1_might)
 
-	var p0_survivors := _remove_dead(state, p0, p0_units)
-	var p1_survivors := _remove_dead(state, p1, p1_units)
+	var p0_survivors: Array = _remove_dead(state, p0, p0_units)
+	var p1_survivors: Array = _remove_dead(state, p1, p1_units)
 
 	# Return survivors to board
 	_return_survivors_to_board(state, p0, slot_index, p0_survivors)
@@ -92,7 +93,7 @@ static func _distribute_damage(units: Array, damage: int) -> void:
 	for unit in units:
 		if remaining <= 0:
 			break
-		var dealt := min(remaining, unit.current_health)
+		var dealt: int = min(remaining, unit.current_health)
 		unit.take_damage(dealt)
 		remaining -= dealt
 
@@ -100,7 +101,7 @@ static func _distribute_damage(units: Array, damage: int) -> void:
 # Remove dead units from the battlefield slot and send them to trash.
 # Returns the array of surviving units.
 static func _remove_dead(state: GameState, player: PlayerState, units: Array) -> Array:
-	var survivors := []
+	var survivors: Array = []
 	for unit in units:
 		if unit.is_dead():
 			unit.zone = CardInstance.Zone.TRASH

@@ -4,7 +4,7 @@ const POINTS_TO_WIN: int = 8
 
 # -1 = no controller, 0 = P0 controls, 1 = P1 controls
 # Index matches battlefield slot: battlefield_control[0] is the first battlefield
-const NO_CONTROL := -1
+const NO_CONTROL: int = -1
 
 var players: Array = []              # [PlayerState, PlayerState]
 var active_player_index: int = 0     # whose turn it is
@@ -50,7 +50,7 @@ func init_battlefield_control(count: int) -> void:
 func set_battlefield_control(slot: int, player_index: int) -> void:
 	if slot < 0 or slot >= battlefield_control.size():
 		return
-	var previous := battlefield_control[slot]
+	var previous: int = battlefield_control[slot]
 	battlefield_control[slot] = player_index
 	if previous != player_index:
 		players[player_index].points += 1
