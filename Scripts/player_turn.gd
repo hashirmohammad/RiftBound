@@ -10,6 +10,7 @@ enum Phase {
 	CHANNEL,
 	DRAW,
 	MAIN,
+	SHOWDOWN,
 	END
 }
 
@@ -19,6 +20,7 @@ var phase_order = [
 	Phase.CHANNEL,
 	Phase.DRAW,
 	Phase.MAIN,
+	Phase.SHOWDOWN,
 	Phase.END
 ]
 
@@ -80,17 +82,17 @@ func _enter_phase():
 
 		Phase.MAIN:
 			pass
-			#print("[PlayerTurn] Reached MAIN phase — waiting for player input")
+
+		Phase.SHOWDOWN:
+			CombatResolver.resolve(state)
 
 		Phase.END:
 			_end_phase(player)
 
-	# Only MAIN waits for player input — everything else auto-advances
+	# MAIN is the only interactive phase — player must submit EndTurnAction to advance.
+	# All other phases (including SHOWDOWN) auto-advance synchronously.
 	if current_phase != Phase.MAIN:
-		#print("[PlayerTurn] auto-advancing past phase=", state.phase, " via call_deferred")
-		call_deferred("next_phase")
-	else:
-		print("[PlayerTurn] stopping at MAIN — waiting for EndTurnAction")
+		next_phase()
 
 func next_phase():
 	var player = state.get_active_player()
@@ -161,5 +163,6 @@ func _phase_name(p: int) -> String:
 		Phase.CHANNEL:   return "CHANNEL"
 		Phase.DRAW:      return "DRAW"
 		Phase.MAIN:      return "MAIN"
+		Phase.SHOWDOWN:  return "SHOWDOWN"
 		Phase.END:       return "END"
 	return "UNKNOWN"
