@@ -7,7 +7,6 @@ var deck: Array[CardInstance] = []
 var hand: Array[CardInstance] = []
 var board: Array[CardInstance] = []
 var trash: Array[CardInstance] = []
-var battlefield_units: Array[CardInstance] = []  # units moved to the contested battlefield
 var battlefields: Array[BattlefieldInstance] = []
 var picked_battlefield: BattlefieldInstance
 var rune_deck: Array[RuneInstance] = []
