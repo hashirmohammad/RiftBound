@@ -67,6 +67,7 @@ func _enter_phase():
 			var runes_to_channel := 2
 			if state.turn_number == 2:
 				runes_to_channel = 3
+			#runes_to_channel = 5
 			player.channel_runes(runes_to_channel)
 			state.add_event("P%d channels %d rune(s)." % [player.id, runes_to_channel])
 
