@@ -45,13 +45,6 @@ func awaken_rune_count() -> int:
 			count += 1
 	return count
 
-func awaken_rune_count() -> int:
-	var count = 0
-	for r in rune_pool:
-		if not r.is_exhausted():
-			count += 1
-	return count
-
 func draw_rune() -> Variant:
 	if rune_deck.is_empty():
 		return null
