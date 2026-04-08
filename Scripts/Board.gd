@@ -567,8 +567,8 @@ func render_static_state(player: PlayerState, opponent: PlayerState) -> void:
 	_render_arena_pick(_arena_p0_panel, player.picked_battlefield, "Arena 1")
 	_render_arena_pick(_arena_p1_panel, opponent.picked_battlefield, "Arena 2")
 
-	_render_runes(_player_runes_panel, player.rune_pool)
-	_render_runes(_opponent_runes_panel, opponent.rune_pool)
+	_render_runes(_player_runes_panel, player.rune_pool, player.id)
+	_render_runes(_opponent_runes_panel, opponent.rune_pool, opponent.id)
 
 func _render_legend_panel(panel: Panel, legend_instance: CardInstance) -> void:
 	if panel == null or legend_instance == null or legend_instance.data == null:
@@ -653,7 +653,7 @@ func _clear_rune_visuals() -> void:
 			card.queue_free()
 	_rune_cards_visuals.clear()
 
-func _render_runes(panel: Panel, runes: Array) -> void:
+func _render_runes(panel: Panel, runes: Array, player_id: int) -> void:
 	if panel == null:
 		return
 
@@ -668,7 +668,10 @@ func _render_runes(panel: Panel, runes: Array) -> void:
 	var spacing: float = 120.0
 	var total_width: float = float(count - 1) * spacing
 	var start_x: float = (panel.size.x / 2.0) - (total_width / 2.0)
+
 	var gs: GameState = game_controller.state as GameState
+	var active_player_id: int = gs.get_active_player().id
+	var is_current_player_panel: bool = (player_id == active_player_id)
 
 	for i in range(count):
 		var rune_inst: RuneInstance = runes[i]
@@ -685,8 +688,8 @@ func _render_runes(panel: Panel, runes: Array) -> void:
 		card.update_visuals()
 
 		var is_exhausted: bool = rune_inst.is_exhausted()
-		var is_selected: bool = gs.selected_rune_uids.has(rune_inst.uid)
-		var can_select: bool = gs.awaiting_rune_payment and (not is_exhausted) and (not is_selected)
+		var is_selected: bool = is_current_player_panel and gs.selected_rune_uids.has(rune_inst.uid)
+		var can_select: bool = is_current_player_panel and gs.awaiting_rune_payment and (not is_exhausted) and (not is_selected)
 
 		card.rotation_degrees = 90.0 if is_exhausted else 0.0
 
@@ -703,5 +706,5 @@ func _render_runes(panel: Panel, runes: Array) -> void:
 		_rune_cards_visuals.append(card)
 		
 func render_rune_panels(p0: PlayerState, p1: PlayerState) -> void:
-	_render_runes(_player_runes_panel, p0.rune_pool)
-	_render_runes(_opponent_runes_panel, p1.rune_pool)
+	_render_runes(_player_runes_panel, p0.rune_pool, p0.id)
+	_render_runes(_opponent_runes_panel, p1.rune_pool, p1.id)
