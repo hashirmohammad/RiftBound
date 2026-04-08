@@ -7,8 +7,8 @@
   "domain": "Chaos",
   "type": "Champion Unit",
   "keywords": [
-    "Pirate",
-    "Miss Fortune",
+	"Pirate",
+	"Miss Fortune",
     "Bilgewater"
   ],
   "rules_text": "You may play me to an open battlefield.Friendly units may be played to open battlefields.",

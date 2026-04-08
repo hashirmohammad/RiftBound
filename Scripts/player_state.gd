@@ -15,10 +15,14 @@ var legend: CardInstance
 var champion: CardInstance
 var board_slots: Array = [[], [], [], [], [], [], [], []]
 
+# Two battlefield slots, one for each arena choice.
+# battlefield_slots[0] = left / arena 1
+# battlefield_slots[1] = right / arena 2
+var battlefield_slots: Array = [[], []]
+
 func _init(player_id: int):
 	id = player_id
 
-# Randomly pick 1 of the 3 battlefields; the other 2 are discarded
 func pick_random_battlefield() -> void:
 	var index = randi() % battlefields.size()
 	battlefields[index].set_state(BattlefieldInstance.State.USED)

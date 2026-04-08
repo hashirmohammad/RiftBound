@@ -7,8 +7,8 @@
   "domain": "Chaos",
   "type": "Champion Unit",
   "keywords": [
-    "Yordle",
-    "Teemo",
+	"Yordle",
+	"Teemo",
     "Bandle City"
   ],
   "rules_text": "[Hidden] (Hide now for Rune Rainbow to react with later for 0 Energy.)When you play me, give me +3 Might this turn.",

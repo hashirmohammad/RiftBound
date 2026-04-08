@@ -7,8 +7,8 @@
   "domain": "Order",
   "type": "Champion Unit",
   "keywords": [
-    "Trifarian",
-    "Darius",
+	"Trifarian",
+	"Darius",
     "Noxus"
   ],
   "rules_text": "[Legion] — When you play me, ready me. (Get the effect if you've played another card this turn)Other friendly units have +1 Might here.",

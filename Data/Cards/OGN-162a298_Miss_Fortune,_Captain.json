@@ -7,8 +7,8 @@
   "domain": "Body",
   "type": "Champion Unit",
   "keywords": [
-    "Pirate",
-    "Miss Fortune",
+	"Pirate",
+	"Miss Fortune",
     "Bilgewater"
   ],
   "rules_text": "[Accelerate] (You may pay 1 EnergyBody as an additional cost to have me enter ready.)[Ganking] (I can move from battlefield to battlefield.)The first time I move each turn, you may ready something else that's exhausted.",

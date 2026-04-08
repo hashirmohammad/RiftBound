@@ -7,7 +7,7 @@
   "domain": "Body",
   "type": "Champion Unit",
   "keywords": [
-    "Lee Sin",
+	"Lee Sin",
     "Ionia"
   ],
   "rules_text": "[Accelerate] (You may pay 1 EnergyBody as an additional cost to have me enter ready.)Other buffed friendly units at my battlefield have +2 Might.",

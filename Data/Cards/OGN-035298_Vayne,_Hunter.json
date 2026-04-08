@@ -7,7 +7,7 @@
   "domain": "Fury",
   "type": "Champion Unit",
   "keywords": [
-    "Vayne",
+	"Vayne",
     "Demacia"
   ],
   "rules_text": "[Assault 3]_ (+3 Might while I'm an attacker.)_If an opponent controls a battlefield, I enter ready.When I conquer, you may pay 1 Energy to return me to my owner's hand.",

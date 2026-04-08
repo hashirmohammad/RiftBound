@@ -7,7 +7,7 @@
   "domain": "Mind",
   "type": "Champion Unit",
   "keywords": [
-    "Malzahar",
+	"Malzahar",
     "The Void"
   ],
   "rules_text": "Kill a friendly unit or gear, Exhaust: [Action] — [Add] Rune RainbowRune Rainbow. (Use on your turn or in showdowns. Abilities that add resources can't be reacted to.)",
