@@ -7,6 +7,7 @@ var deck: Array[CardInstance] = []
 var hand: Array[CardInstance] = []
 var board: Array[CardInstance] = []
 var trash: Array[CardInstance] = []
+var battlefield_units: Array[CardInstance] = []  # units moved to the contested battlefield
 var battlefields: Array[BattlefieldInstance] = []
 var picked_battlefield: BattlefieldInstance
 var rune_deck: Array[RuneInstance] = []
@@ -20,6 +21,8 @@ func _init(player_id: int):
 
 # Randomly pick 1 of the 3 battlefields; the other 2 are discarded
 func pick_random_battlefield() -> void:
+	if battlefields.is_empty():
+		return
 	var index = randi() % battlefields.size()
 	battlefields[index].set_state(BattlefieldInstance.State.USED)
 	picked_battlefield = battlefields[index]
@@ -60,10 +63,10 @@ func spend_runes(selected_runes: Array[RuneInstance]) -> bool:
 			return false
 		if not rune_pool.has(rune):
 			return false
+		if rune.is_exhausted():
+			return false
 	for rune in selected_runes:
-		rune_pool.erase(rune)
-		rune.zone = RuneInstance.Zone.RUNE_DECK
-		rune_deck.append(rune)
+		rune.exhaust()
 	return true
 
 func recycle_runes_to_bottom(rune: RuneInstance) -> void:
