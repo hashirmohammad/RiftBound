@@ -29,7 +29,7 @@ func _ready() -> void:
 # TEST 1 — CardDatabase loads normal cards from a deck folder
 # -------------------------------------------------------------------
 func test_load_cards() -> void:
-	var cards: Array[CardData] = CardDatabase._load_cards(TEST_DECK_NAME)
+	var cards: Array[CardData] = CardDatabase._load_cards_from_deck(TEST_DECK_NAME)
 
 	if cards.is_empty():
 		print("[FAIL] _load_cards('%s') returned empty" % TEST_DECK_NAME)
@@ -59,7 +59,7 @@ func test_load_legend() -> void:
 # TEST 3 — CardDatabase loads battlefields correctly
 # -------------------------------------------------------------------
 func test_load_battlefields() -> void:
-	var battlefields: Array[CardData] = CardDatabase._load_battlefields(TEST_DECK_NAME)
+	var battlefields: Array[CardData] = CardDatabase._load_battlefields_from_deck(TEST_DECK_NAME)
 
 	if battlefields.is_empty():
 		print("[FAIL] _load_battlefields('%s') returned empty" % TEST_DECK_NAME)
@@ -74,7 +74,7 @@ func test_load_battlefields() -> void:
 # TEST 4 — CardDatabase loads runes correctly
 # -------------------------------------------------------------------
 func test_load_runes() -> void:
-	var runes: Array[CardData] = CardDatabase._load_runes(TEST_DECK_NAME)
+	var runes: Array[CardData] = CardDatabase._load_runes_from_deck(TEST_DECK_NAME)
 
 	if runes.is_empty():
 		print("[FAIL] _load_runes('%s') returned empty" % TEST_DECK_NAME)
@@ -102,7 +102,7 @@ func test_load_runes() -> void:
 # TEST 5 — Loaded CardData fields are populated correctly
 # -------------------------------------------------------------------
 func test_card_data_fields_from_loaded_card() -> void:
-	var cards: Array[CardData] = CardDatabase._load_cards(TEST_DECK_NAME)
+	var cards: Array[CardData] = CardDatabase._load_cards_from_deck(TEST_DECK_NAME)
 
 	if cards.is_empty():
 		print("[SKIP] test_card_data_fields_from_loaded_card — no cards loaded")
@@ -134,7 +134,7 @@ func test_card_data_fields_from_loaded_card() -> void:
 	if card.image_url == "":
 		print("[WARN] Loaded card image_url is empty for %s" % card.card_name)
 
-	if card.type < 0 or card.type > CardData.CardType.GEAR:
+	if card.type < 0 or card.type > CardData.CardType.LEGEND:
 		print("[FAIL] Loaded card has invalid type enum value: %s" % str(card.type))
 		passed = false
 
