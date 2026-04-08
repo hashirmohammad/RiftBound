@@ -6,10 +6,10 @@ var player_id: int
 func _init(_player_id: int = -1):
 	player_id = _player_id
 
-func validate(state: GameState) -> bool:
+func validate(_state: GameState) -> bool:
 	return true
 
-func execute(state: GameState) -> void:
+func execute(_state: GameState) -> void:
 	pass
 
 func get_error_message() -> String:

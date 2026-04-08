@@ -29,12 +29,21 @@ func validate(state: GameState) -> bool:
 		_error_message = "Invalid PLAY_CARD: card uid not found in hand."
 		return false
 
+	# Block non-playable types from being played from hand
+	var blocked_types := [CardData.CardType.RUNE, CardData.CardType.BATTLEFIELD, CardData.CardType.LEGEND]
+	if card.data.type in blocked_types:
+		_error_message = "Invalid PLAY_CARD: card type cannot be played from hand."
+		return false
+
 	if p.awaken_rune_count() < card.data.cost:
 		_error_message = "P%d cannot play card: not enough runes." % p.id
 		return false
-	if slot_index < 0 or slot_index >= p.board_slots.size():
-		_error_message = "Invalid PLAY_CARD: slot index out of range."
-		return false
+
+	# Spells don't occupy a board slot — skip slot validation for them
+	if card.data.type != CardData.CardType.SPELL:
+		if slot_index < 0 or slot_index >= p.board_slots.size():
+			_error_message = "Invalid PLAY_CARD: slot index out of range."
+			return false
 
 	return true
 
@@ -57,19 +66,19 @@ func execute(state: GameState) -> void:
 			state.add_event("PLAY_CARD execute failed: not enough runes.")
 			return
 
-	card.zone = CardInstance.Zone.BOARD
 	p.hand.remove_at(hand_index)
-	card.exhaust()
 
-	p.board_slots[slot_index].append(card)
-
-	print("[PlayCardAction] P%d played %s into slot %d | board_slots[%d] size=%d" % [
-		p.id, card.data.card_name, slot_index, slot_index, p.board_slots[slot_index].size()
-	])
-
-	state.add_event("P%d played %s into slot %d." % [
-		p.id, card.data.card_name, slot_index
-	])
+	if card.data.type == CardData.CardType.SPELL:
+		# Spells resolve immediately and go to trash — they don't occupy board slots
+		card.zone = CardInstance.Zone.TRASH
+		p.trash.append(card)
+		state.add_event("P%d played spell %s (sent to trash)." % [p.id, card.data.card_name])
+	else:
+		# Units, Champions, and Gear go to the board exhausted
+		card.zone = CardInstance.Zone.BOARD
+		card.exhaust()
+		p.board_slots[slot_index].append(card)
+		state.add_event("P%d played %s into slot %d." % [p.id, card.data.card_name, slot_index])
 
 func get_error_message() -> String:
 	return _error_message
