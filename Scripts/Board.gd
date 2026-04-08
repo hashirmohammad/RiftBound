@@ -688,7 +688,12 @@ func _render_runes(panel: Panel, runes: Array) -> void:
 		card.card_data = rune_inst.rune
 		card.update_visuals()
 		card.set_card_state(RiftCard.CardState.ON_BOARD)
-		card.modulate = Color(0.7, 0.7, 0.7, 1.0) if rune_inst.is_exhausted() else Color.WHITE
+		if rune_inst.is_exhausted():
+			card.rotation_degrees = 90.0
+			card.modulate = Color.WHITE
+		else:
+			card.rotation_degrees = 0.0
+			card.modulate = Color.WHITE
 		_rune_cards_visuals.append(card)
 
 func setup_rune_deck_click(callback: Callable) -> void:

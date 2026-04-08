@@ -56,6 +56,7 @@ func channel_runes(n: int) -> void:
 		if r == null:
 			return
 		r.zone = RuneInstance.Zone.RUNE_POOL
+		r.awaken()
 		rune_pool.append(r)
 
 func spend_runes(selected_runes: Array[RuneInstance]) -> bool:
@@ -65,9 +66,7 @@ func spend_runes(selected_runes: Array[RuneInstance]) -> bool:
 		if not rune_pool.has(rune):
 			return false
 	for rune in selected_runes:
-		rune_pool.erase(rune)
-		rune.zone = RuneInstance.Zone.RUNE_DECK
-		rune_deck.append(rune)
+		rune.exhaust()
 	return true
 
 func recycle_runes_to_bottom(rune: RuneInstance) -> void:

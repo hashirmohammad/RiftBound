@@ -48,14 +48,30 @@ func execute(state: GameState) -> void:
 
 	var card: CardInstance = p.hand[hand_index]
 
-	# Only spend runes if not in debug free play mode
 	if not DEBUG_FREE_PLAY:
 		var runes_to_spend: Array[RuneInstance] = []
-		for i in range(card.data.cost):
-			runes_to_spend.append(p.rune_pool[i])
+		for r in p.rune_pool:
+			if not r.is_exhausted():
+				runes_to_spend.append(r)
+			if runes_to_spend.size() >= card.data.cost:
+				break
 		if not p.spend_runes(runes_to_spend):
 			state.add_event("PLAY_CARD execute failed: not enough runes.")
 			return
+
+	card.zone = CardInstance.Zone.BOARD
+	p.hand.remove_at(hand_index)
+	card.exhaust()
+
+	p.board_slots[slot_index].append(card)
+
+	print("[PlayCardAction] P%d played %s into slot %d | board_slots[%d] size=%d" % [
+		p.id, card.data.card_name, slot_index, slot_index, p.board_slots[slot_index].size()
+	])
+
+	state.add_event("P%d played %s into slot %d." % [
+		p.id, card.data.card_name, slot_index
+	])
 
 	card.zone = CardInstance.Zone.BOARD
 	p.hand.remove_at(hand_index)

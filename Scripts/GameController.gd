@@ -17,20 +17,13 @@ func _ready() -> void:
 	state = GameEngine.start_game()
 	await wait_until_main()
 	refresh_all_ui()
-	if board.has_method("setup_rune_deck_click"):
-		board.setup_rune_deck_click(_on_rune_deck_clicked)
 
 func refresh_all_ui() -> void:
-	var p0 = state.players[0]
-	var p1 = state.players[1]
-
-	print("P0: ", state.deck_names[0], " | P1: ", state.deck_names[1])
-	print(" | Turn: ", state.turn_number,
-		" | Active Player: P", state.get_active_player().id,
-		" | Phase: ", state.phase)
+	var player = state.get_active_player()
+	var opponent = state.get_opponent()
 
 	if board.has_method("render_static_state"):
-		board.render_static_state(p0, p1)
+		board.render_static_state(player, opponent)
 
 	refresh_hand_ui()
 	refresh_board_ui()
