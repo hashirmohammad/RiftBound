@@ -161,3 +161,7 @@ text = "End Turn"
 
 [node name="GameController" type="Node" parent="." unique_id=540227294]
 script = ExtResource("9_ynf5e")
+
+[node name="StatusLabel" type="Label" parent="." unique_id=1649308434]
+offset_right = 40.0
+offset_bottom = 23.0
