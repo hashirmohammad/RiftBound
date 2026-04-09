@@ -35,37 +35,46 @@ func validate(state: GameState) -> bool:
 	if slot_index < 0 or slot_index >= p.board_slots.size():
 		_error_message = "Invalid PLAY_CARD: slot index out of range."
 		return false
-
+		
+	if state.awaiting_rune_payment:
+		_error_message = "Invalid PLAY_CARD: already waiting for rune payment."
+		return false
+	
 	return true
 
 func execute(state: GameState) -> void:
 	var p := state.get_active_player()
-	var hand_index := _find_hand_index(p)
+	var card := _find_card_in_hand(p)
 
-	if hand_index == -1:
+	if card == null:
 		state.add_event("PLAY_CARD execute failed: card disappeared from hand.")
 		return
 
-	var card: CardInstance = p.hand[hand_index]
+	if card.data.cost <= 0:
+		_finalize_play(state, p, card)
+		return
 
-	# Only spend runes if not in debug free play mode
-	if not DEBUG_FREE_PLAY:
-		var runes_to_spend: Array[RuneInstance] = []
-		for i in range(card.data.cost):
-			runes_to_spend.append(p.rune_pool[i])
-		if not p.spend_runes(runes_to_spend):
-			state.add_event("PLAY_CARD execute failed: not enough runes.")
-			return
+	state.awaiting_rune_payment = true
+	state.pending_payment_player_id = p.id
+	state.pending_card_uid = card.uid
+	state.pending_slot_index = slot_index
+	state.pending_card_cost = card.data.cost
+	state.selected_rune_uids.clear()
 
-	card.zone = CardInstance.Zone.BOARD
-	p.hand.remove_at(hand_index)
-	card.exhaust()
-
-	p.board_slots[slot_index].append(card)
-
-	print("[PlayCardAction] P%d played %s into slot %d | board_slots[%d] size=%d" % [
-		p.id, card.data.card_name, slot_index, slot_index, p.board_slots[slot_index].size()
+	state.add_event("P%d started paying %d runes for %s." % [
+		p.id, card.data.cost, card.data.card_name
 	])
+
+func _finalize_play(state: GameState, p: PlayerState, card: CardInstance) -> void:
+	var hand_index := _find_hand_index(p)
+	if hand_index == -1:
+		state.add_event("PLAY_CARD finalize failed: card disappeared from hand.")
+		return
+
+	p.hand.remove_at(hand_index)
+	card.zone = CardInstance.Zone.BOARD
+	card.exhaust()
+	p.board_slots[slot_index].append(card)
 
 	state.add_event("P%d played %s into slot %d." % [
 		p.id, card.data.card_name, slot_index

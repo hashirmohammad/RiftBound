@@ -1,5 +1,7 @@
 extends Control
 
+@onready var game_controller: Node = $"../GameController"
+
 const SCREEN_W = 1920.0
 const SCREEN_H = 1080.0
 const COLOR_BG     = Color("#0d1b35")
@@ -111,11 +113,9 @@ func _cache_player_slots() -> void:
 		push_warning("Board.gd: P1_Base not found or not a CardSlot.")
 
 func _setup_battlefield_halves() -> void:
-	# Player 0 = bottom
 	_p0_battlefield_left = _create_battlefield_half(_player_battlefield_panel, "P0_LeftHalf", 0)
 	_p0_battlefield_right = _create_battlefield_half(_player_battlefield_panel, "P0_RightHalf", 1)
 
-	# Player 1 = top
 	_p1_battlefield_left = _create_battlefield_half(_opponent_battlefield_panel, "P1_LeftHalf", 0)
 	_p1_battlefield_right = _create_battlefield_half(_opponent_battlefield_panel, "P1_RightHalf", 1)
 
@@ -140,11 +140,9 @@ func _create_battlefield_half(parent_panel: Panel, half_name: String, half_index
 	return panel
 
 func _spawn_battlefield_slots() -> void:
-	# Player 1 (top)
 	_p1_bf_slot_left = _create_battlefield_slot(_p1_battlefield_left, "P1_Left")
 	_p1_bf_slot_right = _create_battlefield_slot(_p1_battlefield_right, "P1_Right")
 
-	# Player 0 (bottom)
 	_p0_bf_slot_left = _create_battlefield_slot(_p0_battlefield_left, "P0_Left")
 	_p0_bf_slot_right = _create_battlefield_slot(_p0_battlefield_right, "P0_Right")
 
@@ -434,11 +432,9 @@ func render_board() -> void:
 	_render_player_slots(state.players[0], _player_slot_nodes)
 	_render_player_slots(state.players[1], _p1_slot_nodes)
 
-	# Player 1 = top
 	_render_battlefield_lane(state.players[1].battlefield_slots[0], _p1_bf_slot_left)
 	_render_battlefield_lane(state.players[1].battlefield_slots[1], _p1_bf_slot_right)
 
-	# Player 0 = bottom
 	_render_battlefield_lane(state.players[0].battlefield_slots[0], _p0_bf_slot_left)
 	_render_battlefield_lane(state.players[0].battlefield_slots[1], _p0_bf_slot_right)
 
@@ -481,7 +477,7 @@ func _render_battlefield_lane(cards: Array, slot: CardSlot) -> void:
 		card.setup_from_card_instance(card_instance)
 		card.set_card_state(RiftCard.CardState.ON_BOARD)
 		card.rotation_degrees = 90.0 if card_instance.is_exhausted() else 0.0
-		
+
 func render_slot(player: PlayerState, slot_index: int) -> void:
 	var slots = _player_slot_nodes if player.id == 0 else _p1_slot_nodes
 	if slot_index >= slots.size():
@@ -565,15 +561,14 @@ func render_static_state(player: PlayerState, opponent: PlayerState) -> void:
 	_render_legend_panel(_player_champion_legend, player.legend)
 	_render_legend_panel(_opponent_champion_legend, opponent.legend)
 
-	# These are the selectable battlefield cards, not the unit-placement lanes.
 	_render_battlefields(_player_battlefield_panel, player.battlefields, player.picked_battlefield)
 	_render_battlefields(_opponent_battlefield_panel, opponent.battlefields, opponent.picked_battlefield)
 
-	_render_arena_pick(_arena_p0_panel, player.picked_battlefield, "Arena 1" % player.id)
-	_render_arena_pick(_arena_p1_panel, opponent.picked_battlefield, "Arena 2" % opponent.id)
+	_render_arena_pick(_arena_p0_panel, player.picked_battlefield, "Arena 1")
+	_render_arena_pick(_arena_p1_panel, opponent.picked_battlefield, "Arena 2")
 
-	_render_runes(_player_runes_panel, player.rune_pool)
-	_render_runes(_opponent_runes_panel, opponent.rune_pool)
+	_render_runes(_player_runes_panel, player.rune_pool, player.id)
+	_render_runes(_opponent_runes_panel, opponent.rune_pool, opponent.id)
 
 func _render_legend_panel(panel: Panel, legend_instance: CardInstance) -> void:
 	if panel == null or legend_instance == null or legend_instance.data == null:
@@ -658,7 +653,7 @@ func _clear_rune_visuals() -> void:
 			card.queue_free()
 	_rune_cards_visuals.clear()
 
-func _render_runes(panel: Panel, runes: Array) -> void:
+func _render_runes(panel: Panel, runes: Array, player_id: int) -> void:
 	if panel == null:
 		return
 
@@ -674,8 +669,12 @@ func _render_runes(panel: Panel, runes: Array) -> void:
 	var total_width: float = float(count - 1) * spacing
 	var start_x: float = (panel.size.x / 2.0) - (total_width / 2.0)
 
+	var gs: GameState = game_controller.state as GameState
+	var active_player_id: int = gs.get_active_player().id
+	var is_current_player_panel: bool = (player_id == active_player_id)
+
 	for i in range(count):
-		var rune_inst = runes[i]
+		var rune_inst: RuneInstance = runes[i]
 		if rune_inst == null or rune_inst.rune == null:
 			continue
 
@@ -687,6 +686,25 @@ func _render_runes(panel: Panel, runes: Array) -> void:
 		card.card_uid = rune_inst.uid
 		card.card_data = rune_inst.rune
 		card.update_visuals()
+
+		var is_exhausted: bool = rune_inst.is_exhausted()
+		var is_selected: bool = is_current_player_panel and gs.selected_rune_uids.has(rune_inst.uid)
+		var can_select: bool = is_current_player_panel and gs.awaiting_rune_payment and (not is_exhausted) and (not is_selected)
+
+		card.rotation_degrees = 90.0 if is_exhausted else 0.0
+
+		if is_exhausted:
+			card.modulate = Color(0.7, 0.7, 0.7, 1.0)
+		elif is_selected:
+			card.modulate = Color(0.6, 1.0, 0.6, 1.0)
+		elif can_select:
+			card.modulate = Color(1.15, 1.15, 0.75, 1.0)
+		else:
+			card.modulate = Color.WHITE
+
 		card.set_card_state(RiftCard.CardState.ON_BOARD)
-		card.modulate = Color(0.7, 0.7, 0.7, 1.0) if rune_inst.is_exhausted() else Color.WHITE
 		_rune_cards_visuals.append(card)
+		
+func render_rune_panels(p0: PlayerState, p1: PlayerState) -> void:
+	_render_runes(_player_runes_panel, p0.rune_pool, p0.id)
+	_render_runes(_opponent_runes_panel, p1.rune_pool, p1.id)

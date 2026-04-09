@@ -5,6 +5,12 @@ const POINTS_TO_WIN: int = 8
 var players: Array = []              # [PlayerState, PlayerState]
 var active_player_index: int = 0     # whose turn it is
 var turn_number: int = 1
+var awaiting_rune_payment: bool = false
+var pending_card_uid: int = -1
+var pending_slot_index: int = -1
+var pending_card_cost: int = 0
+var selected_rune_uids: Array[int] = []
+var pending_payment_player_id: int = -1
 var phase: String = "START"          # keep as string for now (we'll enum later)
 
 # Stores the randomly picked deck name for each player

@@ -33,6 +33,22 @@ func _try_start_drag() -> void:
 	var card_found = _get_card_under_cursor()
 	if card_found == null:
 		return
+	var state : GameState = game_controller.state
+
+	# If we are paying for a card, only rune clicks are allowed.
+	if state.awaiting_rune_payment:
+		var rune_instance := _get_payment_player_rune_instance(card_found.card_uid)
+		if rune_instance != null:
+			game_controller.try_pick_runes_to_spend(card_found.card_uid)
+		else:
+			game_controller.status_label.text = "Finish selecting runes first."
+		return
+		
+	# FIRST: check whether this clicked visual is a rune
+	var rune_instance := _get_payment_player_rune_instance(card_found.card_uid)
+	if rune_instance != null:
+		game_controller.try_pick_runes_to_spend(card_found.card_uid)
+		return
 
 	var zone := _get_active_player_card_zone(card_found.card_uid)
 
@@ -51,8 +67,7 @@ func _try_start_drag() -> void:
 		card_manager_reference.start_drag(card_found)
 		return
 
-	# battlefield -> base is allowed
-# battlefield -> base is allowed only if the card is AWAKEN
+	# battlefield -> base is allowed only if the card is AWAKEN
 	if zone == "ARENA":
 		var card_instance = _get_active_player_card_instance(card_found.card_uid)
 		if card_instance == null:
@@ -82,7 +97,14 @@ func _try_release_dragged_card() -> void:
 			if slot_index != -1:
 				var played: bool = game_controller.try_play_card_to_slot(dragged_card.card_uid, slot_index)
 				if played:
-					card_manager_reference.clear_dragged_card()
+					if game_controller.state.awaiting_rune_payment:
+						card_manager_reference.return_dragged_card_to_hand()
+						if game_controller.has_method("refresh_payment_ui"):
+							game_controller.refresh_payment_ui()
+						else:
+							game_controller.refresh_all_ui()
+					else:
+						card_manager_reference.clear_dragged_card()
 					return
 
 		params.collision_mask = COLLISION_MASK_HAND
@@ -192,6 +214,21 @@ func _get_active_player_battlefield_index(card_uid: int) -> int:
 				return i
 
 	return -1
+
+func _get_payment_player_rune_instance(rune_uid: int) -> RuneInstance:
+	var state: GameState = game_controller.state
+	var player: PlayerState
+
+	if state.awaiting_rune_payment and state.pending_payment_player_id != -1:
+		player = state.players[state.pending_payment_player_id]
+	else:
+		player = state.get_active_player()
+
+	for rune in player.rune_pool:
+		if rune.uid == rune_uid:
+			return rune
+
+	return null
 
 func _get_card_under_cursor():
 	var space_state = get_world_2d().direct_space_state

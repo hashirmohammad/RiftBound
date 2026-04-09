@@ -14,6 +14,7 @@ var rune_pool: Array[RuneInstance] = []
 var legend: CardInstance
 var champion: CardInstance
 var board_slots: Array = [[], [], [], [], [], [], [], []]
+var rune_slots: Array = [[], [], [], [], [], [], [], [], [], [], [], []]
 
 # Two battlefield slots, one for each arena choice.
 # battlefield_slots[0] = left / arena 1
@@ -36,7 +37,7 @@ func rune_count_in_deck() -> int:
 
 func rune_count_in_pool() -> int:
 	return rune_pool.size()
-
+	
 func awaken_rune_count() -> int:
 	var count = 0
 	for r in rune_pool:
@@ -58,16 +59,14 @@ func channel_runes(n: int) -> void:
 		r.zone = RuneInstance.Zone.RUNE_POOL
 		rune_pool.append(r)
 
-func spend_runes(selected_runes: Array[RuneInstance]) -> bool:
-	for rune in selected_runes:
-		if rune == null:
-			return false
-		if not rune_pool.has(rune):
-			return false
-	for rune in selected_runes:
-		rune_pool.erase(rune)
-		rune.zone = RuneInstance.Zone.RUNE_DECK
-		rune_deck.append(rune)
+func spend_runes(rune: RuneInstance) -> bool:
+
+	if rune == null:
+		return false
+	if not rune_pool.has(rune):
+		return false
+
+	rune.exhaust()
 	return true
 
 func recycle_runes_to_bottom(rune: RuneInstance) -> void:
