@@ -1,6 +1,7 @@
+@tool
 extends Control
 
-@onready var game_controller: Node = $"../GameController"
+@onready var game_controller: Node = $"../GameController" if not Engine.is_editor_hint() else null
 
 const SCREEN_W     = 1920.0
 const SCREEN_H     = 1080.0
@@ -23,7 +24,9 @@ const CARD_SLOT_SCENE = preload("res://Scenes/CardSlot.tscn")
 
 # Public panel references — GameController renders card visuals into these
 var player_battlefield_panel:   Panel = null
+var player_battlefield_right:   Panel = null
 var opponent_battlefield_panel: Panel = null
+var opponent_battlefield_right: Panel = null
 var player_champion_legend:     Panel = null
 var opponent_champion_legend:   Panel = null
 var player_main_deck:           Panel = null
@@ -34,6 +37,10 @@ var player_runes_panel:         Panel = null
 var opponent_runes_panel:       Panel = null
 var arena_p0_panel:             Panel = null
 var arena_p1_panel:             Panel = null
+
+# Base panel references — used to fit slot collisions
+var player_base_panel:   Panel = null
+var opponent_base_panel: Panel = null
 
 # Slot nodes — used by CardManager for highlight routing
 var _player_slot_nodes: Array = []
@@ -69,9 +76,14 @@ func _ready() -> void:
 	add_rect(Vector2(0, ph + DIVIDER_H + ARENA_H), Vector2(SCREEN_W, DIVIDER_H), COLOR_DIV)
 	build_player(ph + DIVIDER_H * 2 + ARENA_H, false, ph)
 
+	if not Engine.is_editor_hint():
+		call_deferred("_post_ready_setup")
+
+func _post_ready_setup() -> void:
 	_cache_player_slots()
 	_setup_battlefield_halves()
 	_spawn_battlefield_slots()
+	_fit_zone_collisions()
 
 # ─── Slot Setup ───────────────────────────────────────────────────────────────
 
@@ -82,40 +94,53 @@ func _cache_player_slots() -> void:
 	var p0_base = get_node_or_null("../P0/P0_Base")
 	if p0_base and p0_base is CardSlot:
 		_player_slot_nodes.append(p0_base)
+		_fit_slot_to_panel(p0_base, player_base_panel)
 	else:
 		push_warning("Board.gd: P0_Base not found or not a CardSlot.")
 
 	var p1_base = get_node_or_null("../P1/P1_Base")
 	if p1_base and p1_base is CardSlot:
 		_p1_slot_nodes.append(p1_base)
+		_fit_slot_to_panel(p1_base, opponent_base_panel)
 	else:
 		push_warning("Board.gd: P1_Base not found or not a CardSlot.")
 
+func _fit_zone_collisions() -> void:
+	_fit_collision_to_panel(get_node_or_null("../P0/P0_Battlefield/P0_Battlefield1"), player_battlefield_panel)
+	_fit_collision_to_panel(get_node_or_null("../P0/P0_Battlefield/P0_Battlefield2"), player_battlefield_right)
+	_fit_collision_to_panel(get_node_or_null("../P1/P1_Battlefield/P1_Battlefield1"), opponent_battlefield_panel)
+	_fit_collision_to_panel(get_node_or_null("../P1/P1_Battlefield/P1_Battlefield2"), opponent_battlefield_right)
+	_fit_collision_to_panel(get_node_or_null("../P0_Arena"), arena_p0_panel)
+	_fit_collision_to_panel(get_node_or_null("../P1_Arena"), arena_p1_panel)
+
+func _fit_collision_to_panel(node: Node2D, panel: Panel) -> void:
+	if node == null or panel == null:
+		return
+	node.global_position = panel.global_position + panel.size / 2.0
+	var area = node.get_node_or_null("Area2D")
+	if area:
+		var shape_node = area.get_node_or_null("CollisionShape2D")
+		if shape_node and shape_node.shape is RectangleShape2D:
+			shape_node.shape      = shape_node.shape.duplicate()
+			shape_node.shape.size = panel.size - Vector2(BORDER_W * 2, BORDER_W * 2)
+
+func _fit_slot_to_panel(slot: CardSlot, panel: Panel) -> void:
+	if slot == null or panel == null:
+		return
+	slot.scale           = Vector2(1.0, 1.0)
+	slot.global_position = panel.global_position + panel.size / 2.0
+	var area = slot.get_node_or_null("Area2D")
+	if area:
+		var shape_node = area.get_node_or_null("CollisionShape2D")
+		if shape_node and shape_node.shape is RectangleShape2D:
+			shape_node.shape      = shape_node.shape.duplicate()
+			shape_node.shape.size = panel.size - Vector2(BORDER_W * 2, BORDER_W * 2)
+
 func _setup_battlefield_halves() -> void:
-	_p0_battlefield_left  = _create_battlefield_half(player_battlefield_panel,   "P0_LeftHalf",  0)
-	_p0_battlefield_right = _create_battlefield_half(player_battlefield_panel,   "P0_RightHalf", 1)
-	_p1_battlefield_left  = _create_battlefield_half(opponent_battlefield_panel, "P1_LeftHalf",  0)
-	_p1_battlefield_right = _create_battlefield_half(opponent_battlefield_panel, "P1_RightHalf", 1)
-
-func _create_battlefield_half(parent_panel: Panel, half_name: String, half_index: int) -> Panel:
-	if parent_panel == null:
-		return null
-
-	var existing = parent_panel.get_node_or_null(half_name)
-	if existing and existing is Panel:
-		return existing
-
-	var half_gap = 8.0
-	var half_w   = (parent_panel.size.x - half_gap) / 2.0
-
-	var panel          = Panel.new()
-	panel.name         = half_name
-	panel.position     = Vector2(0, 0) if half_index == 0 else Vector2(half_w + half_gap, 0)
-	panel.size         = Vector2(half_w, parent_panel.size.y)
-	panel.add_theme_stylebox_override("panel", make_style())
-	parent_panel.add_child(panel)
-
-	return panel
+	_p0_battlefield_left  = player_battlefield_panel
+	_p0_battlefield_right = player_battlefield_right
+	_p1_battlefield_left  = opponent_battlefield_panel
+	_p1_battlefield_right = opponent_battlefield_right
 
 func _spawn_battlefield_slots() -> void:
 	_p1_bf_slot_left  = _create_battlefield_slot(_p1_battlefield_left,  "P1_Left")
@@ -152,6 +177,7 @@ func _create_battlefield_slot(panel: Panel, slot_name: String) -> CardSlot:
 # ─── Slot Detection ───────────────────────────────────────────────────────────
 
 func get_slot_index_under_mouse() -> int:
+	if game_controller == null: return -1
 	var active_id: int = game_controller.state.get_active_player().id
 	var slots          = _player_slot_nodes if active_id == 0 else _p1_slot_nodes
 	var mouse_pos      = get_global_mouse_position()
@@ -283,6 +309,7 @@ func build_player(y: float, flip: bool, ph: float) -> void:
 	var tw  = SCREEN_W - MANA_COL_W - GAP
 	var cw  = floor(tw * 0.14)
 	var lw  = tw - cw * 2 - GAP * 2
+	var bfw = floor((lw - GAP) / 2.0)
 	var rdw = floor(lw * 0.15)
 	var xl  = float(MANA_COL_W)
 	var xc  = xl + lw + GAP
@@ -295,9 +322,10 @@ func build_player(y: float, flip: bool, ph: float) -> void:
 	var rb  = inn - re * 2 - GAP * 2
 
 	var zones = [
-		["BATTLEFIELD",     xl,         y1, lw,                  re],
-		["CHAMPION LEGEND", xc,         y1, cw,                  re],
-		["CHOSEN CHAMPION", xr,         y1, cw,                  re],
+		["BATTLEFIELD 1",          xl,         y1, bfw,                 re],
+		["BATTLEFIELD 2",          xl+bfw+GAP, y1, bfw,                 re],
+		["LEGEND",          xc,         y1, cw,                  re],
+		["CHAMPION",        xr,         y1, cw,                  re],
 		["BASE",            xl,         y2, lw + cw + GAP,       re],
 		["MAIN DECK",       xr,         y2, cw,                  re],
 		["RUNE DECK",       xl,         y3, rdw,                 rb],
@@ -313,16 +341,20 @@ func build_player(y: float, flip: bool, ph: float) -> void:
 
 		if zname == "RUNES": runes_ref = p
 
-		if   not flip and zname == "BATTLEFIELD":     player_battlefield_panel   = p
-		elif flip     and zname == "BATTLEFIELD":     opponent_battlefield_panel = p
-		if   not flip and zname == "CHAMPION LEGEND": player_champion_legend     = p
-		elif flip     and zname == "CHAMPION LEGEND": opponent_champion_legend   = p
+		if   not flip and zname == "BATTLEFIELD 1":           player_battlefield_panel   = p
+		elif flip     and zname == "BATTLEFIELD 1":           opponent_battlefield_panel = p
+		if   not flip and zname == "BATTLEFIELD 2":           player_battlefield_right   = p
+		elif flip     and zname == "BATTLEFIELD 2":           opponent_battlefield_right = p
+		if   not flip and zname == "LEGEND":           player_champion_legend     = p
+		elif flip     and zname == "LEGEND":           opponent_champion_legend   = p
 		if   not flip and zname == "MAIN DECK":       player_main_deck           = p
 		elif flip     and zname == "MAIN DECK":       opponent_main_deck         = p
 		if   not flip and zname == "RUNE DECK":       player_rune_deck           = p
 		elif flip     and zname == "RUNE DECK":       opponent_rune_deck         = p
 		if   not flip and zname == "RUNES":           player_runes_panel         = p
 		elif flip     and zname == "RUNES":           opponent_runes_panel       = p
+		if   not flip and zname == "BASE":            player_base_panel          = p
+		elif flip     and zname == "BASE":            opponent_base_panel        = p
 
 		if zname == "BASE":
 			add_image(p, tint_gold("res://Assets/RiftBoundLogo.jpg"), -0.2, -0.5, 1.2, 1.5, 0.0, 0.0, 0.0, 0.0, Color(0.83, 0.68, 0.21, 0.55))
