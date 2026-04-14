@@ -1,10 +1,9 @@
 [gd_scene format=3 uid="uid://db3x6hhv5s5yi"]
 
-[ext_resource type="Script" uid="uid://d10inoh50ig7f" path="res://Scripts/CardManager.gd" id="1_21xkr"]
 [ext_resource type="PackedScene" uid="uid://i2v3j52mwfha" path="res://Scenes/Board.tscn" id="1_344ge"]
-[ext_resource type="Script" uid="uid://qq14kdatojop" path="res://Scripts/main.gd" id="1_hptm8"]
+[ext_resource type="Script" uid="uid://qq14kdatojop" path="res://Scripts/FrontEnd/main.gd" id="1_hptm8"]
 [ext_resource type="PackedScene" uid="uid://d30bkc8l8s6ad" path="res://Scenes/Arena.tscn" id="2_h1bgf"]
-[ext_resource type="Script" uid="uid://b407ds4aw5ilw" path="res://Scripts/Board.gd" id="2_hptm8"]
+[ext_resource type="Script" uid="uid://b407ds4aw5ilw" path="res://Scripts/FrontEnd/Board.gd" id="2_hptm8"]
 [ext_resource type="PackedScene" uid="uid://bdtm88erd1wam" path="res://Scenes/CardSlot.tscn" id="2_jjvhh"]
 [ext_resource type="PackedScene" uid="uid://nb0qalao5ivo" path="res://Scenes/Battlefield.tscn" id="4_6iyac"]
 [ext_resource type="PackedScene" uid="uid://bcd6w6o1ruqom" path="res://Scenes/Hand.tscn" id="4_d1ilt"]
@@ -12,8 +11,8 @@
 [ext_resource type="PackedScene" uid="uid://w81buurym63b" path="res://Scenes/Runes.tscn" id="4_hptm8"]
 [ext_resource type="PackedScene" uid="uid://bi6khoh054nvq" path="res://Scenes/Point.tscn" id="4_k12tt"]
 [ext_resource type="PackedScene" uid="uid://4jxghshc0u46" path="res://Scenes/Legend.tscn" id="5_6iyac"]
-[ext_resource type="Script" uid="uid://dbj7q7e1mye34" path="res://Scripts/InputManager.gd" id="6_344ge"]
-[ext_resource type="Script" uid="uid://b4t67171v1thf" path="res://Scripts/GameController.gd" id="9_ynf5e"]
+[ext_resource type="Script" uid="uid://dbj7q7e1mye34" path="res://Scripts/FrontEnd/InputManager.gd" id="6_344ge"]
+[ext_resource type="Script" uid="uid://b4t67171v1thf" path="res://Scripts/FrontEnd/GameController.gd" id="9_ynf5e"]
 [ext_resource type="PackedScene" uid="uid://bjwex4dl6gep7" path="res://Scenes/RuneDeck.tscn" id="11_h1bgf"]
 [ext_resource type="PackedScene" uid="uid://23ypgw1gnlhb" path="res://Scenes/MainDeck.tscn" id="11_wsu2k"]
 [ext_resource type="PackedScene" uid="uid://cscpai8v2fbek" path="res://Scenes/Trash.tscn" id="12_k12tt"]
@@ -24,9 +23,6 @@ script = ExtResource("1_hptm8")
 [node name="Board" parent="." unique_id=272103127 instance=ExtResource("1_344ge")]
 z_index = -1
 script = ExtResource("2_hptm8")
-
-[node name="CardManager" type="Node2D" parent="." unique_id=1015727202]
-script = ExtResource("1_21xkr")
 
 [node name="InputManager" type="Node2D" parent="." unique_id=208591127]
 script = ExtResource("6_344ge")

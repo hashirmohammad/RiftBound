@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://bcd6w6o1ruqom"]
 
-[ext_resource type="Script" path="res://Scripts/HandManager.gd" id="1_handmgr"]
+[ext_resource type="Script" path="res://Scripts/FrontEnd/HandManager.gd" id="1_handmgr"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_r0y0a"]
 size = Vector2(1916, 126)
