@@ -1,10 +1,10 @@
 extends Node
 
-const GameEngine                  = preload("res://Scripts/game_engine.gd")
-const PlayCardAction              = preload("res://Scripts/play_card_action.gd")
-const EndTurnAction               = preload("res://Scripts/end_turn_action.gd")
-const MoveToBattlefieldAction     = preload("res://Scripts/move_to_battlefield_action.gd")
-const ReturnFromBattlefieldAction = preload("res://Scripts/return_from_battlefield_action.gd")
+const GameEngine                  = preload("res://Scripts//BackEnd/core/game_engine.gd")
+const PlayCardAction              = preload("res://Scripts/BackEnd/actions/play_card_action.gd")
+const EndTurnAction               = preload("res://Scripts/BackEnd/actions/end_turn_action.gd")
+const MoveToBattlefieldAction     = preload("res://Scripts/BackEnd/actions/move_to_battlefield_action.gd")
+const ReturnFromBattlefieldAction = preload("res://Scripts/BackEnd/actions/return_from_battlefield_action.gd")
 const CARD_SCENE                  = preload("res://Scenes/Card.tscn")
 
 var state: GameState
