@@ -82,7 +82,7 @@ func _render_player_slots(player: PlayerState, slots: Array) -> void:
 	for i in range(player.board_slots.size()):
 		if i >= slots.size() or slots[i] == null: continue
 		for ci in player.board_slots[i]:
-			_place_card(slots[i], ci, Vector2(0.8, 0.8))
+			_place_card(slots[i], ci, Vector2(0.35, 0.35))
 
 func _render_battlefield_lane(cards: Array, slot: CardSlot) -> void:
 	if slot == null: return
@@ -292,7 +292,9 @@ func try_play_card_to_slot(card_uid: int, slot_index: int) -> bool:
 	if state.awaiting_rune_payment:
 		refresh_payment_ui()
 	else:
-		refresh_all_ui()
+		refresh_hand_ui()
+		render_slot(player, slot_index)
+		_update_status_label()
 
 	return true
 

@@ -83,7 +83,10 @@ func _on_image_request_completed(result, response_code, headers, body) -> void:
 		push_error("Failed to decode image")
 		return
 
-	_set_card_texture(ImageTexture.create_from_image(image))
+	var tex = ImageTexture.create_from_image(image)
+	if card_data != null:
+		card_data.texture = tex
+	_set_card_texture(tex)
 
 func _set_card_texture(tex: Texture2D) -> void:
 	if card_image == null:

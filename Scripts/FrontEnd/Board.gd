@@ -94,22 +94,20 @@ func _cache_player_slots() -> void:
 	var p0_base = get_node_or_null("../P0/P0_Base")
 	if p0_base and p0_base is CardSlot:
 		_player_slot_nodes.append(p0_base)
-		_fit_slot_to_panel(p0_base, player_base_panel)
 	else:
-		push_warning("Board.gd: P0_Base not found or not a CardSlot.")
+		push_warning("Board.gd: P0_Base not found.")
 
 	var p1_base = get_node_or_null("../P1/P1_Base")
 	if p1_base and p1_base is CardSlot:
 		_p1_slot_nodes.append(p1_base)
-		_fit_slot_to_panel(p1_base, opponent_base_panel)
 	else:
-		push_warning("Board.gd: P1_Base not found or not a CardSlot.")
+		push_warning("Board.gd: P1_Base not found.")
 
 func _fit_zone_collisions() -> void:
-	_fit_collision_to_panel(get_node_or_null("../P0/P0_Battlefield/P0_Battlefield1"), player_battlefield_panel)
-	_fit_collision_to_panel(get_node_or_null("../P0/P0_Battlefield/P0_Battlefield2"), player_battlefield_right)
-	_fit_collision_to_panel(get_node_or_null("../P1/P1_Battlefield/P1_Battlefield1"), opponent_battlefield_panel)
-	_fit_collision_to_panel(get_node_or_null("../P1/P1_Battlefield/P1_Battlefield2"), opponent_battlefield_right)
+	_fit_collision_to_panel(get_node_or_null("../P0/P0_Battlefield1"), player_battlefield_panel)
+	_fit_collision_to_panel(get_node_or_null("../P0/P0_Battlefield2"), player_battlefield_right)
+	_fit_collision_to_panel(get_node_or_null("../P1/P1_Battlefield1"), opponent_battlefield_panel)
+	_fit_collision_to_panel(get_node_or_null("../P1/P1_Battlefield2"), opponent_battlefield_right)
 	_fit_collision_to_panel(get_node_or_null("../P0_Arena"), arena_p0_panel)
 	_fit_collision_to_panel(get_node_or_null("../P1_Arena"), arena_p1_panel)
 
@@ -124,17 +122,6 @@ func _fit_collision_to_panel(node: Node2D, panel: Panel) -> void:
 			shape_node.shape      = shape_node.shape.duplicate()
 			shape_node.shape.size = panel.size - Vector2(BORDER_W * 2, BORDER_W * 2)
 
-func _fit_slot_to_panel(slot: CardSlot, panel: Panel) -> void:
-	if slot == null or panel == null:
-		return
-	slot.scale           = Vector2(1.0, 1.0)
-	slot.global_position = panel.global_position + panel.size / 2.0
-	var area = slot.get_node_or_null("Area2D")
-	if area:
-		var shape_node = area.get_node_or_null("CollisionShape2D")
-		if shape_node and shape_node.shape is RectangleShape2D:
-			shape_node.shape      = shape_node.shape.duplicate()
-			shape_node.shape.size = panel.size - Vector2(BORDER_W * 2, BORDER_W * 2)
 
 func _setup_battlefield_halves() -> void:
 	_p0_battlefield_left  = player_battlefield_panel
@@ -160,8 +147,7 @@ func _create_battlefield_slot(panel: Panel, slot_name: String) -> CardSlot:
 	slot.name          = slot_name
 	panel.add_child(slot)
 
-	var usable_h  = panel.size.y - 30.0
-	slot.position = Vector2(panel.size.x / 2.0, usable_h / 2.0 + 12.0)
+	slot.position = panel.size / 2.0
 
 	var area = slot.get_node_or_null("Area2D")
 	if area:
@@ -170,7 +156,7 @@ func _create_battlefield_slot(panel: Panel, slot_name: String) -> CardSlot:
 		var shape_node = area.get_node_or_null("CollisionShape2D")
 		if shape_node and shape_node.shape is RectangleShape2D:
 			shape_node.shape      = shape_node.shape.duplicate()
-			shape_node.shape.size = Vector2(panel.size.x - 16.0, usable_h)
+			shape_node.shape.size = panel.size - Vector2(BORDER_W * 2, BORDER_W * 2)
 
 	return slot
 
