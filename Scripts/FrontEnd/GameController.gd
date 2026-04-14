@@ -64,7 +64,7 @@ func render_slot(player: PlayerState, slot_index: int) -> void:
 	var slot = slots[slot_index]
 	slot.clear_cards()
 	for ci in player.board_slots[slot_index]:
-		_place_card(slot, ci, Vector2(0.8, 0.8))
+		_place_card(slot, ci, Vector2(0.35, 0.35))
 
 func render_arena_slot(player: PlayerState) -> void:
 	if player.id == 1:
