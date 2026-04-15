@@ -53,12 +53,20 @@ static func rune_from_string(s: String) -> int:
 ## FIX: new helper used by from_dict() and card_database.gd filtering
 static func type_from_string(s: String) -> int:
 	match s.strip_edges().to_lower():
-		"unit":     return CardType.UNIT
-		"spell":    return CardType.SPELL
-		"rune":     return CardType.RUNE
-		"champion": return CardType.CHAMPION
-		"gear":		return CardType.GEAR
-		_:          return CardType.UNIT
+		"unit":           return CardType.UNIT
+		"signature unit": return CardType.UNIT
+		"champion unit":  return CardType.UNIT
+		"token unit":     return CardType.UNIT
+		"spell":          return CardType.SPELL
+		"signature spell":return CardType.SPELL
+		"rune":           return CardType.RUNE
+		"basic rune":     return CardType.RUNE
+		"champion":       return CardType.CHAMPION
+		"champion legend":return CardType.CHAMPION
+		"legend":         return CardType.CHAMPION
+		"gear":           return CardType.GEAR
+		"battlefield":    return CardType.GEAR
+		_:                return CardType.UNIT
 
 static func from_dict(d: Dictionary) -> CardData:
 	var c := CardData.new()

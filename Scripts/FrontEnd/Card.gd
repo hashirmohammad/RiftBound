@@ -12,10 +12,17 @@ enum CardState {
 
 const CARD_WIDTH  := 180.0
 const CARD_HEIGHT := 266.0
+const HOVER_SCALE    := Vector2(0.65, 0.65)
+const NORMAL_SCALE   := Vector2(0.4, 0.4)
 
 var card_uid:      int      = -1
 var card_data:     CardData = null
 var current_state: CardState = CardState.IN_HAND
+var _is_hovered: bool = false
+var _original_scale: Vector2 = Vector2.ONE
+var _original_z_index: int = 0
+var _original_rotation: float = 0.0
+var _hover_tween: Tween = null
 
 func _ready() -> void:
 	if http_request == null:
@@ -106,3 +113,51 @@ func _set_card_texture(tex: Texture2D) -> void:
 
 	var scale_factor: float = min(CARD_WIDTH / tex_size.x, CARD_HEIGHT / tex_size.y)
 	card_image.scale = Vector2(scale_factor, scale_factor)
+
+func _on_mouse_entered() -> void:
+	if current_state == CardState.DRAGGING:
+		return
+	if card_data != null and card_data.type == CardData.CardType.RUNE:
+		return
+	_is_hovered = true
+	_original_scale    = scale
+	_original_z_index  = z_index
+	_original_rotation = rotation_degrees
+	
+	if _hover_tween:
+		_hover_tween.kill()
+	
+	# Scale up by 1.5x from whatever the current scale is
+	var target_scale = _original_scale * 2.3
+	
+	_hover_tween = create_tween()
+	_hover_tween.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+	_hover_tween.tween_property(self, "scale", target_scale, 0.15)
+	_hover_tween.parallel().tween_property(self, "rotation_degrees", 0.0, 0.15)
+	z_index = 50
+
+func _on_mouse_exited() -> void:
+	if not _is_hovered:
+		return
+	_is_hovered = false
+	
+	if _hover_tween:
+		_hover_tween.kill()
+	
+	_hover_tween = create_tween()
+	_hover_tween.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+	_hover_tween.tween_property(self, "scale", _original_scale, 0.15)
+	_hover_tween.parallel().tween_property(self, "rotation_degrees", _original_rotation, 0.15)
+	z_index = _original_z_index
+
+func _input(event: InputEvent) -> void:
+	if event is InputEventMouseMotion:
+		var local_pos = to_local(get_global_mouse_position())
+		var half_w = (CARD_WIDTH * scale.x) / 2.0
+		var half_h = (CARD_HEIGHT * scale.y) / 2.0
+		var is_over = abs(local_pos.x) <= half_w and abs(local_pos.y) <= half_h
+
+		if is_over and not _is_hovered:
+			_on_mouse_entered()
+		elif not is_over and _is_hovered:
+			_on_mouse_exited()
