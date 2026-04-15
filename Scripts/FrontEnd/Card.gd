@@ -24,6 +24,7 @@ var _original_z_index: int = 0
 var _original_rotation: float = 0.0
 var _hover_tween: Tween = null
 var _original_position: Vector2 = Vector2.ZERO
+var _original_global_position: Vector2 = Vector2.ZERO
 
 func _ready() -> void:
 	if http_request == null:
@@ -124,32 +125,48 @@ func _on_mouse_entered() -> void:
 	_original_scale    = scale
 	_original_z_index  = z_index
 	_original_rotation = rotation_degrees
-	
+	_original_global_position = global_position
+
 	if _hover_tween:
 		_hover_tween.kill()
-	
-	# Scale up by 1.5x from whatever the current scale is
+
+	# Scale up by 2.7x from whatever the current scale is
 	var target_scale = _original_scale * 2.7
-	
+
 	_hover_tween = create_tween()
 	_hover_tween.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
 	_hover_tween.tween_property(self, "scale", target_scale, 0.15)
 	_hover_tween.parallel().tween_property(self, "rotation_degrees", 0.0, 0.15)
 	z_index = 50
 
+	# Clamp position only for hand cards so they stay within the viewport at full scale
+	if current_state == CardState.IN_HAND:
+		var viewport_size = get_viewport_rect().size
+		var half_w = (CARD_WIDTH  * target_scale.x) / 2.0
+		var half_h = (CARD_HEIGHT * target_scale.y) / 2.0
+		var clamped := global_position
+		clamped.x = clamp(clamped.x, half_w, viewport_size.x - half_w)
+		clamped.y = clamp(clamped.y, half_h, viewport_size.y - half_h)
+		if clamped != global_position:
+			_hover_tween.parallel().tween_property(self, "global_position", clamped, 0.15)
+
 func _on_mouse_exited() -> void:
 	if not _is_hovered:
 		return
 	_is_hovered = false
-	
+
 	if _hover_tween:
 		_hover_tween.kill()
-	
+
 	_hover_tween = create_tween()
 	_hover_tween.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
 	_hover_tween.tween_property(self, "scale", _original_scale, 0.15)
 	_hover_tween.parallel().tween_property(self, "rotation_degrees", _original_rotation, 0.15)
 	z_index = _original_z_index
+
+	# Restore original position for hand cards that were nudged by clamping
+	if current_state == CardState.IN_HAND:
+		_hover_tween.parallel().tween_property(self, "global_position", _original_global_position, 0.15)
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
