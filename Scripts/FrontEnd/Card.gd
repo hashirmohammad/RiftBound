@@ -23,6 +23,7 @@ var _original_scale: Vector2 = Vector2.ONE
 var _original_z_index: int = 0
 var _original_rotation: float = 0.0
 var _hover_tween: Tween = null
+var _original_position: Vector2 = Vector2.ZERO
 
 func _ready() -> void:
 	if http_request == null:
@@ -128,7 +129,7 @@ func _on_mouse_entered() -> void:
 		_hover_tween.kill()
 	
 	# Scale up by 1.5x from whatever the current scale is
-	var target_scale = _original_scale * 2.3
+	var target_scale = _original_scale * 2.7
 	
 	_hover_tween = create_tween()
 	_hover_tween.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
