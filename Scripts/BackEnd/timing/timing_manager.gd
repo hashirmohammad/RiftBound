@@ -14,12 +14,12 @@ extends RefCounted
 #   Last queued REACTION resolves first (LIFO).
 #   A REACTION may set context.is_cancelled = true to prevent combat damage.
 
-enum Window { NONE, SHOWDOWN }
+enum TimingWindow { NONE, SHOWDOWN }
 
-signal window_opened(window: Window)
-signal window_closed(window: Window)
+signal window_opened(window: TimingWindow)
+signal window_closed(window: TimingWindow)
 
-var current_window: Window = Window.NONE
+var current_window: TimingWindow = TimingWindow.NONE
 
 # LIFO reaction stack — entries: { effect: EffectInstance, source: UnitState, context: CombatContext }
 var _reaction_stack: Array[Dictionary] = []
@@ -27,18 +27,18 @@ var _reaction_stack: Array[Dictionary] = []
 # ── Showdown ──────────────────────────────────────────────────────────────────
 
 func open_showdown(context: CombatContext) -> ShowdownContext:
-	assert(current_window == Window.NONE, "Cannot open showdown: another window is active")
-	current_window = Window.SHOWDOWN
+	assert(current_window == TimingWindow.NONE, "Cannot open showdown: another window is active")
+	current_window = TimingWindow.SHOWDOWN
 	_reaction_stack.clear()
 	var sc := ShowdownContext.new(context)
-	window_opened.emit(Window.SHOWDOWN)
+	window_opened.emit(TimingWindow.SHOWDOWN)
 	return sc
 
 func close_showdown(showdown: ShowdownContext) -> void:
-	assert(current_window == Window.SHOWDOWN, "close_showdown called outside of showdown")
+	assert(current_window == TimingWindow.SHOWDOWN, "close_showdown called outside of showdown")
 	_resolve_reaction_stack(showdown.combat_context)
-	current_window = Window.NONE
-	window_closed.emit(Window.SHOWDOWN)
+	current_window = TimingWindow.NONE
+	window_closed.emit(TimingWindow.SHOWDOWN)
 
 # ── Action window ─────────────────────────────────────────────────────────────
 
@@ -48,7 +48,7 @@ func queue_action(
 		effect: EffectInstance,
 		source: UnitState,
 		context: CombatContext) -> void:
-	assert(current_window == Window.SHOWDOWN, "ACTION used outside of showdown window")
+	assert(current_window == TimingWindow.SHOWDOWN, "ACTION used outside of showdown window")
 	assert(effect.timing_window == "action", "Effect is not an ACTION ability")
 	if effect.ability_fn.is_valid():
 		effect.ability_fn.call(source, context, context.game_state)
@@ -62,7 +62,7 @@ func queue_reaction(
 		source: UnitState,
 		context: CombatContext,
 		showdown: ShowdownContext) -> void:
-	assert(current_window == Window.SHOWDOWN, "REACTION used outside of showdown window")
+	assert(current_window == TimingWindow.SHOWDOWN, "REACTION used outside of showdown window")
 	assert(effect.timing_window == "reaction", "Effect is not a REACTION ability")
 	_reaction_stack.push_back({
 		"effect": effect,

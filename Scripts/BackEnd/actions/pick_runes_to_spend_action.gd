@@ -98,6 +98,8 @@ func _finalize_pending_card_play(state: GameState) -> void:
 
 	if card.data.type == CardData.CardType.UNIT or card.data.type == CardData.CardType.CHAMPION:
 		var unit := UnitState.new(card, p.id)
+		for effect in KeywordParser.parse(card.data, state):
+			unit.effects.add(effect)
 		state.unit_registry.register(unit)
 		state.add_event("P%d unit registered: %s (uid=%d)." % [p.id, card.data.card_name, card.uid])
 

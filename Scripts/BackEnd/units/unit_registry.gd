@@ -43,4 +43,7 @@ func get_allied_count(player_id: int) -> int:
 	return get_units_for_player(player_id).size()
 
 func get_all() -> Array[UnitState]:
-	return Array(_units.values(), TYPE_OBJECT, "UnitState", null)
+	var result: Array[UnitState] = []
+	for unit in _units.values():
+		result.append(unit)
+	return result
