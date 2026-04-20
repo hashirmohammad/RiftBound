@@ -134,10 +134,14 @@ func _process_deaths(dead: Array[UnitState], context: CombatContext) -> void:
 	# Ordering: turn player's triggers first, then opponent's, registration order within
 	var pending_triggers: Array[Dictionary] = _collect_deathknell_triggers(dead, context)
 
-	# Move dead units to trash
+	# Move dead units to trash — order matters:
+	# 1. remove from board_slots/battlefield_slots on PlayerState
+	# 2. unregister from UnitRegistry
+	# 3. set zone to TRASH on CardInstance
 	for unit in dead:
-		unit.card_instance.zone = CardInstance.Zone.TRASH
+		context.game_state.remove_unit_from_board(unit.uid)
 		unit_registry.unregister(unit.uid)
+		unit.card_instance.zone = CardInstance.Zone.TRASH
 		context.game_state.event_log.append({
 			"event": "unit_died",
 			"uid": unit.uid,
