@@ -22,9 +22,6 @@ func validate(state: GameState) -> bool:
 		_error_message = "Invalid RUNE_PICKED: not in MAIN phase."
 		return false
 
-	var p : PlayerState = state.players[state.pending_payment_player_id]
-	var rune := _find_rune_in_pool(p)
-	
 	if not state.awaiting_rune_payment:
 		_error_message = "Invalid RUNE_PICKED: no card is waiting for payment."
 		return false
@@ -32,22 +29,30 @@ func validate(state: GameState) -> bool:
 	if player_id != state.pending_payment_player_id:
 		_error_message = "Invalid RUNE_PICKED: wrong paying player."
 		return false
-	
+
+	var p: PlayerState = state.players[state.pending_payment_player_id]
+	var rune := _find_rune_in_pool(p)
+
 	if rune == null:
 		_error_message = "Invalid RUNE_PICKED: rune uid not found in pool."
 		return false
-	
+
 	if rune.is_exhausted():
 		_error_message = "P%d cannot pick rune: rune is already exhausted." % p.id
+		return false
+
+	if state.selected_rune_uids.has(rune.uid):
+		_error_message = "Invalid RUNE_PICKED: rune already selected."
 		return false
 
 	return true
 
 func execute(state: GameState) -> void:
-	var p : PlayerState = state.players[state.pending_payment_player_id]
-
+	var p: PlayerState = state.players[state.pending_payment_player_id]
 	var rune: RuneInstance = _find_rune_in_pool(p)
+
 	if rune == null:
+		state.add_event("RUNE_PICKED execute failed: rune disappeared from pool.")
 		return
 
 	if not state.awaiting_rune_payment:
@@ -64,60 +69,38 @@ func execute(state: GameState) -> void:
 		return
 
 	state.selected_rune_uids.append(rune.uid)
+	p.runes_spent_this_turn += 1
 
 	state.add_event("P%d spends rune %s (uid=%d)." % [
 		p.id, rune.name(), rune.uid
 	])
 
-	if state.selected_rune_uids.size() >= state.pending_card_cost:
-		_finalize_pending_card_play(state)
-
-func _finalize_pending_card_play(state: GameState) -> void:
-	var p : PlayerState = state.players[state.pending_payment_player_id]
-
-	var hand_index := _find_pending_card_index(p, state.pending_card_uid)
-
-	if hand_index == -1:
-		state.add_event("Finalize pending play failed: card not found in hand.")
-		_clear_pending_payment(state)
+	# Still not enough runes selected yet
+	if state.selected_rune_uids.size() < state.pending_card_cost:
+		state.add_event("P%d has paid %d / %d runes for pending card." % [
+			p.id,
+			state.selected_rune_uids.size(),
+			state.pending_card_cost
+		])
 		return
 
-	var card: CardInstance = p.hand[hand_index]
-	p.hand.remove_at(hand_index)
+	# Enough runes selected: finalize the pending card play
+	var card := GameEngine.find_card_in_hand_by_uid(p, state.pending_card_uid)
+	if card == null:
+		state.add_event("Finalize pending play failed: card not found in hand.")
+		state.clear_rune_payment_state()
+		return
 
-	card.zone = CardInstance.Zone.BOARD
-	card.exhaust()
-	p.board_slots[state.pending_slot_index].append(card)
+	var paid_cost := state.pending_card_cost
+	var pending_slot := state.pending_slot_index
 
-	state.add_event("P%d played %s into slot %d after paying %d runes." % [
+	GameEngine.finalize_card_play(state, p, card, pending_slot)
+
+	state.add_event("P%d finished paying %d runes for %s." % [
 		p.id,
-		card.data.card_name,
-		state.pending_slot_index,
-		state.pending_card_cost
+		paid_cost,
+		card.data.card_name
 	])
-
-	if card.data.type == CardData.CardType.UNIT or card.data.type == CardData.CardType.CHAMPION:
-		var unit := UnitState.new(card, p.id)
-		for effect in KeywordParser.parse(card.data, state):
-			unit.effects.add(effect)
-		state.unit_registry.register(unit)
-		state.add_event("P%d unit registered: %s (uid=%d)." % [p.id, card.data.card_name, card.uid])
-
-	_clear_pending_payment(state)
-
-func _find_pending_card_index(player: PlayerState, target_uid: int) -> int:
-	for i in range(player.hand.size()):
-		if player.hand[i].uid == target_uid:
-			return i
-	return -1
-
-func _clear_pending_payment(state: GameState) -> void:
-	state.awaiting_rune_payment = false
-	state.pending_payment_player_id = -1
-	state.pending_card_uid = -1
-	state.pending_slot_index = -1
-	state.pending_card_cost = 0
-	state.selected_rune_uids.clear()
 
 func get_error_message() -> String:
 	return _error_message

@@ -90,3 +90,116 @@ static func end_turn(state: GameState) -> void:
 	state.active_player_index = 1 - state.active_player_index
 	state.turn_number += 1
 	start_turn(state)
+
+static func finalize_card_play(state: GameState, player: PlayerState, card: CardInstance, slot_index: int) -> void:
+	if state == null or player == null or card == null:
+		return
+
+	# Remove from hand
+	if player.hand.has(card):
+		player.hand.erase(card)
+
+	# Update card state
+	card.zone = CardInstance.Zone.BOARD
+	card.exhaust()
+
+	# Add to the player's board list
+	if not player.board.has(card):
+		player.board.append(card)
+
+	# Place into the chosen board slot
+	if slot_index >= 0 and slot_index < player.board_slots.size():
+		if not player.board_slots[slot_index].has(card):
+			player.board_slots[slot_index].append(card)
+
+	# Count as a successful play
+	player.cards_played_this_turn += 1
+
+	# Clear temporary payment state
+	state.clear_rune_payment_state()
+
+	# Log event
+	state.add_event("P%d played %s into board slot %d." % [player.id, card.data.card_name, slot_index])
+
+	# Register runtime unit if this card is a unit/champion
+	if card.data.type == CardData.CardType.UNIT or card.data.type == CardData.CardType.CHAMPION:
+		var unit := UnitState.new(card, player.id)
+		for effect in KeywordParser.parse(card.data, state):
+			unit.effects.add(effect)
+		state.unit_registry.register(unit)
+		state.add_event("P%d unit registered: %s (uid=%d)." % [player.id, card.data.card_name, card.uid])
+		
+static func find_card_in_hand_by_uid(player: PlayerState, card_uid: int) -> CardInstance:
+	for card in player.hand:
+		if card.uid == card_uid:
+			return card
+	return null
+		
+
+static func move_card_from_board_to_battlefield(
+	player: PlayerState,
+	card: CardInstance,
+	board_slot_index: int,
+	battlefield_slot_index: int
+) -> bool:
+	if player == null or card == null:
+		return false
+
+	if board_slot_index < 0 or board_slot_index >= player.board_slots.size():
+		return false
+
+	if battlefield_slot_index < 0 or battlefield_slot_index >= player.battlefield_slots.size():
+		return false
+
+	# Remove from flat board list
+	if player.board.has(card):
+		player.board.erase(card)
+
+	# Remove from board slot
+	if player.board_slots[board_slot_index].has(card):
+		player.board_slots[board_slot_index].erase(card)
+
+	# Add to battlefield slot
+	if not player.battlefield_slots[battlefield_slot_index].has(card):
+		player.battlefield_slots[battlefield_slot_index].append(card)
+
+	# Update card state
+	card.zone = CardInstance.Zone.ARENA
+	card.exhaust()
+
+	player.units_moved_this_turn += 1
+	return true
+
+static func move_card_from_battlefield_to_board(
+	player: PlayerState,
+	card: CardInstance,
+	battlefield_slot_index: int,
+	board_slot_index: int
+) -> bool:
+	if player == null or card == null:
+		return false
+
+	if battlefield_slot_index < 0 or battlefield_slot_index >= player.battlefield_slots.size():
+		return false
+
+	if board_slot_index < 0 or board_slot_index >= player.board_slots.size():
+		return false
+
+	# Remove from battlefield
+	if player.battlefield_slots[battlefield_slot_index].has(card):
+		player.battlefield_slots[battlefield_slot_index].erase(card)
+
+	# Add back to flat board list
+	if not player.board.has(card):
+		player.board.append(card)
+
+	# Add back to board slot
+	if not player.board_slots[board_slot_index].has(card):
+		player.board_slots[board_slot_index].append(card)
+
+	# Update card state
+	card.zone = CardInstance.Zone.BOARD
+	card.exhaust()
+
+	player.units_moved_this_turn += 1
+	return true

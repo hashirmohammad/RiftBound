@@ -2,7 +2,7 @@ class_name GameState
 
 const POINTS_TO_WIN: int = 8
 
-var players: Array = []              # [PlayerState, PlayerState]
+var players: Array[PlayerState] = []              # [PlayerState, PlayerState]
 var active_player_index: int = 0     # whose turn it is
 var turn_number: int = 1
 var phase: String = "START"          # keep as string for now (we'll enum later)
@@ -11,10 +11,10 @@ var phase: String = "START"          # keep as string for now (we'll enum later)
 var deck_names: Array[String] = ["", ""]
 
 # Event log for debugging / later replays
-var event_log: Array = []
+var event_log: Array[String] = []
 
 # Turn/phase controller (manages phase order + phase logic)
-var turn_system
+var turn_system: PlayerTurn
 
 # ── Combat systems ────────────────────────────────────────────────────────────
 var unit_registry: UnitRegistry
@@ -22,7 +22,7 @@ var timing_manager: TimingManager
 var combat_manager: CombatManager
 
 # ── Rune payment state ────────────────────────────────────────────────────────
-var awaiting_rune_payment: bool = false
+var awaiting_rune_payment: bool = false  # True while the player is currently selecting runes to pay for a card
 var pending_card_uid: int = -1
 var pending_slot_index: int = -1
 var pending_card_cost: int = 0
@@ -78,3 +78,21 @@ func remove_unit_from_board(uid: int) -> void:
 					player.trash.append(lane[i])
 					lane.remove_at(i)
 					return
+
+func clear_rune_payment_state() -> void:
+	awaiting_rune_payment = false
+	pending_card_uid = -1
+	pending_slot_index = -1
+	pending_card_cost = 0
+	selected_rune_uids.clear()
+	pending_payment_player_id = -1
+	
+func clear_combat_state() -> void:
+	awaiting_showdown = false
+	awaiting_damage_assignment = false
+	active_combat_context = null
+	active_showdown = null
+	
+func clear_temporary_state() -> void:
+	clear_rune_payment_state()
+	clear_combat_state()

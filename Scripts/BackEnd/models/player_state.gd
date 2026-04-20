@@ -16,6 +16,11 @@ var champion: CardInstance
 var board_slots: Array = [[], [], [], [], [], [], [], []]
 var rune_slots: Array = [[], [], [], [], [], [], [], [], [], [], [], []]
 
+# Per-turn counters
+var cards_played_this_turn: int = 0
+var runes_spent_this_turn: int = 0
+var units_moved_this_turn: int = 0
+
 # Two battlefield slots, one for each arena choice.
 # battlefield_slots[0] = left / arena 1
 # battlefield_slots[1] = right / arena 2
@@ -29,7 +34,11 @@ func pick_random_battlefield() -> void:
 	battlefields[index].set_state(BattlefieldInstance.State.USED)
 	picked_battlefield = battlefields[index]
 
-
+func reset_turn_counters() -> void:
+	cards_played_this_turn = 0
+	runes_spent_this_turn = 0
+	units_moved_this_turn = 0
+	
 # ---------- Rune helpers ----------
 
 func rune_count_in_deck() -> int:

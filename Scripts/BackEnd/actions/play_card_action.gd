@@ -22,6 +22,10 @@ func validate(state: GameState) -> bool:
 		_error_message = "Invalid PLAY_CARD: not in MAIN phase."
 		return false
 
+	if state.awaiting_rune_payment:
+		_error_message = "Invalid PLAY_CARD: already waiting for rune payment."
+		return false
+
 	var p := state.get_active_player()
 	var card := _find_card_in_hand(p)
 
@@ -29,17 +33,14 @@ func validate(state: GameState) -> bool:
 		_error_message = "Invalid PLAY_CARD: card uid not found in hand."
 		return false
 
-	if p.awaken_rune_count() < card.data.cost:
-		_error_message = "P%d cannot play card: not enough runes." % p.id
-		return false
 	if slot_index < 0 or slot_index >= p.board_slots.size():
 		_error_message = "Invalid PLAY_CARD: slot index out of range."
 		return false
-		
-	if state.awaiting_rune_payment:
-		_error_message = "Invalid PLAY_CARD: already waiting for rune payment."
+
+	if p.awaken_rune_count() < card.data.cost:
+		_error_message = "P%d cannot play card: not enough runes." % p.id
 		return false
-	
+
 	return true
 
 func execute(state: GameState) -> void:
@@ -51,7 +52,7 @@ func execute(state: GameState) -> void:
 		return
 
 	if card.data.cost <= 0:
-		_finalize_play(state, p, card)
+		GameEngine.finalize_card_play(state, p, card, slot_index)
 		return
 
 	state.awaiting_rune_payment = true
@@ -64,28 +65,6 @@ func execute(state: GameState) -> void:
 	state.add_event("P%d started paying %d runes for %s." % [
 		p.id, card.data.cost, card.data.card_name
 	])
-
-func _finalize_play(state: GameState, p: PlayerState, card: CardInstance) -> void:
-	var hand_index := _find_hand_index(p)
-	if hand_index == -1:
-		state.add_event("PLAY_CARD finalize failed: card disappeared from hand.")
-		return
-
-	p.hand.remove_at(hand_index)
-	card.zone = CardInstance.Zone.BOARD
-	card.exhaust()
-	p.board_slots[slot_index].append(card)
-
-	state.add_event("P%d played %s into slot %d." % [
-		p.id, card.data.card_name, slot_index
-	])
-
-	if card.data.type == CardData.CardType.UNIT or card.data.type == CardData.CardType.CHAMPION:
-		var unit := UnitState.new(card, p.id)
-		for effect in KeywordParser.parse(card.data, state):
-			unit.effects.add(effect)
-		state.unit_registry.register(unit)
-		state.add_event("P%d unit registered: %s (uid=%d)." % [p.id, card.data.card_name, card.uid])
 
 func get_error_message() -> String:
 	return _error_message

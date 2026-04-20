@@ -15,6 +15,10 @@ func validate(state: GameState) -> bool:
 		_error_message = "Cannot end turn while a combat showdown is active."
 		return false
 
+	if state.awaiting_damage_assignment:
+		_error_message = "Cannot end turn while damage assignment is pending."
+		return false
+
 	if player_id != state.get_active_player().id:
 		_error_message = "Invalid END_TURN: not this player's turn."
 		return false
@@ -26,6 +30,11 @@ func validate(state: GameState) -> bool:
 	return true
 
 func execute(state: GameState) -> void:
+	var current_player := state.get_active_player()
+	current_player.reset_turn_counters()
+
+	state.add_event("P%d ends their turn." % current_player.id)
+
 	# Advance from MAIN to END phase, which triggers the full end-of-turn
 	# phase chain in PlayerTurn. That chain handles switching players and
 	# calling start_turn() internally — do NOT call GameEngine.end_turn()
