@@ -5,12 +5,6 @@ const POINTS_TO_WIN: int = 8
 var players: Array = []              # [PlayerState, PlayerState]
 var active_player_index: int = 0     # whose turn it is
 var turn_number: int = 1
-var awaiting_rune_payment: bool = false
-var pending_card_uid: int = -1
-var pending_slot_index: int = -1
-var pending_card_cost: int = 0
-var selected_rune_uids: Array[int] = []
-var pending_payment_player_id: int = -1
 var phase: String = "START"          # keep as string for now (we'll enum later)
 
 # Stores the randomly picked deck name for each player
@@ -21,6 +15,24 @@ var event_log: Array = []
 
 # Turn/phase controller (manages phase order + phase logic)
 var turn_system
+
+# ── Combat systems ────────────────────────────────────────────────────────────
+var unit_registry: UnitRegistry
+var timing_manager: TimingManager
+var combat_manager: CombatManager
+
+# ── Rune payment state ────────────────────────────────────────────────────────
+var awaiting_rune_payment: bool = false
+var pending_card_uid: int = -1
+var pending_slot_index: int = -1
+var pending_card_cost: int = 0
+var selected_rune_uids: Array[int] = []
+var pending_payment_player_id: int = -1
+
+# ── Combat / showdown state ───────────────────────────────────────────────────
+var awaiting_showdown: bool = false
+var active_combat_context: CombatContext
+var active_showdown: ShowdownContext
 
 var _next_uid: int = 1
 
@@ -47,3 +59,21 @@ func get_winner_index() -> int:
 
 func is_game_over() -> bool:
 	return get_winner_index() != -1
+
+# Removes a CardInstance from any board or battlefield slot by uid and appends
+# it to that player's trash. Called by CombatManager after a unit dies so that
+# PlayerState stays in sync with UnitRegistry.
+func remove_unit_from_board(uid: int) -> void:
+	for player in players:
+		for slot in player.board_slots:
+			for i in range(slot.size() - 1, -1, -1):
+				if slot[i].uid == uid:
+					player.trash.append(slot[i])
+					slot.remove_at(i)
+					return
+		for lane in player.battlefield_slots:
+			for i in range(lane.size() - 1, -1, -1):
+				if lane[i].uid == uid:
+					player.trash.append(lane[i])
+					lane.remove_at(i)
+					return
