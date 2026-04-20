@@ -2,31 +2,31 @@
   "legend": "Darius",
   "legend_card": "OGN-253/298",
   "battlefields": [
-    { "card_id": "OGN-298/298", "name": "Zaun Warrens", "count": 1 },
-    { "card_id": "OGN-294/298", "name": "Trifarian War Camp", "count": 1 },
-    { "card_id": "OGN-290/298", "name": "The Arena's Greatest", "count": 1 }
+	{ "card_id": "OGN-298/298", "name": "Zaun Warrens", "count": 1 },
+	{ "card_id": "OGN-294/298", "name": "Trifarian War Camp", "count": 1 },
+	{ "card_id": "OGN-290/298", "name": "The Arena's Greatest", "count": 1 }
   ],
   "runes": [
-    { "card_id": "OGN-214a/298", "name": "Order Rune", "count": 6 },
-    { "card_id": "OGN-007a/298", "name": "Fury Rune", "count": 6 }
+	{ "card_id": "OGN-214a/298", "name": "Order Rune", "count": 6 },
+	{ "card_id": "OGN-007a/298", "name": "Fury Rune", "count": 6 }
   ],
   "cards": [
-    { "card_id": "OGN-245/298", "name": "Seal of Unity", "count": 3 },
-    { "card_id": "OGN-242/298", "name": "Baited Hook", "count": 3 },
-    { "card_id": "OGN-226/298", "name": "Spectral Matron", "count": 3 },
-    { "card_id": "OGN-221/298", "name": "Imperial Decree", "count": 1 },
-    { "card_id": "OGN-218/298", "name": "Vanguard Captain", "count": 3 },
-    { "card_id": "OGN-217/298", "name": "Trifarian Gloryseeker", "count": 3 },
-    { "card_id": "OGN-213/298", "name": "Hidden Blade", "count": 3 },
-    { "card_id": "OGN-211/298", "name": "Faithful Manufactor", "count": 2 },
-    { "card_id": "OGN-210/298", "name": "Daring Poro", "count": 1 },
-    { "card_id": "OGN-039/298", "name": "Kai'Sa, Survivor", "count": 1 },
-    { "card_id": "OGN-035/298", "name": "Vayne, Hunter", "count": 1 },
-    { "card_id": "OGN-029/298", "name": "Falling Star", "count": 2 },
-    { "card_id": "OGN-028/298", "name": "Draven, Showboat", "count": 3 },
-    { "card_id": "OGN-027/298", "name": "Darius, Trifarian", "count": 3 },
-    { "card_id": "OGN-013/298", "name": "Pouty Poro", "count": 3 },
-    { "card_id": "OGN-012/298", "name": "Noxus Hopeful", "count": 2 },
-    { "card_id": "OGN-004/298", "name": "Cleave", "count": 3 }
+	{ "card_id": "OGN-245/298", "name": "Seal of Unity", "count": 3 },
+	{ "card_id": "OGN-242/298", "name": "Baited Hook", "count": 3 },
+	{ "card_id": "OGN-226/298", "name": "Spectral Matron", "count": 3 },
+	{ "card_id": "OGN-221/298", "name": "Imperial Decree", "count": 1 },
+	{ "card_id": "OGN-218/298", "name": "Vanguard Captain", "count": 3 },
+	{ "card_id": "OGN-217/298", "name": "Trifarian Gloryseeker", "count": 3 },
+	{ "card_id": "OGN-213/298", "name": "Hidden Blade", "count": 3 },
+	{ "card_id": "OGN-211/298", "name": "Faithful Manufactor", "count": 2 },
+	{ "card_id": "OGN-210/298", "name": "Daring Poro", "count": 1 },
+	{ "card_id": "OGN-039/298", "name": "Kai'Sa, Survivor", "count": 1 },
+	{ "card_id": "OGN-035/298", "name": "Vayne, Hunter", "count": 1 },
+	{ "card_id": "OGN-029/298", "name": "Falling Star", "count": 2 },
+	{ "card_id": "OGN-028/298", "name": "Draven, Showboat", "count": 3 },
+	{ "card_id": "OGN-027/298", "name": "Darius, Trifarian", "count": 3 },
+	{ "card_id": "OGN-013/298", "name": "Pouty Poro", "count": 3 },
+	{ "card_id": "OGN-012/298", "name": "Noxus Hopeful", "count": 2 },
+	{ "card_id": "OGN-004/298", "name": "Cleave", "count": 3 }
   ]
 }
