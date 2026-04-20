@@ -37,11 +37,20 @@ func _process(_delta) -> void:
 			_pending_board_card = null
 
 func _input(event) -> void:
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
-		if event.pressed:
-			_try_start_drag()
-		else:
-			_try_release()
+	if event is InputEventMouseButton:
+		# Damage assignment mode — left-click adds, right-click removes
+		if game_controller.state.awaiting_damage_assignment:
+			if event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+				_try_assign_damage(1)
+			elif event.pressed and event.button_index == MOUSE_BUTTON_RIGHT:
+				_try_assign_damage(-1)
+			return
+
+		if event.button_index == MOUSE_BUTTON_LEFT:
+			if event.pressed:
+				_try_start_drag()
+			else:
+				_try_release()
 
 # ─── Press: pick up a card or begin selection ─────────────────────────────────
 
@@ -263,6 +272,16 @@ func _get_battlefield_index(card_uid: int) -> int:
 		for c in player.battlefield_slots[i]:
 			if c.uid == card_uid: return i
 	return -1
+
+func _try_assign_damage(delta: int) -> void:
+	var card_found = _get_card_under_cursor()
+	if card_found == null:
+		return
+	var ctx: CombatContext = game_controller.state.active_combat_context
+	for defender in ctx.defenders:
+		if defender.uid == card_found.card_uid:
+			game_controller.adjust_damage_assignment(defender.uid, delta)
+			return
 
 func _get_rune_instance(rune_uid: int) -> RuneInstance:
 	var state: GameState = game_controller.state

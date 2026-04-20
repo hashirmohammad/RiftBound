@@ -31,6 +31,7 @@ var pending_payment_player_id: int = -1
 
 # ── Combat / showdown state ───────────────────────────────────────────────────
 var awaiting_showdown: bool = false
+var awaiting_damage_assignment: bool = false
 var active_combat_context: CombatContext
 var active_showdown: ShowdownContext
 

@@ -58,16 +58,20 @@ static func assign_attacker_damage(context: CombatContext, pool: int) -> void:
 			context.attacker_assignments.get(defender.uid, 0) + remaining
 		remaining = 0
 
-# Assigns defender_pool damage among attackers (retaliation).
-# Simple version: distributes evenly; overflow goes to first attacker.
+# Assigns defender_pool damage evenly among attackers (retaliation).
+# Floor division applied to each attacker; remainder distributed one-per-unit
+# from the front. Example: 7 might vs 2 attackers → 4 to first, 3 to second.
 static func assign_defender_damage(context: CombatContext, pool: int) -> void:
-	var remaining := pool
-	for attacker in context.attackers:
-		if remaining <= 0:
-			break
+	if context.attackers.is_empty() or pool <= 0:
+		return
+	var count    := context.attackers.size()
+	var base     := pool / count
+	var remainder := pool % count
+	for i in range(count):
+		var dmg: int = base + (1 if i < remainder else 0)
+		var attacker: UnitState = context.attackers[i]
 		context.defender_assignments[attacker.uid] = \
-			context.defender_assignments.get(attacker.uid, 0) + remaining
-		remaining = 0
+			context.defender_assignments.get(attacker.uid, 0) + dmg
 
 # ── Simultaneous application ──────────────────────────────────────────────────
 

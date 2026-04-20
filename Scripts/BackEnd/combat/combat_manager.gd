@@ -187,6 +187,33 @@ func _collect_deathknell_triggers(
 	result.append_array(opponent_triggers)
 	return result
 
+# ── Player damage assignment resolution ──────────────────────────────────────
+
+# Auto-resolves combat with no player input — used when there is only one
+# defender (no split decision exists). Attacker damage is assigned via the
+# existing TANK-first lethal logic, then all damage is applied simultaneously.
+func auto_resolve(context: CombatContext) -> void:
+	CombatResolver.assign_attacker_damage(context, context.total_attacker_might)
+	CombatResolver.stage_damage(context)
+	CombatResolver.apply_all_damage(context)
+	var dead: Array[UnitState] = CombatResolver.collect_dead(context)
+	_process_deaths(dead, context)
+	_cleanup(context)
+	combat_resolved.emit(context)
+
+# Called by ConfirmDamageAction after the player has assigned attacker damage.
+# Writes assignments to context, stages all damage, applies simultaneously,
+# then processes deaths and cleans up.
+func apply_player_assignments(context: CombatContext, attacker_assignments: Dictionary) -> void:
+	for uid in attacker_assignments:
+		context.attacker_assignments[uid] = attacker_assignments[uid]
+	CombatResolver.stage_damage(context)
+	CombatResolver.apply_all_damage(context)
+	var dead: Array[UnitState] = CombatResolver.collect_dead(context)
+	_process_deaths(dead, context)
+	_cleanup(context)
+	combat_resolved.emit(context)
+
 # ── Step 7: Cleanup ───────────────────────────────────────────────────────────
 
 func _cleanup(context: CombatContext) -> void:

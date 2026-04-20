@@ -217,3 +217,10 @@ offset_top = 541.0
 offset_right = 1920.0
 offset_bottom = 639.0
 text = "Pass Priority"
+
+[node name="ConfirmDamageButton" type="Button" parent="." unique_id=355363715]
+offset_left = 1763.677
+offset_top = 541.0
+offset_right = 1920.0
+offset_bottom = 639.0
+text = "Confirm Damage"

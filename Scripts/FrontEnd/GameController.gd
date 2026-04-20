@@ -7,6 +7,7 @@ const MoveToBattlefieldAction     = preload("res://Scripts/BackEnd/actions/move_
 const ReturnFromBattlefieldAction = preload("res://Scripts/BackEnd/actions/return_from_battlefield_action.gd")
 const CommitToBattlefieldAction   = preload("res://Scripts/BackEnd/actions/commit_to_battlefield_action.gd")
 const PassPriorityAction          = preload("res://Scripts/BackEnd/actions/pass_priority_action.gd")
+const ConfirmDamageAction         = preload("res://Scripts/BackEnd/actions/confirm_damage_action.gd")
 const CARD_SCENE                  = preload("res://Scenes/Card.tscn")
 
 var state: GameState
@@ -21,6 +22,10 @@ var selected_board_uids: Array[int] = []
 @onready var deck_ui               = $"../P0/P0_MainDeck"
 @onready var cancel_payment_button = $"../CancelPaymentButton"
 @onready var pass_priority_button  = $"../PassPriorityButton"
+@onready var confirm_damage_button = $"../ConfirmDamageButton"
+
+# Attacker's pending damage assignments during the assignment phase: uid -> damage
+var _pending_assignments: Dictionary = {}
 
 func _ready() -> void:
 	state = GameEngine.start_game()
@@ -30,6 +35,8 @@ func _ready() -> void:
 	cancel_payment_button.visible  = false
 	pass_priority_button.pressed.connect(_on_pass_priority_pressed)
 	pass_priority_button.visible   = false
+	confirm_damage_button.pressed.connect(_on_confirm_damage_pressed)
+	confirm_damage_button.visible  = false
 
 # ─── UI Refresh ───────────────────────────────────────────────────────────────
 
@@ -351,6 +358,34 @@ func try_pass_priority() -> void:
 	var action := PassPriorityAction.new(player_id)
 	apply_backend_action(action)
 
+func adjust_damage_assignment(defender_uid: int, delta: int) -> void:
+	if not state.awaiting_damage_assignment:
+		return
+	var ctx := state.active_combat_context
+	var current: int = _pending_assignments.get(defender_uid, 0)
+	var total_assigned: int = 0
+	for uid in _pending_assignments:
+		total_assigned += _pending_assignments[uid]
+	var remaining: int = ctx.total_attacker_might - total_assigned
+	if delta > 0:
+		var capped := mini(delta, remaining)
+		_pending_assignments[defender_uid] = current + capped
+	else:
+		_pending_assignments[defender_uid] = maxi(0, current + delta)
+	_update_status_label()
+
+func try_confirm_damage() -> void:
+	if not state.awaiting_damage_assignment:
+		return
+	var player_id := state.active_player_index
+	var action := ConfirmDamageAction.new(player_id, _pending_assignments)
+	var success := GameEngine.apply_action(state, action)
+	if not success:
+		status_label.text = action.get_error_message()
+		return
+	_pending_assignments.clear()
+	refresh_all_ui()
+
 func try_move_to_battlefield(card_uid: int, battlefield_index: int) -> bool:
 	var player  = state.get_active_player()
 	var action  = MoveToBattlefieldAction.new(player.id, card_uid, battlefield_index)
@@ -415,13 +450,36 @@ func _update_status_label() -> void:
 		var whose: String = "P%d" % (state.active_player_index if not showdown.active_player_passed \
 			else 1 - state.active_player_index)
 		status_label.text             = "Showdown! %d vs %d — %s: Pass or use ability." % [atk, def, whose]
-		pass_priority_button.visible = true
+		pass_priority_button.visible  = true
 		cancel_payment_button.visible = false
+		confirm_damage_button.visible = false
+		return
+
+	if state.awaiting_damage_assignment:
+		var ctx: CombatContext = state.active_combat_context
+		for unit in ctx.defenders:
+			if not _pending_assignments.has(unit.uid):
+				_pending_assignments[unit.uid] = 0
+		var total_assigned: int = 0
+		for uid in _pending_assignments:
+			total_assigned += _pending_assignments[uid]
+		var remaining: int = ctx.total_attacker_might - total_assigned
+		var parts: Array = []
+		for unit in ctx.defenders:
+			var dmg: int = _pending_assignments.get(unit.uid, 0)
+			parts.append("%s: %d" % [unit.card_instance.data.card_name, dmg])
+		status_label.text             = "Assign %d might (left: %d) — L-click +1, R-click -1\n%s" % [
+			ctx.total_attacker_might, remaining, "  |  ".join(parts)
+		]
+		pass_priority_button.visible  = false
+		cancel_payment_button.visible = false
+		confirm_damage_button.visible = true
 		return
 
 	status_label.text             = ""
 	cancel_payment_button.visible = false
-	if pass_priority_button: pass_priority_button.visible = false
+	pass_priority_button.visible  = false
+	confirm_damage_button.visible = false
 
 func _get_pending_card_name() -> String:
 	for card in state.get_active_player().hand:
@@ -431,6 +489,9 @@ func _get_pending_card_name() -> String:
 
 func _on_pass_priority_pressed() -> void:
 	try_pass_priority()
+
+func _on_confirm_damage_pressed() -> void:
+	try_confirm_damage()
 
 func _on_cancel_payment_pressed() -> void:
 	if not state.awaiting_rune_payment:
