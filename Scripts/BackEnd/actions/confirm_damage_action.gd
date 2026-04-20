@@ -15,8 +15,11 @@ func validate(state: GameState) -> bool:
 		return false
 
 	var context := state.active_combat_context
+	# loser_is_attacker = attacker had less might; they assign their own (lesser) damage to defenders
+	# not loser_is_attacker = defender had less might; they assign their own damage to attackers
+	var loser_is_attacker: bool = context.total_defender_might > context.total_attacker_might
+	var pool: int = context.total_attacker_might if loser_is_attacker else context.total_defender_might
 
-	# All assignment values must be non-negative
 	var total_assigned: int = 0
 	for uid in assignments:
 		var dmg: int = assignments[uid]
@@ -25,28 +28,27 @@ func validate(state: GameState) -> bool:
 			return false
 		total_assigned += dmg
 
-	if total_assigned > context.total_attacker_might:
-		_error_message = "Total assigned (%d) exceeds attacker might (%d)." % [
-			total_assigned, context.total_attacker_might
-		]
+	if total_assigned > pool:
+		_error_message = "Total assigned (%d) exceeds damage pool (%d)." % [total_assigned, pool]
 		return false
 
-	# TANK rule: each TANK defender must receive lethal before non-TANK units
-	# (only enforced when the attacker has enough might to deal lethal)
-	for tank in context.tank_priority_order:
-		var lethal: int = tank.base_health - tank.damage_taken
-		var assigned: int = assignments.get(tank.uid, 0)
-		if assigned < lethal and context.total_attacker_might >= lethal:
-			_error_message = "Must assign lethal damage (%d) to TANK unit '%s' before non-TANK." % [
-				lethal, tank.card_instance.data.card_name
-			]
-			return false
+	# TANK rule applies when the attacker is the loser (assigning their damage to defenders)
+	if loser_is_attacker:
+		for tank in context.tank_priority_order:
+			var lethal: int = tank.base_health - tank.damage_taken
+			var assigned: int = assignments.get(tank.uid, 0)
+			if assigned < lethal and pool >= lethal:
+				_error_message = "Must assign lethal damage (%d) to TANK unit '%s' before non-TANK." % [
+					lethal, tank.card_instance.data.card_name
+				]
+				return false
 
 	return true
 
 func execute(state: GameState) -> void:
 	var context := state.active_combat_context
-	state.combat_manager.apply_player_assignments(context, assignments)
+	var loser_is_attacker: bool = context.total_defender_might > context.total_attacker_might
+	state.combat_manager.apply_player_assignments(context, assignments, loser_is_attacker)
 	state.add_event("Damage applied. Combat resolved.")
 	state.awaiting_damage_assignment = false
 	state.active_combat_context = null

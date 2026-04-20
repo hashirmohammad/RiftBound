@@ -278,9 +278,12 @@ func _try_assign_damage(delta: int) -> void:
 	if card_found == null:
 		return
 	var ctx: CombatContext = game_controller.state.active_combat_context
-	for defender in ctx.defenders:
-		if defender.uid == card_found.card_uid:
-			game_controller.adjust_damage_assignment(defender.uid, delta)
+	var loser_is_attacker: bool = ctx.total_defender_might > ctx.total_attacker_might
+	# The loser clicks on the WINNER's units to distribute damage
+	var target_units = ctx.defenders if loser_is_attacker else ctx.attackers
+	for unit in target_units:
+		if unit.uid == card_found.card_uid:
+			game_controller.adjust_damage_assignment(unit.uid, delta)
 			return
 
 func _get_rune_instance(rune_uid: int) -> RuneInstance:

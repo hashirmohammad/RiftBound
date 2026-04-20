@@ -358,26 +358,32 @@ func try_pass_priority() -> void:
 	var action := PassPriorityAction.new(player_id)
 	apply_backend_action(action)
 
-func adjust_damage_assignment(defender_uid: int, delta: int) -> void:
+func adjust_damage_assignment(unit_uid: int, delta: int) -> void:
 	if not state.awaiting_damage_assignment:
 		return
 	var ctx := state.active_combat_context
-	var current: int = _pending_assignments.get(defender_uid, 0)
+	var loser_is_attacker: bool = ctx.total_defender_might > ctx.total_attacker_might
+	# Pool = loser's own might (what they are distributing)
+	var pool: int = ctx.total_attacker_might if loser_is_attacker else ctx.total_defender_might
+	var current: int = _pending_assignments.get(unit_uid, 0)
 	var total_assigned: int = 0
 	for uid in _pending_assignments:
 		total_assigned += _pending_assignments[uid]
-	var remaining: int = ctx.total_attacker_might - total_assigned
+	var remaining: int = pool - total_assigned
 	if delta > 0:
-		var capped := mini(delta, remaining)
-		_pending_assignments[defender_uid] = current + capped
+		_pending_assignments[unit_uid] = current + mini(delta, remaining)
 	else:
-		_pending_assignments[defender_uid] = maxi(0, current + delta)
+		_pending_assignments[unit_uid] = maxi(0, current + delta)
 	_update_status_label()
 
 func try_confirm_damage() -> void:
 	if not state.awaiting_damage_assignment:
 		return
-	var player_id := state.active_player_index
+	var ctx := state.active_combat_context
+	var loser_is_attacker: bool = ctx.total_defender_might > ctx.total_attacker_might
+	# Loser is the one submitting: attacker if they lost, defender if they lost
+	var player_id: int = ctx.attackers[0].player_id if loser_is_attacker \
+		else ctx.defenders[0].player_id
 	var action := ConfirmDamageAction.new(player_id, _pending_assignments)
 	var success := GameEngine.apply_action(state, action)
 	if not success:
@@ -457,19 +463,26 @@ func _update_status_label() -> void:
 
 	if state.awaiting_damage_assignment:
 		var ctx: CombatContext = state.active_combat_context
-		for unit in ctx.defenders:
+		# loser_is_attacker: attacker had less might, distributes their own damage to defenders
+		# else: defender had less might, distributes their own damage to attackers
+		var loser_is_attacker: bool = ctx.total_defender_might > ctx.total_attacker_might
+		var pool: int = ctx.total_attacker_might if loser_is_attacker else ctx.total_defender_might
+		# target_units = the winner's units receiving the loser's damage
+		var target_units: Array = ctx.defenders if loser_is_attacker else ctx.attackers
+		var loser_player_id: int = ctx.attackers[0].player_id if loser_is_attacker \
+			else ctx.defenders[0].player_id
+		for unit in target_units:
 			if not _pending_assignments.has(unit.uid):
 				_pending_assignments[unit.uid] = 0
 		var total_assigned: int = 0
 		for uid in _pending_assignments:
 			total_assigned += _pending_assignments[uid]
-		var remaining: int = ctx.total_attacker_might - total_assigned
+		var remaining: int = pool - total_assigned
 		var parts: Array = []
-		for unit in ctx.defenders:
-			var dmg: int = _pending_assignments.get(unit.uid, 0)
-			parts.append("%s: %d" % [unit.card_instance.data.card_name, dmg])
-		status_label.text             = "Assign %d might (left: %d) — L-click +1, R-click -1\n%s" % [
-			ctx.total_attacker_might, remaining, "  |  ".join(parts)
+		for unit in target_units:
+			parts.append("%s: %d" % [unit.card_instance.data.card_name, _pending_assignments.get(unit.uid, 0)])
+		status_label.text             = "P%d assign %d dmg (left: %d) — L-click +1, R-click -1\n%s" % [
+			loser_player_id, pool, remaining, "  |  ".join(parts)
 		]
 		pass_priority_button.visible  = false
 		cancel_payment_button.visible = false

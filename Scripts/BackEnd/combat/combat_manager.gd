@@ -194,6 +194,11 @@ func _collect_deathknell_triggers(
 # existing TANK-first lethal logic, then all damage is applied simultaneously.
 func auto_resolve(context: CombatContext) -> void:
 	CombatResolver.assign_attacker_damage(context, context.total_attacker_might)
+	complete_resolve(context)
+
+# Stages and applies all pre-set assignments, processes deaths, and cleans up.
+# Call this after all assignment dicts on context are fully populated.
+func complete_resolve(context: CombatContext) -> void:
 	CombatResolver.stage_damage(context)
 	CombatResolver.apply_all_damage(context)
 	var dead: Array[UnitState] = CombatResolver.collect_dead(context)
@@ -201,18 +206,21 @@ func auto_resolve(context: CombatContext) -> void:
 	_cleanup(context)
 	combat_resolved.emit(context)
 
-# Called by ConfirmDamageAction after the player has assigned attacker damage.
-# Writes assignments to context, stages all damage, applies simultaneously,
-# then processes deaths and cleans up.
-func apply_player_assignments(context: CombatContext, attacker_assignments: Dictionary) -> void:
-	for uid in attacker_assignments:
-		context.attacker_assignments[uid] = attacker_assignments[uid]
-	CombatResolver.stage_damage(context)
-	CombatResolver.apply_all_damage(context)
-	var dead: Array[UnitState] = CombatResolver.collect_dead(context)
-	_process_deaths(dead, context)
-	_cleanup(context)
-	combat_resolved.emit(context)
+# Called by ConfirmDamageAction after the loser assigns incoming damage.
+# loser_is_attacker=true  → writes into defender_assignments (incoming from defender)
+# loser_is_attacker=false → writes into attacker_assignments (incoming from attacker)
+func apply_player_assignments(
+		context: CombatContext,
+		player_assignments: Dictionary,
+		loser_is_attacker: bool) -> void:
+	for uid in player_assignments:
+		if loser_is_attacker:
+			# Attacker (loser) distributes their own damage to defender units
+			context.attacker_assignments[uid] = player_assignments[uid]
+		else:
+			# Defender (loser) distributes their own damage to attacker units
+			context.defender_assignments[uid] = player_assignments[uid]
+	complete_resolve(context)
 
 # ── Step 7: Cleanup ───────────────────────────────────────────────────────────
 

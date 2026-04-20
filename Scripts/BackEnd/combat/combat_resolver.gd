@@ -61,6 +61,19 @@ static func assign_attacker_damage(context: CombatContext, pool: int) -> void:
 # Assigns defender_pool damage evenly among attackers (retaliation).
 # Floor division applied to each attacker; remainder distributed one-per-unit
 # from the front. Example: 7 might vs 2 attackers → 4 to first, 3 to second.
+# Assigns attacker pool evenly across all defenders (no TANK ordering — for auto-resolve paths).
+static func assign_attacker_damage_evenly(context: CombatContext, pool: int) -> void:
+	if context.defenders.is_empty() or pool <= 0:
+		return
+	var count    := context.defenders.size()
+	var base     := pool / count
+	var remainder := pool % count
+	for i in range(count):
+		var dmg: int = base + (1 if i < remainder else 0)
+		var defender: UnitState = context.defenders[i]
+		context.attacker_assignments[defender.uid] = \
+			context.attacker_assignments.get(defender.uid, 0) + dmg
+
 static func assign_defender_damage(context: CombatContext, pool: int) -> void:
 	if context.attackers.is_empty() or pool <= 0:
 		return
