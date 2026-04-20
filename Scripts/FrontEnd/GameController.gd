@@ -5,22 +5,31 @@ const PlayCardAction              = preload("res://Scripts/BackEnd/actions/play_
 const EndTurnAction               = preload("res://Scripts/BackEnd/actions/end_turn_action.gd")
 const MoveToBattlefieldAction     = preload("res://Scripts/BackEnd/actions/move_to_battlefield_action.gd")
 const ReturnFromBattlefieldAction = preload("res://Scripts/BackEnd/actions/return_from_battlefield_action.gd")
+const CommitToBattlefieldAction   = preload("res://Scripts/BackEnd/actions/commit_to_battlefield_action.gd")
+const PassPriorityAction          = preload("res://Scripts/BackEnd/actions/pass_priority_action.gd")
 const CARD_SCENE                  = preload("res://Scenes/Card.tscn")
 
 var state: GameState
+
+# UIDs of board cards currently selected for group commit; written by InputManager
+var selected_board_uids: Array[int] = []
+
 @onready var status_label          = $"../StatusLabel"
 @onready var hand_manager          = $"../P0/P0_Hand"
 @onready var hand_manager_p1       = $"../P1/P1_Hand"
 @onready var board                 = $"../Board"
 @onready var deck_ui               = $"../P0/P0_MainDeck"
 @onready var cancel_payment_button = $"../CancelPaymentButton"
+@onready var pass_priority_button  = $"../PassPriorityButton"
 
 func _ready() -> void:
 	state = GameEngine.start_game()
 	await wait_until_main()
 	refresh_all_ui()
 	cancel_payment_button.pressed.connect(_on_cancel_payment_pressed)
-	cancel_payment_button.visible = false
+	cancel_payment_button.visible  = false
+	pass_priority_button.pressed.connect(_on_pass_priority_pressed)
+	pass_priority_button.visible   = false
 
 # ─── UI Refresh ───────────────────────────────────────────────────────────────
 
@@ -98,6 +107,8 @@ func _place_card(slot: CardSlot, card_instance: CardInstance, scale: Vector2) ->
 	card.setup_from_card_instance(card_instance)
 	card.set_card_state(RiftCard.CardState.ON_BOARD)
 	card.rotation_degrees = 90.0 if card_instance.is_exhausted() else 0.0
+	if selected_board_uids.has(card_instance.uid):
+		card.modulate = Color(0.55, 1.0, 0.55, 1.0)
 
 # ─── Static State Rendering ───────────────────────────────────────────────────
 
@@ -314,6 +325,32 @@ func try_pick_runes_to_spend(rune_uid: int) -> bool:
 
 	return true
 
+func try_commit_to_battlefield(card_uids: Array[int], battlefield_index: int) -> bool:
+	var player  = state.get_active_player()
+	var action  = CommitToBattlefieldAction.new(player.id, card_uids, battlefield_index)
+	var success = GameEngine.apply_action(state, action)
+
+	if not success:
+		status_label.text = action.get_error_message()
+		return false
+
+	refresh_all_ui()
+	return true
+
+func try_pass_priority() -> void:
+	if not state.awaiting_showdown:
+		return
+
+	var showdown := state.active_showdown
+	var player_id: int
+	if not showdown.active_player_passed:
+		player_id = state.active_player_index
+	else:
+		player_id = 1 - state.active_player_index
+
+	var action := PassPriorityAction.new(player_id)
+	apply_backend_action(action)
+
 func try_move_to_battlefield(card_uid: int, battlefield_index: int) -> bool:
 	var player  = state.get_active_player()
 	var action  = MoveToBattlefieldAction.new(player.id, card_uid, battlefield_index)
@@ -367,16 +404,33 @@ func _update_status_label() -> void:
 		var card_name: String = _get_pending_card_name()
 		status_label.text             = "Select %d more rune(s) to play %s" % [remaining, card_name]
 		cancel_payment_button.visible = true
+		pass_priority_button.visible = false
+		return
+
+	if state.awaiting_showdown:
+		var ctx: CombatContext = state.active_combat_context
+		var atk := ctx.attackers.size()
+		var def := ctx.defenders.size()
+		var showdown := state.active_showdown
+		var whose: String = "P%d" % (state.active_player_index if not showdown.active_player_passed \
+			else 1 - state.active_player_index)
+		status_label.text             = "Showdown! %d vs %d — %s: Pass or use ability." % [atk, def, whose]
+		pass_priority_button.visible = true
+		cancel_payment_button.visible = false
 		return
 
 	status_label.text             = ""
 	cancel_payment_button.visible = false
+	if pass_priority_button: pass_priority_button.visible = false
 
 func _get_pending_card_name() -> String:
 	for card in state.get_active_player().hand:
 		if card.uid == state.pending_card_uid:
 			return card.data.card_name
 	return "card"
+
+func _on_pass_priority_pressed() -> void:
+	try_pass_priority()
 
 func _on_cancel_payment_pressed() -> void:
 	if not state.awaiting_rune_payment:
