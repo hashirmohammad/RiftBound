@@ -345,16 +345,10 @@ func try_commit_to_battlefield(card_uids: Array[int], battlefield_index: int) ->
 	return true
 
 func try_pass_priority() -> void:
-	if not state.awaiting_showdown:
+	if not state.awaiting_showdown or state.active_showdown == null:
 		return
 
-	var showdown := state.active_showdown
-	var player_id: int
-	if not showdown.active_player_passed:
-		player_id = state.active_player_index
-	else:
-		player_id = 1 - state.active_player_index
-
+	var player_id := state.active_showdown.priority_player_id
 	var action := PassPriorityAction.new(player_id)
 	apply_backend_action(action)
 
@@ -453,8 +447,7 @@ func _update_status_label() -> void:
 		var atk := ctx.attackers.size()
 		var def := ctx.defenders.size()
 		var showdown := state.active_showdown
-		var whose: String = "P%d" % (state.active_player_index if not showdown.active_player_passed \
-			else 1 - state.active_player_index)
+		var whose: String = "P%d" % showdown.priority_player_id
 		status_label.text             = "Showdown! %d vs %d — %s: Pass or use ability." % [atk, def, whose]
 		pass_priority_button.visible  = true
 		cancel_payment_button.visible = false
@@ -516,9 +509,5 @@ func _on_cancel_payment_pressed() -> void:
 			if rune.uid == rune_uid:
 				rune.awaken()
 
-	state.awaiting_rune_payment = false
-	state.pending_card_uid      = -1
-	state.pending_slot_index    = -1
-	state.pending_card_cost     = 0
-	state.selected_rune_uids.clear()
+	state.clear_rune_payment_state()
 	refresh_all_ui()

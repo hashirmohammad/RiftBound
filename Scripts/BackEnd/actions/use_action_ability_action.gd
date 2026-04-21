@@ -15,9 +15,12 @@ func validate(state: GameState) -> bool:
 		_error_message = "Invalid USE_ACTION: no showdown is active."
 		return false
 
-	var allowed_player_id := _get_priority_player_id(state)
-	if player_id != allowed_player_id:
-		_error_message = "Invalid USE_ACTION: not your priority to act."
+	if state.active_showdown == null:
+		_error_message = "Invalid USE_ACTION: no active showdown."
+		return false
+
+	if player_id != state.active_showdown.priority_player_id:
+		_error_message = "Invalid USE_ACTION: not this player's priority."
 		return false
 
 	var source: UnitState = state.unit_registry.get_unit(source_unit_uid)
@@ -50,8 +53,8 @@ func execute(state: GameState) -> void:
 
 	state.timing_manager.queue_action(effect, source, state.active_combat_context)
 
-	# Reset pass flags so the opponent can respond to this action
 	state.active_showdown.reset_passes()
+	state.active_showdown.switch_priority()
 
 	state.add_event("P%d used ACTION ability (effect_uid=%d) on unit uid=%d." % [
 		player_id, effect_uid, source_unit_uid
@@ -65,11 +68,3 @@ func _find_effect(source: UnitState) -> EffectInstance:
 		if e.uid == effect_uid:
 			return e
 	return null
-
-func _get_priority_player_id(state: GameState) -> int:
-	if state.awaiting_showdown and state.active_showdown != null:
-		if not state.active_showdown.active_player_passed:
-			return state.active_player_index
-		else:
-			return 1 - state.active_player_index
-	return state.get_active_player().id
