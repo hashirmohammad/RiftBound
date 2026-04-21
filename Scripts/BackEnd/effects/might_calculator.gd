@@ -22,7 +22,6 @@ class_name MightCalculator
 # ── Public API ────────────────────────────────────────────────────────────────
 
 static func compute_attack_might(unit: UnitState, game_state: GameState) -> int:
-	# STUN prevents dealing damage entirely — short-circuit before any bonus
 	if unit.is_stunned():
 		return 0
 
@@ -31,6 +30,10 @@ static func compute_attack_might(unit: UnitState, game_state: GameState) -> int:
 	might += unit.effects.sum_of(EffectInstance.EffectType.ASSAULT)
 	might += _evaluate_conditional(unit, EffectInstance.EffectType.MIGHTY, game_state)
 	might += _evaluate_conditional(unit, EffectInstance.EffectType.LEGION, game_state)
+
+	# 👇 Lee Sin aura (continuous)
+	might += _lee_sin_aura_bonus(unit, game_state)
+
 	return maxi(might, 0)
 
 static func compute_defense_might(unit: UnitState, game_state: GameState) -> int:
@@ -39,6 +42,10 @@ static func compute_defense_might(unit: UnitState, game_state: GameState) -> int
 	might += unit.effects.sum_of(EffectInstance.EffectType.SHIELD)
 	might += _evaluate_conditional(unit, EffectInstance.EffectType.MIGHTY, game_state)
 	might += _evaluate_conditional(unit, EffectInstance.EffectType.LEGION, game_state)
+
+	# 👇 Lee Sin aura (continuous)
+	might += _lee_sin_aura_bonus(unit, game_state)
+
 	return maxi(might, 0)
 
 # Returns the extra Power cost opponents must pay to target this unit with spells/abilities.
@@ -58,3 +65,50 @@ static func _evaluate_conditional(
 			if e.condition_fn.call(unit, game_state):
 				total += e.value
 	return total
+	
+static func _lee_sin_aura_bonus(unit: UnitState, game_state: GameState) -> int:
+
+	if not _is_buffed(unit):
+		return 0
+
+	var bonus := 0
+
+	for other in game_state.unit_registry.get_all():
+		
+		if other.uid == unit.uid:
+			continue
+
+		if other.card_instance.data.card_id != "OGN-151/298":
+			continue
+
+		if other.player_id != unit.player_id:
+			continue
+
+		if not _same_battlefield_lane(other, unit, game_state):
+			continue
+
+		bonus += 2
+
+	return bonus
+
+static func _is_buffed(unit: UnitState) -> bool:
+	#return unit.effects.max_of(EffectInstance.EffectType.BUFF) > 0
+	return true
+	
+static func _same_battlefield_lane(a: UnitState, b: UnitState, state: GameState) -> bool:
+	var player := state.players[a.player_id]
+
+	for lane in player.battlefield_slots:
+		var has_a := false
+		var has_b := false
+
+		for card in lane:
+			if card.uid == a.uid:
+				has_a = true
+			if card.uid == b.uid:
+				has_b = true
+
+		if has_a and has_b:
+			return true
+
+	return false

@@ -25,8 +25,11 @@ static func start_game() -> GameState:
 	var p1 := PlayerState.new(1)
 	state.players = [p0, p1]
 
-	var p0_deck_name: String = CardDatabase._random_deck_name()
-	var p1_deck_name: String = CardDatabase._random_deck_name()
+	#var p0_deck_name: String = CardDatabase._random_deck_name()
+	#var p1_deck_name: String = CardDatabase._random_deck_name()
+	var p0_deck_name: String = "Lee Sin"
+	var p1_deck_name: String = "Kai'Sa"
+	
 	state.deck_names[0] = p0_deck_name
 	state.deck_names[1] = p1_deck_name
 	state.add_event("P0 deck: %s | P1 deck: %s" % [p0_deck_name, p1_deck_name])
@@ -66,7 +69,9 @@ static func start_game() -> GameState:
 
 	p0.rune_deck.shuffle()
 	p1.rune_deck.shuffle()
-
+	
+	#_give_debug_card_to_hand(p0, "OGN-151/298") # Lee Sin, Centered
+	_give_debug_card_to_hand(p0, "OGN-155/298")  # Qiyana, Victorious
 	for i in range(OPENING_HAND_SIZE):
 		state.turn_system._draw_card(p0)
 		state.turn_system._draw_card(p1)
@@ -204,3 +209,12 @@ static func move_card_from_battlefield_to_board(
 
 	player.units_moved_this_turn += 1
 	return true
+
+static func _give_debug_card_to_hand(player: PlayerState, card_id: String) -> void:
+	for i in range(player.deck.size()):
+		if player.deck[i].data.card_id == card_id:
+			var card := player.deck[i]
+			player.deck.remove_at(i)
+			player.hand.append(card)
+			card.zone = CardInstance.Zone.HAND
+			return

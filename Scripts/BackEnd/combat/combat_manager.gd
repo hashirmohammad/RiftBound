@@ -126,12 +126,38 @@ func resolve_combat(context: CombatContext) -> void:
 	})
 
 	var dead: Array[UnitState] = CombatResolver.collect_dead(context)
+	_process_conquer(context, dead)
 	_process_deaths(dead, context)
 	_cleanup(context)
 	combat_resolved.emit(context)
 
 # ── Step 6: Death processing ──────────────────────────────────────────────────
+func _process_conquer(context: CombatContext, dead: Array[UnitState]) -> void:
+	for attacker in context.attackers:
+		for defender in context.defenders:
 
+			# Attacker conquers defender
+			if attacker.is_alive() and dead.has(defender):
+				_trigger_conquer_if_present(attacker, context)
+
+			# Defender conquers attacker
+			if defender.is_alive() and dead.has(attacker):
+				_trigger_conquer_if_present(defender, context)
+
+func _trigger_conquer_if_present(unit: UnitState, context: CombatContext) -> void:
+	var triggers: Array[EffectInstance] = unit.effects.get_triggered("on_conquer")
+
+	for effect in triggers:
+		if effect.trigger_fn.is_valid():
+			effect.trigger_fn.call(unit, context.game_state)
+
+			context.game_state.event_log.append({
+				"event": "conquer_triggered",
+				"source_uid": unit.uid,
+				"effect_uid": effect.uid
+			})
+	print("Conquer check:", unit.card_instance.data.card_name)
+	
 func _process_deaths(dead: Array[UnitState], context: CombatContext) -> void:
 	if dead.is_empty():
 		return
@@ -209,7 +235,12 @@ func auto_resolve(context: CombatContext) -> void:
 func complete_resolve(context: CombatContext) -> void:
 	CombatResolver.stage_damage(context)
 	CombatResolver.apply_all_damage(context)
+
 	var dead: Array[UnitState] = CombatResolver.collect_dead(context)
+
+	# NEW: process conquer here too
+	_process_conquer(context, dead)
+
 	_process_deaths(dead, context)
 	_cleanup(context)
 	combat_resolved.emit(context)

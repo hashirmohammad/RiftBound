@@ -7,6 +7,7 @@ enum EffectType {
 	SHIELD,     # +X Might when defending only; stacks additively
 	# Non-stackable persistent modifier
 	BUFF,       # +X Might; only highest value applies; persists until removed
+	AURA,       # continuous aura source; usually applied dynamically in calculators
 	# State flags
 	STUN,       # prevents unit from dealing damage; unit still receives damage normally
 	TANK,       # damage must be assigned to this unit before non-TANK units

@@ -43,15 +43,6 @@ static func _ensure_loaded() -> void:
 # Complex effects that aren't yet fully supported are stubbed with a TODO log.
 
 static func _populate() -> void:
-
-	# OGN-096/298 — Watchful Sentry
-	# [Deathknell] — Draw 1. (When I die, get the effect.)
-	_registry["OGN-096/298"] = {
-		"on_death": func(unit: UnitState, state: GameState) -> void:
-			_draw_cards(unit.player_id, 1, state)
-			state.add_event("Watchful Sentry deathknell: P%d drew 1." % unit.player_id)
-	}
-
 	# OGN-075/298 — Tasty Faefolk
 	# [Deathknell] — Channel 2 runes exhausted and draw 1. (When I die, get the effect.)
 	_registry["OGN-075/298"] = {
@@ -63,6 +54,14 @@ static func _populate() -> void:
 			)
 	}
 
+	# OGN-096/298 — Watchful Sentry
+	# [Deathknell] — Draw 1. (When I die, get the effect.)
+	_registry["OGN-096/298"] = {
+		"on_death": func(unit: UnitState, state: GameState) -> void:
+			_draw_cards(unit.player_id, 1, state)
+			state.add_event("Watchful Sentry deathknell: P%d drew 1." % unit.player_id)
+	}
+
 	# OGN-110/298 — Ekko, Recurrent
 	# [Deathknell] — Recycle me to ready your runes. (When I die, get the effect.)
 	_registry["OGN-110/298"] = {
@@ -72,7 +71,35 @@ static func _populate() -> void:
 				"Ekko deathknell: P%d (recycle + ready runes: TODO)." % unit.player_id
 			)
 	}
+	
+	# OGN-151/298 — Lee Sin, Centered
+	# Passive — Other buffed friendly units at my battlefield have +2 Might.
+	# Continuous aura effect; applied dynamically during Might calculation.
+	_registry["OGN-151/298"] = {
+		"on_enter_play": func(unit: UnitState, state: GameState) -> void:
+			# Marker effect — actual aura applied in MightCalculator
+			var effect := EffectInstance.new()
+			effect.uid = randi()
+			effect.source_uid = unit.uid
+			effect.effect_type = EffectInstance.EffectType.AURA
+			effect.value = 2
+			effect.expiry = EffectInstance.ExpiryTiming.PERMANENT
 
+			unit.effects.add(effect)
+			
+			state.add_event("%s aura active: buffed allies in same battlefield gain +2 Might." % unit.card_instance.data.card_name)
+	}
+	
+	# OGN-155/298 — Qiyana, Victorious
+	# [Deflect] — handled by keyword/effect parsing.
+	# When I conquer, draw 1 or channel 1 rune exhausted.
+	# Temporary implementation: on conquer, draw 1.
+	_registry["OGN-155/298"] = {
+		"on_conquer": func(unit: UnitState, state: GameState) -> void:
+			_draw_cards(unit.player_id, 1, state)
+			state.add_event("Qiyana, Victorious conquer: P%d drew 1." % unit.player_id)
+	}
+	
 	# OGN-178/298 — Undercover Agent
 	# [Deathknell] — Discard 2, then draw 2. (When I die, get the effect.)
 	_registry["OGN-178/298"] = {
