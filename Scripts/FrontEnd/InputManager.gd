@@ -77,6 +77,7 @@ func _try_start_drag() -> void:
 		_selected_uids.clear()
 		game_controller.selected_board_uids.clear()
 		_start_drag(card_found)
+		game_controller.update_special_play_highlights(card_found.card_uid)
 
 	elif zone == "BOARD":
 		var inst = _get_card_instance(card_found.card_uid)
@@ -109,6 +110,17 @@ func _try_release() -> void:
 	params.collide_with_areas = true
 
 	if origin_zone == "HAND":
+		# 1) First try special play targets under mouse (ex: Deadbloom to enemy battlefield)
+		var played_special: bool = game_controller.try_play_card_under_mouse(dragged_card.card_uid)
+		if played_special:
+			if game_controller.state.awaiting_rune_payment:
+				_return_to_hand()
+				game_controller.refresh_payment_ui()
+			else:
+				_clear_drag()
+			return
+
+		# 2) Fallback to normal base-slot play
 		params.collision_mask = COLLISION_MASK_SLOT
 		if space.intersect_point(params).size() > 0:
 			var slot_index: int = board_reference.get_slot_index_under_mouse()
@@ -121,6 +133,7 @@ func _try_release() -> void:
 					else:
 						_clear_drag()
 					return
+
 		_return_to_hand()
 		return
 
@@ -185,6 +198,7 @@ func _return_to_hand() -> void:
 	var card     = dragged_card
 	dragged_card = null
 	_clear_slot_highlights()
+	game_controller.clear_special_play_highlights()
 	drag_offset  = Vector2.ZERO
 	_active_hand().return_card(card)
 
@@ -193,6 +207,7 @@ func _clear_drag() -> void:
 		_active_hand().remove_card(dragged_card)
 	dragged_card = null
 	_clear_slot_highlights()
+	game_controller.clear_special_play_highlights()
 	drag_offset  = Vector2.ZERO
 
 func _active_hand():

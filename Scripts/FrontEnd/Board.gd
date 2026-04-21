@@ -349,3 +349,29 @@ func build_player(y: float, flip: bool, ph: float) -> void:
 
 	if runes_ref:
 		add_image(runes_ref, tint_gold("res://Assets/runes.jpg"), 0.05, 0.2, 0.25, 1.0, 6.0, 1.0, 0.0, 0.0)
+
+func clear_special_play_highlights() -> void:
+	for slot in [_p0_bf_slot_left, _p0_bf_slot_right, _p1_bf_slot_left, _p1_bf_slot_right]:
+		if slot == null:
+			continue
+		slot.modulate = Color.WHITE
+
+func highlight_special_play_targets(targets: Array[Dictionary]) -> void:
+	clear_special_play_highlights()
+
+	for t in targets:
+		var player_id: int = int(t.get("player", -1))
+		var lane: int = int(t.get("lane", -1))
+
+		var slot: CanvasItem = null
+		if player_id == 0 and lane == 0:
+			slot = _p0_bf_slot_left
+		elif player_id == 0 and lane == 1:
+			slot = _p0_bf_slot_right
+		elif player_id == 1 and lane == 0:
+			slot = _p1_bf_slot_left
+		elif player_id == 1 and lane == 1:
+			slot = _p1_bf_slot_right
+
+		if slot != null:
+			slot.modulate = Color(1.0, 1.0, 0.65, 1.0)

@@ -98,7 +98,7 @@ func set_pending_effect_choice(choice_type: String, player_id: int, source_uid: 
 		"player_id": player_id,
 		"source_uid": source_uid
 	}
-	
+
 func clear_effect_choice_state() -> void:
 	awaiting_effect_choice = false
 	pending_effect_choice.clear()
