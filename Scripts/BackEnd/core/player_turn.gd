@@ -90,6 +90,9 @@ func next_phase():
 	var player = state.get_active_player()
 	emit_signal("phase_ended", _phase_name(current_phase), player.id)
 
+	var all_units: Array[UnitState] = state.unit_registry.get_all()
+	state.timing_manager.expire_end_of_phase(all_units, state)
+
 	phase_index += 1
 	if phase_index >= phase_order.size():
 		end_turn()
@@ -126,6 +129,8 @@ func _awaken_phase(player: PlayerState):
 	state.add_event("P%d awakens %d runes." % [player.id, rune_count])
 
 func _end_phase(player: PlayerState):
+	var all_units: Array[UnitState] = state.unit_registry.get_all()
+	state.timing_manager.expire_end_of_turn(all_units, state)
 	state.add_event("P%d ends turn." % player.id)
 
 func _draw_card(player: PlayerState):

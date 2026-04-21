@@ -96,6 +96,13 @@ func _finalize_pending_card_play(state: GameState) -> void:
 		state.pending_card_cost
 	])
 
+	if card.data.type == CardData.CardType.UNIT or card.data.type == CardData.CardType.CHAMPION:
+		var unit := UnitState.new(card, p.id)
+		for effect in KeywordParser.parse(card.data, state):
+			unit.effects.add(effect)
+		state.unit_registry.register(unit)
+		state.add_event("P%d unit registered: %s (uid=%d)." % [p.id, card.data.card_name, card.uid])
+
 	_clear_pending_payment(state)
 
 func _find_pending_card_index(player: PlayerState, target_uid: int) -> int:

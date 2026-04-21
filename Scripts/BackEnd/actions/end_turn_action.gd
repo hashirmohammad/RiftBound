@@ -11,6 +11,10 @@ func validate(state: GameState) -> bool:
 		_error_message = "Cannot end turn while paying runes."
 		return false
 
+	if state.awaiting_showdown:
+		_error_message = "Cannot end turn while a combat showdown is active."
+		return false
+
 	if player_id != state.get_active_player().id:
 		_error_message = "Invalid END_TURN: not this player's turn."
 		return false
