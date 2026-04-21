@@ -17,6 +17,9 @@ static func apply_action(state: GameState, action: GameAction) -> bool:
 static func start_game() -> GameState:
 	var state := GameState.new()
 	state.turn_system = PlayerTurn.new()
+	state.unit_registry = UnitRegistry.new()
+	state.timing_manager = TimingManager.new()
+	state.combat_manager = CombatManager.new(state.unit_registry, state.timing_manager)
 
 	var p0 := PlayerState.new(0)
 	var p1 := PlayerState.new(1)

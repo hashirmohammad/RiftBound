@@ -80,6 +80,13 @@ func _finalize_play(state: GameState, p: PlayerState, card: CardInstance) -> voi
 		p.id, card.data.card_name, slot_index
 	])
 
+	if card.data.type == CardData.CardType.UNIT or card.data.type == CardData.CardType.CHAMPION:
+		var unit := UnitState.new(card, p.id)
+		for effect in KeywordParser.parse(card.data, state):
+			unit.effects.add(effect)
+		state.unit_registry.register(unit)
+		state.add_event("P%d unit registered: %s (uid=%d)." % [p.id, card.data.card_name, card.uid])
+
 func get_error_message() -> String:
 	return _error_message
 

@@ -75,7 +75,7 @@ static func from_dict(d: Dictionary) -> CardData:
 	c.card_name = str(d.get("name",     d.get("card_name", "")))
 	c.cost      = int(d.get("cost",   0))
 	c.might     = int(d.get("might",  d.get("power", 0)))
-	c.health    = int(d.get("health", d.get("defense", 0)))
+	c.health    = int(d.get("health", d.get("defense", d.get("might", d.get("power", 0)))))
 
 	## FIX: parse to enum values instead of storing raw strings
 	c.rune    	= rune_from_string(str(d.get("domain", "")))

@@ -1,7 +1,7 @@
 @tool
 extends Control
 
-@onready var game_controller: Node = $"../GameController" if not Engine.is_editor_hint() else null
+var game_controller: Node
 
 const SCREEN_W     = 1920.0
 const SCREEN_H     = 1080.0
@@ -59,6 +59,8 @@ var _p1_bf_slot_left:  CardSlot = null
 var _p1_bf_slot_right: CardSlot = null
 
 func _ready() -> void:
+	if not Engine.is_editor_hint():
+		game_controller = get_node_or_null("../GameController")
 	add_rect(Vector2.ZERO, Vector2(SCREEN_W, SCREEN_H), COLOR_BG)
 
 	var ph      = floor((SCREEN_H - DIVIDER_H * 2 - ARENA_H) / 2.0)

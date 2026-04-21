@@ -2,12 +2,18 @@ extends Node2D
 
 const COLLISION_MASK_SLOT  = 2
 const COLLISION_MASK_ARENA = 4
+const DRAG_THRESHOLD       = 10.0
 
 var board_reference
 var game_controller
 var screen_size  = Vector2()
 var drag_offset  = Vector2.ZERO
 var dragged_card = null
+
+# Multi-select state for board cards
+var _selected_uids:      Array[int] = []
+var _pending_board_card              = null   # board card pressed but not yet dragged
+var _press_position:     Vector2    = Vector2.ZERO
 
 func _ready() -> void:
 	screen_size     = get_viewport_rect().size
@@ -22,15 +28,31 @@ func _process(_delta) -> void:
 			clamp(mp.y - drag_offset.y, 0, screen_size.y)
 		)
 		_highlight_slots()
+		return
+
+	# Threshold-based drag start for board cards
+	if _pending_board_card != null:
+		if get_global_mouse_position().distance_to(_press_position) > DRAG_THRESHOLD:
+			_start_drag(_pending_board_card)
+			_pending_board_card = null
 
 func _input(event) -> void:
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
-		if event.pressed:
-			_try_start_drag()
-		else:
-			_try_release_dragged_card()
+	if event is InputEventMouseButton:
+		# Damage assignment mode — left-click adds, right-click removes
+		if game_controller.state.awaiting_damage_assignment:
+			if event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+				_try_assign_damage(1)
+			elif event.pressed and event.button_index == MOUSE_BUTTON_RIGHT:
+				_try_assign_damage(-1)
+			return
 
-# ─── Press: pick up a card ────────────────────────────────────────────────────
+		if event.button_index == MOUSE_BUTTON_LEFT:
+			if event.pressed:
+				_try_start_drag()
+			else:
+				_try_release()
+
+# ─── Press: pick up a card or begin selection ─────────────────────────────────
 
 func _try_start_drag() -> void:
 	var card_found = _get_card_under_cursor()
@@ -38,6 +60,8 @@ func _try_start_drag() -> void:
 		return
 
 	var state: GameState = game_controller.state
+
+	# Rune tap — handled separately, not a drag
 	var rune := _get_rune_instance(card_found.card_uid)
 	if rune != null:
 		game_controller.try_pick_runes_to_spend(card_found.card_uid)
@@ -48,16 +72,33 @@ func _try_start_drag() -> void:
 		return
 
 	var zone := _get_card_zone(card_found.card_uid)
+
 	if zone == "HAND":
+		_selected_uids.clear()
+		game_controller.selected_board_uids.clear()
 		_start_drag(card_found)
-	elif zone == "BOARD" or zone == "ARENA":
+
+	elif zone == "BOARD":
+		var inst = _get_card_instance(card_found.card_uid)
+		if inst != null and not inst.is_exhausted():
+			# Record press; actual drag starts only after threshold movement
+			_pending_board_card = card_found
+			_press_position = get_global_mouse_position()
+
+	elif zone == "ARENA":
 		var inst = _get_card_instance(card_found.card_uid)
 		if inst != null and not inst.is_exhausted():
 			_start_drag(card_found)
 
-# ─── Release: place the card ──────────────────────────────────────────────────
+# ─── Release: place card or toggle selection ──────────────────────────────────
 
-func _try_release_dragged_card() -> void:
+func _try_release() -> void:
+	# Click on board card (no drag started) → toggle selection
+	if _pending_board_card != null:
+		_toggle_board_selection(_pending_board_card.card_uid)
+		_pending_board_card = null
+		return
+
 	if dragged_card == null:
 		return
 
@@ -88,10 +129,16 @@ func _try_release_dragged_card() -> void:
 		if space.intersect_point(params).size() > 0:
 			var bf_data = board_reference.get_battlefield_half_under_mouse()
 			if not bf_data.is_empty():
-				var moved: bool = game_controller.try_move_to_battlefield(dragged_card.card_uid, int(bf_data["lane"]))
-				if moved:
-					_clear_drag()
-					return
+				var active_id: int = game_controller.state.get_active_player().id
+				if int(bf_data["player"]) == active_id:
+					var lane := int(bf_data["lane"])
+					var uids := _get_commit_uids()
+					var committed: bool = game_controller.try_commit_to_battlefield(uids, lane)
+					if committed:
+						_selected_uids.clear()
+						game_controller.selected_board_uids.clear()
+						_clear_drag()
+						return
 		game_controller.refresh_all_ui()
 		_clear_drag()
 		return
@@ -109,6 +156,22 @@ func _try_release_dragged_card() -> void:
 		game_controller.refresh_all_ui()
 		_clear_drag()
 		return
+
+# ─── Selection ────────────────────────────────────────────────────────────────
+
+func _toggle_board_selection(uid: int) -> void:
+	if _selected_uids.has(uid):
+		_selected_uids.erase(uid)
+	else:
+		_selected_uids.append(uid)
+	game_controller.selected_board_uids.assign(_selected_uids)
+	game_controller.render_board()
+
+func _get_commit_uids() -> Array[int]:
+	if not _selected_uids.is_empty() and _selected_uids.has(dragged_card.card_uid):
+		return _selected_uids.duplicate()
+	var result: Array[int] = [dragged_card.card_uid]
+	return result
 
 # ─── Drag state ───────────────────────────────────────────────────────────────
 
@@ -209,6 +272,19 @@ func _get_battlefield_index(card_uid: int) -> int:
 		for c in player.battlefield_slots[i]:
 			if c.uid == card_uid: return i
 	return -1
+
+func _try_assign_damage(delta: int) -> void:
+	var card_found = _get_card_under_cursor()
+	if card_found == null:
+		return
+	var ctx: CombatContext = game_controller.state.active_combat_context
+	var loser_is_attacker: bool = ctx.total_defender_might > ctx.total_attacker_might
+	# The loser clicks on the WINNER's units to distribute damage
+	var target_units = ctx.defenders if loser_is_attacker else ctx.attackers
+	for unit in target_units:
+		if unit.uid == card_found.card_uid:
+			game_controller.adjust_damage_assignment(unit.uid, delta)
+			return
 
 func _get_rune_instance(rune_uid: int) -> RuneInstance:
 	var state: GameState = game_controller.state
