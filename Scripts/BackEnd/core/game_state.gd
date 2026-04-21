@@ -35,6 +35,10 @@ var awaiting_damage_assignment: bool = false
 var active_combat_context: CombatContext
 var active_showdown: ShowdownContext
 
+# ── Pending effect-choice state ───────────────────────────────────────────────
+var awaiting_effect_choice: bool = false
+var pending_effect_choice: Dictionary = {}
+
 var _next_uid: int = 1
 
 func next_uid() -> int:
@@ -86,7 +90,19 @@ func clear_rune_payment_state() -> void:
 	pending_card_cost = 0
 	selected_rune_uids.clear()
 	pending_payment_player_id = -1
+
+func set_pending_effect_choice(choice_type: String, player_id: int, source_uid: int = -1) -> void:
+	awaiting_effect_choice = true
+	pending_effect_choice = {
+		"type": choice_type,
+		"player_id": player_id,
+		"source_uid": source_uid
+	}
 	
+func clear_effect_choice_state() -> void:
+	awaiting_effect_choice = false
+	pending_effect_choice.clear()
+
 func clear_combat_state() -> void:
 	awaiting_showdown = false
 	awaiting_damage_assignment = false

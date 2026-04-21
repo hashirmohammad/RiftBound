@@ -68,6 +68,15 @@ func channel_runes(n: int) -> void:
 		r.zone = RuneInstance.Zone.RUNE_POOL
 		rune_pool.append(r)
 
+func channel_runes_exhausted(n: int) -> void:
+	for i in range(n):
+		var r = draw_rune()
+		if r == null:
+			return
+		r.zone = RuneInstance.Zone.RUNE_POOL
+		r.exhaust()
+		rune_pool.append(r)
+
 func spend_runes(rune: RuneInstance) -> bool:
 
 	if rune == null:

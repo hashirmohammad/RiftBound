@@ -224,3 +224,17 @@ offset_top = 541.0
 offset_right = 1920.0
 offset_bottom = 639.0
 text = "Confirm Damage"
+
+[node name="QiyanaDrawButton" type="Button" parent="." unique_id=1214282351]
+offset_left = 1607.35
+offset_top = 443.0
+offset_right = 1763.673
+offset_bottom = 541.0
+text = "Draw 1 Card"
+
+[node name="QiyanaChannelButton" type="Button" parent="." unique_id=1509017941]
+offset_left = 1607.35
+offset_top = 541.0
+offset_right = 1763.673
+offset_bottom = 639.0
+text = "Channel 1 Rune"

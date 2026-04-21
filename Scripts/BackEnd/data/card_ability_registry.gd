@@ -93,11 +93,15 @@ static func _populate() -> void:
 	# OGN-155/298 — Qiyana, Victorious
 	# [Deflect] — handled by keyword/effect parsing.
 	# When I conquer, draw 1 or channel 1 rune exhausted.
-	# Temporary implementation: on conquer, draw 1.
 	_registry["OGN-155/298"] = {
 		"on_conquer": func(unit: UnitState, state: GameState) -> void:
-			_draw_cards(unit.player_id, 1, state)
-			state.add_event("Qiyana, Victorious conquer: P%d drew 1." % unit.player_id)
+			if state.awaiting_effect_choice:
+				return
+
+			state.set_pending_effect_choice("qiyana_conquer", unit.player_id, unit.uid)
+			state.add_event(
+				"Qiyana, Victorious conquer: P%d must choose draw 1 or channel 1 rune exhausted." % unit.player_id
+			)
 	}
 	
 	# OGN-178/298 — Undercover Agent
@@ -180,3 +184,16 @@ static func _draw_cards(player_id: int, count: int, state: GameState) -> void:
 		var card: CardInstance = player.deck.pop_back()
 		player.hand.append(card)
 		card.zone = CardInstance.Zone.HAND
+
+static func resolve_qiyana_conquer_choice(player_id: int, choice: String, state: GameState) -> void:
+	var player: PlayerState = state.players[player_id]
+
+	match choice:
+		"draw":
+			_draw_cards(player_id, 1, state)
+			state.add_event("Qiyana, Victorious conquer: P%d chose draw 1." % player_id)
+		"channel":
+			player.channel_runes_exhausted(1)
+			state.add_event("Qiyana, Victorious conquer: P%d chose channel 1 rune exhausted." % player_id)
+		_:
+			state.add_event("Qiyana, Victorious conquer: invalid choice '%s'." % choice)

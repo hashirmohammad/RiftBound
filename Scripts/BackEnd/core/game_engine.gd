@@ -71,7 +71,8 @@ static func start_game() -> GameState:
 	p1.rune_deck.shuffle()
 	
 	#_give_debug_card_to_hand(p0, "OGN-151/298") # Lee Sin, Centered
-	_give_debug_card_to_hand(p0, "OGN-155/298")  # Qiyana, Victorious
+	#_give_debug_card_to_hand(p0, "OGN-155/298")  # Qiyana, Victorious
+	_give_debug_card_to_hand(p0, "OGN-161/298")  # Deadbloom Predator
 	for i in range(OPENING_HAND_SIZE):
 		state.turn_system._draw_card(p0)
 		state.turn_system._draw_card(p1)
@@ -98,6 +99,10 @@ static func end_turn(state: GameState) -> void:
 
 static func finalize_card_play(state: GameState, player: PlayerState, card: CardInstance, slot_index: int) -> void:
 	if state == null or player == null or card == null:
+		return
+
+	if _is_deadbloom_enemy_battlefield_target(card, slot_index):
+		finalize_deadbloom_play(state, player, card, _deadbloom_battlefield_index(slot_index))
 		return
 
 	# Remove from hand
@@ -134,7 +139,58 @@ static func finalize_card_play(state: GameState, player: PlayerState, card: Card
 		state.unit_registry.register(unit)
 		CardAbilityRegistry.attach_abilities(unit, state)
 		state.add_event("P%d unit registered: %s (uid=%d)." % [player.id, card.data.card_name, card.uid])
-		
+
+static func finalize_deadbloom_play(state: GameState, player: PlayerState, card: CardInstance, battlefield_index: int) -> void:
+	if state == null or player == null or card == null:
+		return
+	if battlefield_index < 0 or battlefield_index >= player.battlefield_slots.size():
+		state.add_event("Deadbloom play failed: invalid battlefield index.")
+		return
+
+	# Remove from hand
+	if player.hand.has(card):
+		player.hand.erase(card)
+
+	# Deadbloom enters battlefield directly
+	card.zone = CardInstance.Zone.ARENA
+	card.exhaust()
+
+	if not player.battlefield_slots[battlefield_index].has(card):
+		player.battlefield_slots[battlefield_index].append(card)
+
+	# Count as a successful play
+	player.cards_played_this_turn += 1
+
+	# Clear temporary payment state
+	state.clear_rune_payment_state()
+
+	state.add_event("P%d played %s directly to battlefield %d." % [
+		player.id, card.data.card_name, battlefield_index
+	])
+
+	# Register runtime unit if this card is a unit/champion
+	if card.data.type == CardData.CardType.UNIT or card.data.type == CardData.CardType.CHAMPION:
+		var unit := UnitState.new(card, player.id)
+		for effect in KeywordParser.parse(card.data, state):
+			unit.effects.add(effect)
+		state.unit_registry.register(unit)
+		CardAbilityRegistry.attach_abilities(unit, state)
+		state.add_event("P%d unit registered: %s (uid=%d)." % [player.id, card.data.card_name, card.uid])
+
+static func _is_deadbloom_enemy_battlefield_target(card: CardInstance, slot_index: int) -> bool:
+	if card == null or card.data == null:
+		return false
+	return card.data.card_id == "OGN-161/298" and (
+		slot_index == -100 or slot_index == -101
+	)
+
+static func _deadbloom_battlefield_index(slot_index: int) -> int:
+	if slot_index == -100:
+		return 0
+	if slot_index == -101:
+		return 1
+	return -1
+	
 static func find_card_in_hand_by_uid(player: PlayerState, card_uid: int) -> CardInstance:
 	for card in player.hand:
 		if card.uid == card_uid:

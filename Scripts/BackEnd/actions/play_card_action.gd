@@ -8,6 +8,10 @@ var _error_message: String = "Invalid PLAY_CARD."
 # Set to false when rune loading is confirmed working
 const DEBUG_FREE_PLAY := false
 
+const DEADBLOOM_CARD_ID := "OGN-161/298"
+const TARGET_ENEMY_BATTLEFIELD_LEFT  := -100
+const TARGET_ENEMY_BATTLEFIELD_RIGHT := -101
+
 func _init(_player_id: int = -1, _card_uid: int = -1, _slot_index: int = -1):
 	super(_player_id)
 	card_uid = _card_uid
@@ -33,9 +37,13 @@ func validate(state: GameState) -> bool:
 		_error_message = "Invalid PLAY_CARD: card uid not found in hand."
 		return false
 
-	if slot_index < 0 or slot_index >= p.board_slots.size():
-		_error_message = "Invalid PLAY_CARD: slot index out of range."
-		return false
+	if _is_deadbloom_enemy_battlefield_target():
+		if not _validate_deadbloom_target(state, p, card):
+			return false
+	else:
+		if slot_index < 0 or slot_index >= p.board_slots.size():
+			_error_message = "Invalid PLAY_CARD: slot index out of range."
+			return false
 
 	if p.awaken_rune_count() < card.data.cost:
 		_error_message = "P%d cannot play card: not enough runes." % p.id
@@ -52,7 +60,10 @@ func execute(state: GameState) -> void:
 		return
 
 	if card.data.cost <= 0:
-		GameEngine.finalize_card_play(state, p, card, slot_index)
+		if _is_deadbloom_enemy_battlefield_target():
+			GameEngine.finalize_deadbloom_play(state, p, card, _deadbloom_battlefield_index())
+		else:
+			GameEngine.finalize_card_play(state, p, card, slot_index)
 		return
 
 	state.awaiting_rune_payment = true
@@ -62,9 +73,14 @@ func execute(state: GameState) -> void:
 	state.pending_card_cost = card.data.cost
 	state.selected_rune_uids.clear()
 
-	state.add_event("P%d started paying %d runes for %s." % [
-		p.id, card.data.cost, card.data.card_name
-	])
+	if _is_deadbloom_enemy_battlefield_target():
+		state.add_event("P%d started paying %d runes for %s to enemy battlefield %d." % [
+			p.id, card.data.cost, card.data.card_name, _deadbloom_battlefield_index()
+		])
+	else:
+		state.add_event("P%d started paying %d runes for %s." % [
+			p.id, card.data.cost, card.data.card_name
+		])
 
 func get_error_message() -> String:
 	return _error_message
@@ -80,3 +96,34 @@ func _find_card_in_hand(player: PlayerState) -> CardInstance:
 	if idx == -1:
 		return null
 	return player.hand[idx]
+
+func _is_deadbloom_enemy_battlefield_target() -> bool:
+	return slot_index == TARGET_ENEMY_BATTLEFIELD_LEFT or slot_index == TARGET_ENEMY_BATTLEFIELD_RIGHT
+
+func _deadbloom_battlefield_index() -> int:
+	if slot_index == TARGET_ENEMY_BATTLEFIELD_LEFT:
+		return 0
+	if slot_index == TARGET_ENEMY_BATTLEFIELD_RIGHT:
+		return 1
+	return -1
+
+func _validate_deadbloom_target(state: GameState, player: PlayerState, card: CardInstance) -> bool:
+	if card.data.card_id != DEADBLOOM_CARD_ID:
+		_error_message = "Only Deadbloom Predator can be played to an occupied enemy battlefield."
+		return false
+
+	var battlefield_index := _deadbloom_battlefield_index()
+	if battlefield_index < 0 or battlefield_index >= player.battlefield_slots.size():
+		_error_message = "Invalid Deadbloom battlefield target."
+		return false
+
+	var opponent := state.get_opponent()
+	if opponent == null:
+		_error_message = "Deadbloom target failed: opponent missing."
+		return false
+
+	if opponent.battlefield_slots[battlefield_index].is_empty():
+		_error_message = "Deadbloom Predator can only be played to an occupied enemy battlefield."
+		return false
+
+	return true

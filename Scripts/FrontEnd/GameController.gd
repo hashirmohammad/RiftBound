@@ -9,6 +9,7 @@ const CommitToBattlefieldAction   = preload("res://Scripts/BackEnd/actions/commi
 const PassPriorityAction          = preload("res://Scripts/BackEnd/actions/pass_priority_action.gd")
 const ConfirmDamageAction         = preload("res://Scripts/BackEnd/actions/confirm_damage_action.gd")
 const CARD_SCENE                  = preload("res://Scenes/Card.tscn")
+const CardAbilityRegistry         = preload("res://Scripts/BackEnd/data/card_ability_registry.gd")
 
 var state: GameState
 
@@ -23,6 +24,8 @@ var selected_board_uids: Array[int] = []
 @onready var cancel_payment_button = $"../CancelPaymentButton"
 @onready var pass_priority_button  = $"../PassPriorityButton"
 @onready var confirm_damage_button = $"../ConfirmDamageButton"
+@onready var qiyana_draw_button    = $"../QiyanaDrawButton"
+@onready var qiyana_channel_button = $"../QiyanaChannelButton"
 
 # Attacker's pending damage assignments during the assignment phase: uid -> damage
 var _pending_assignments: Dictionary = {}
@@ -37,7 +40,10 @@ func _ready() -> void:
 	pass_priority_button.visible   = false
 	confirm_damage_button.pressed.connect(_on_confirm_damage_pressed)
 	confirm_damage_button.visible  = false
-
+	qiyana_draw_button.pressed.connect(_on_qiyana_draw_pressed)
+	qiyana_draw_button.visible = false
+	qiyana_channel_button.pressed.connect(_on_qiyana_channel_pressed)
+	qiyana_channel_button.visible = false
 # ─── UI Refresh ───────────────────────────────────────────────────────────────
 
 func refresh_all_ui() -> void:
@@ -310,9 +316,7 @@ func try_play_card_to_slot(card_uid: int, slot_index: int) -> bool:
 	if state.awaiting_rune_payment:
 		refresh_payment_ui()
 	else:
-		refresh_hand_ui()
-		render_slot(player, slot_index)
-		_update_status_label()
+		refresh_all_ui()
 
 	return true
 
@@ -434,6 +438,23 @@ func wait_until_main() -> void:
 		push_warning("wait_until_main() timed out. Current phase: %s" % state.phase)
 
 func _update_status_label() -> void:
+	qiyana_draw_button.visible = false
+	qiyana_channel_button.visible = false
+	if state.awaiting_effect_choice:
+		var pending: Dictionary = state.pending_effect_choice
+		var player_id: int = int(pending.get("player_id", -1))
+		var choice_type: String = str(pending.get("type", ""))
+
+		if choice_type == "qiyana_conquer":
+			status_label.text = "P%d: Qiyana conquered. Choose an effect." % player_id
+			qiyana_draw_button.visible = true
+			qiyana_channel_button.visible = true
+
+			cancel_payment_button.visible = false
+			pass_priority_button.visible = false
+			confirm_damage_button.visible = false
+			return
+	
 	if state.awaiting_rune_payment:
 		var remaining: int    = state.pending_card_cost - state.selected_rune_uids.size()
 		var card_name: String = _get_pending_card_name()
@@ -510,4 +531,29 @@ func _on_cancel_payment_pressed() -> void:
 				rune.awaken()
 
 	state.clear_rune_payment_state()
+	refresh_all_ui()
+	
+func _on_qiyana_draw_pressed() -> void:
+	resolve_pending_effect_choice("draw")
+
+func _on_qiyana_channel_pressed() -> void:
+	resolve_pending_effect_choice("channel")
+	
+func resolve_pending_effect_choice(choice: String) -> void:
+	if not state.awaiting_effect_choice:
+		return
+
+	var pending: Dictionary = state.pending_effect_choice
+	var choice_type: String = str(pending.get("type", ""))
+	var player_id: int = int(pending.get("player_id", -1))
+
+	# Clear first so the same choice cannot be clicked twice
+	state.clear_effect_choice_state()
+
+	match choice_type:
+		"qiyana_conquer":
+			CardAbilityRegistry.resolve_qiyana_conquer_choice(player_id, choice, state)
+		_:
+			state.add_event("Unknown pending effect choice type: %s" % choice_type)
+
 	refresh_all_ui()
