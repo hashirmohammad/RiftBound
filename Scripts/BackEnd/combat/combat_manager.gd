@@ -80,6 +80,8 @@ func declare_attack(
 	})
 
 	combat_declared.emit(context)
+	_trigger_unit_event(attacker, "on_attack_declared", context)
+	_trigger_unit_event(intended, "on_defend_declared", context)
 	return context
 
 # ── Step 2: Open Showdown ─────────────────────────────────────────────────────
@@ -110,6 +112,10 @@ func resolve_combat(context: CombatContext) -> void:
 		return
 
 	CombatResolver.resolve(context)
+	for unit in context.attackers:
+		_trigger_unit_event(unit, "on_combat_resolved", context)
+	for unit in context.defenders:
+		_trigger_unit_event(unit, "on_combat_resolved", context)
 
 	context.game_state.event_log.append({
 		"event": "combat_damage_applied",
@@ -148,6 +154,8 @@ func _process_deaths(dead: Array[UnitState], context: CombatContext) -> void:
 			"name": unit.card_instance.data.card_name
 		})
 		unit_died.emit(unit)
+		for survivor in unit_registry.get_all():
+			survivor.effects.remove_by_source(unit.uid)
 
 	# Fire DEATHKNELL triggers after all units are removed
 	for entry in pending_triggers:
@@ -206,6 +214,20 @@ func complete_resolve(context: CombatContext) -> void:
 	_cleanup(context)
 	combat_resolved.emit(context)
 
+func _trigger_unit_event(unit: UnitState, event_name: String, context: CombatContext) -> void:
+	if unit == null:
+		return
+
+	var triggers: Array[EffectInstance] = unit.effects.get_triggered(event_name)
+	for effect in triggers:
+		if effect.trigger_fn.is_valid():
+			effect.trigger_fn.call(unit, context.game_state)
+			context.game_state.event_log.append({
+				"event": "ability_triggered",
+				"source_uid": unit.uid,
+				"effect_uid": effect.uid,
+				"trigger": event_name
+			})
 # Called by ConfirmDamageAction after the loser assigns incoming damage.
 # loser_is_attacker=true  → writes into defender_assignments (incoming from defender)
 # loser_is_attacker=false → writes into attacker_assignments (incoming from attacker)

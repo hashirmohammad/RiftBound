@@ -127,6 +127,7 @@ static func finalize_card_play(state: GameState, player: PlayerState, card: Card
 		for effect in KeywordParser.parse(card.data, state):
 			unit.effects.add(effect)
 		state.unit_registry.register(unit)
+		CardAbilityRegistry.attach_abilities(unit, state)
 		state.add_event("P%d unit registered: %s (uid=%d)." % [player.id, card.data.card_name, card.uid])
 		
 static func find_card_in_hand_by_uid(player: PlayerState, card_uid: int) -> CardInstance:

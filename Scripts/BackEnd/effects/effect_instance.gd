@@ -67,3 +67,22 @@ var trigger_fn: Callable
 var timing_window: String = ""
 # Signature: func(source_unit: UnitState, context: CombatContext, game_state: GameState) -> void
 var ability_fn: Callable
+
+static func make_triggered(
+	p_uid: int,
+	p_type: EffectType,
+	p_source_uid: int,
+	p_trigger_event: String,
+	p_trigger_fn: Callable,
+	p_expiry: ExpiryTiming = ExpiryTiming.PERMANENT,
+	p_value: int = 0
+) -> EffectInstance:
+	var e := EffectInstance.new()
+	e.uid = p_uid
+	e.effect_type = p_type
+	e.source_uid = p_source_uid
+	e.trigger_event = p_trigger_event
+	e.trigger_fn = p_trigger_fn
+	e.expiry = p_expiry
+	e.value = p_value
+	return e

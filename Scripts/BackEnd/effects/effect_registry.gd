@@ -86,3 +86,6 @@ func get_all() -> Array[EffectInstance]:
 
 func is_empty() -> bool:
 	return _effects.is_empty()
+
+func clear_expired_end_of_combat(game_state: GameState) -> void:
+	expire_by_timing(EffectInstance.ExpiryTiming.END_OF_COMBAT, game_state)

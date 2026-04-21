@@ -84,6 +84,64 @@ static func _populate() -> void:
 			)
 	}
 
+	_registry["TEST_ATTACK_BUFF"] = {
+		"on_attack_declared": func(unit: UnitState, state: GameState) -> void:
+			var effect := EffectInstance.new()
+			effect.uid = randi()
+			effect.effect_type = EffectInstance.EffectType.ASSAULT
+			effect.source_uid = unit.uid
+			effect.value = 1
+			effect.expiry = EffectInstance.ExpiryTiming.END_OF_COMBAT
+			unit.effects.add(effect)
+
+			state.add_event("%s gains +1 assault until end of combat." % unit.card_instance.data.card_name)
+	}
+
+	_registry["TEST_DRAW_ON_DEATH"] = {
+		"on_death": func(unit: UnitState, state: GameState) -> void:
+			_draw_cards(unit.player_id, 1, state)
+			state.add_event("%s deathknell: draw 1." % unit.card_instance.data.card_name)
+	}
+
+	_registry["TEST_PASSIVE_BUFF"] = {
+		"on_enter_play": func(unit: UnitState, state: GameState) -> void:
+			var effect := EffectInstance.new()
+			effect.uid = randi()
+			effect.effect_type = EffectInstance.EffectType.BUFF
+			effect.source_uid = unit.uid
+			effect.value = 1
+			effect.expiry = EffectInstance.ExpiryTiming.PERMANENT
+			unit.effects.add(effect)
+
+			state.add_event("%s gains permanent +1 buff." % unit.card_instance.data.card_name)
+	}
+
+static func attach_abilities(unit: UnitState, state: GameState) -> void:
+	_ensure_loaded()
+
+	var card_id = unit.card_instance.data.card_id
+
+	if not _registry.has(card_id):
+		return
+
+	var ability_data = _registry[card_id]
+
+	for event_name in ability_data.keys():
+		if event_name == "on_enter_play":
+			continue
+
+		var effect := EffectInstance.new()
+		effect.uid = randi()
+		effect.source_uid = unit.uid
+		effect.trigger_event = event_name
+		effect.trigger_fn = ability_data[event_name]
+		effect.expiry = EffectInstance.ExpiryTiming.PERMANENT
+		unit.effects.add(effect)
+
+	var enter_play: Callable = ability_data.get("on_enter_play", Callable())
+	if enter_play.is_valid():
+		enter_play.call(unit, state)
+
 # ── Shared helpers ────────────────────────────────────────────────────────────
 
 static func _draw_cards(player_id: int, count: int, state: GameState) -> void:

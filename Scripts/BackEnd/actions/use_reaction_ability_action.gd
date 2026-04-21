@@ -15,6 +15,11 @@ func validate(state: GameState) -> bool:
 		_error_message = "Invalid USE_REACTION: no showdown is active."
 		return false
 
+	var allowed_player_id := _get_priority_player_id(state)
+	if player_id != allowed_player_id:
+		_error_message = "Invalid USE_REACTION: not your priority to act."
+		return false
+
 	var source: UnitState = state.unit_registry.get_unit(source_unit_uid)
 	if source == null:
 		_error_message = "Invalid USE_REACTION: source unit not found in registry."
@@ -59,3 +64,11 @@ func _find_effect(source: UnitState) -> EffectInstance:
 		if e.uid == effect_uid:
 			return e
 	return null
+
+func _get_priority_player_id(state: GameState) -> int:
+	if state.awaiting_showdown and state.active_showdown != null:
+		if not state.active_showdown.active_player_passed:
+			return state.active_player_index
+		else:
+			return 1 - state.active_player_index
+	return state.get_active_player().id
