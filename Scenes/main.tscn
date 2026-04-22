@@ -38,125 +38,124 @@ position = Vector2(1322, 540)
 [node name="P0_Points" type="Node2D" parent="P0" unique_id=84179518]
 
 [node name="P0_Point1" parent="P0/P0_Points" unique_id=858870301 instance=ExtResource("4_k12tt")]
-position = Vector2(27, 931)
+position = Vector2(27, 880.875)
 
 [node name="P0_Point2" parent="P0/P0_Points" unique_id=811101513 instance=ExtResource("4_k12tt")]
-position = Vector2(27, 893)
+position = Vector2(27, 842.625)
 
 [node name="P0_Point3" parent="P0/P0_Points" unique_id=327160036 instance=ExtResource("4_k12tt")]
-position = Vector2(27, 854)
+position = Vector2(27, 804.375)
 
 [node name="P0_Point4" parent="P0/P0_Points" unique_id=1361892046 instance=ExtResource("4_k12tt")]
-position = Vector2(27, 816)
+position = Vector2(27, 766.125)
 
 [node name="P0_Point5" parent="P0/P0_Points" unique_id=1176661728 instance=ExtResource("4_k12tt")]
-position = Vector2(27, 778)
+position = Vector2(27, 727.875)
 
 [node name="P0_Point6" parent="P0/P0_Points" unique_id=1253753202 instance=ExtResource("4_k12tt")]
-position = Vector2(27, 740)
+position = Vector2(27, 689.625)
 
 [node name="P0_Point7" parent="P0/P0_Points" unique_id=1191016440 instance=ExtResource("4_k12tt")]
-position = Vector2(27, 701)
+position = Vector2(27, 651.375)
 
 [node name="P0_Point8" parent="P0/P0_Points" unique_id=822467084 instance=ExtResource("4_k12tt")]
-position = Vector2(27, 663)
+position = Vector2(27, 613.125)
 
 [node name="P0_Base" parent="P0" unique_id=402928220 instance=ExtResource("2_jjvhh")]
-position = Vector2(850, 796)
+position = Vector2(850, 746)
 
 [node name="P0_Battlefield1" parent="P0" unique_id=737844258 instance=ExtResource("4_6iyac")]
-position = Vector2(383, 698)
+position = Vector2(383, 648)
 
 [node name="P0_Battlefield2" parent="P0" unique_id=200000001 instance=ExtResource("4_6iyac")]
-position = Vector2(1051, 698)
+position = Vector2(1051, 648)
 
 [node name="P0_Legend" parent="P0" unique_id=1188493574 instance=ExtResource("5_6iyac")]
-position = Vector2(1518, 698)
+position = Vector2(1518, 648)
 
 [node name="P0_Champion" parent="P0" unique_id=387825937 instance=ExtResource("4_fdnlq")]
-position = Vector2(1784, 698)
+position = Vector2(1784, 648)
 
 [node name="P0_MainDeck" parent="P0" unique_id=189259472 instance=ExtResource("11_wsu2k")]
-position = Vector2(1784, 796)
+position = Vector2(1784, 746)
 
 [node name="P0_RuneDeck" parent="P0" unique_id=2020144502 instance=ExtResource("11_h1bgf")]
-position = Vector2(140.00006, 955.00006)
+position = Vector2(151.5, 845)
 scale = Vector2(0.8000001, 0.8000001)
 
 [node name="P0_Runes" parent="P0" unique_id=1761847097 instance=ExtResource("4_hptm8")]
-position = Vector2(952, 895)
+position = Vector2(952.5, 845)
 
 [node name="P0_Trash" parent="P0" unique_id=685272223 instance=ExtResource("12_k12tt")]
-position = Vector2(1784, 895)
+position = Vector2(1784, 845)
 
 [node name="P0_Hand" parent="P0" unique_id=1713076396 instance=ExtResource("4_d1ilt")]
-position = Vector2(960, 1015)
+position = Vector2(960, 990)
 
 [node name="P1" type="Node2D" parent="." unique_id=548828831]
 
 [node name="P1_Points" type="Node2D" parent="P1" unique_id=507618386]
-position = Vector2(0, -514)
 
 [node name="P1_Point1" parent="P1/P1_Points" unique_id=1084306714 instance=ExtResource("4_k12tt")]
-position = Vector2(27, 931)
+position = Vector2(27, 199.125)
 
 [node name="P1_Point2" parent="P1/P1_Points" unique_id=100000010 instance=ExtResource("4_k12tt")]
-position = Vector2(27, 893)
+position = Vector2(27, 237.375)
 
 [node name="P1_Point3" parent="P1/P1_Points" unique_id=100000011 instance=ExtResource("4_k12tt")]
-position = Vector2(27, 854)
+position = Vector2(27, 275.625)
 
 [node name="P1_Point4" parent="P1/P1_Points" unique_id=100000012 instance=ExtResource("4_k12tt")]
-position = Vector2(27, 816)
+position = Vector2(27, 313.875)
 
 [node name="P1_Point5" parent="P1/P1_Points" unique_id=100000013 instance=ExtResource("4_k12tt")]
-position = Vector2(27, 778)
+position = Vector2(27, 352.125)
 
 [node name="P1_Point6" parent="P1/P1_Points" unique_id=100000014 instance=ExtResource("4_k12tt")]
-position = Vector2(27, 740)
+position = Vector2(27, 390.375)
 
 [node name="P1_Point7" parent="P1/P1_Points" unique_id=100000015 instance=ExtResource("4_k12tt")]
-position = Vector2(27, 701)
+position = Vector2(27, 428.625)
 
 [node name="P1_Point8" parent="P1/P1_Points" unique_id=100000016 instance=ExtResource("4_k12tt")]
-position = Vector2(27, 663)
+position = Vector2(27, 466.875)
 
 [node name="P1_Base" parent="P1" unique_id=100000004 instance=ExtResource("2_jjvhh")]
-position = Vector2(850, 284)
+position = Vector2(850, 334)
 
 [node name="P1_Battlefield1" parent="P1" unique_id=100000001 instance=ExtResource("4_6iyac")]
-position = Vector2(383, 382)
+position = Vector2(383, 432)
 
 [node name="P1_Battlefield2" parent="P1" unique_id=200000002 instance=ExtResource("4_6iyac")]
-position = Vector2(1051, 382)
+position = Vector2(1051, 432)
 
 [node name="P1_Legend" parent="P1" unique_id=100000002 instance=ExtResource("5_6iyac")]
-position = Vector2(1518, 382)
+position = Vector2(1518, 432)
 
 [node name="P1_Champion" parent="P1" unique_id=100000003 instance=ExtResource("4_fdnlq")]
-position = Vector2(1784, 382)
+position = Vector2(1784, 432)
 
 [node name="P1_MainDeck" parent="P1" unique_id=100000005 instance=ExtResource("11_wsu2k")]
-position = Vector2(1784, 284)
+position = Vector2(1784, 334)
 
 [node name="P1_RuneDeck" parent="P1" unique_id=100000006 instance=ExtResource("11_h1bgf")]
-position = Vector2(140, 245)
+position = Vector2(151.5, 235)
 scale = Vector2(0.8000001, 0.8000001)
 
 [node name="P1_Runes" parent="P1" unique_id=151080046 instance=ExtResource("4_hptm8")]
-position = Vector2(953, 185)
+position = Vector2(952.5, 235)
 
 [node name="P1_Trash" parent="P1" unique_id=886760367 instance=ExtResource("12_k12tt")]
-position = Vector2(1784, 185)
+position = Vector2(1784, 235)
 
 [node name="P1_Hand" parent="P1" unique_id=698325425 instance=ExtResource("4_d1ilt")]
-position = Vector2(960, 65)
+position = Vector2(960, 90)
 
 [node name="EndTurnButton" type="Button" parent="." unique_id=283290533]
-offset_left = 1763.6774
-offset_top = 443.0
-offset_right = 1920.0004
-offset_bottom = 541.0
+offset_left = 1760.0
+offset_top = 490.0
+offset_right = 1920.0
+offset_bottom = 540.0
 text = "End Turn"
 
 [node name="GameController" type="Node" parent="." unique_id=540227294]
@@ -167,22 +166,22 @@ offset_right = 40.0
 offset_bottom = 23.0
 
 [node name="CancelPaymentButton" type="Button" parent="." unique_id=355363713]
-offset_left = 1763.677
-offset_top = 541.0
+offset_left = 1760.0
+offset_top = 540.0
 offset_right = 1920.0
-offset_bottom = 639.0
+offset_bottom = 590.0
 text = "Cancel"
 
 [node name="PassPriorityButton" type="Button" parent="." unique_id=355363714]
-offset_left = 1763.677
-offset_top = 541.0
+offset_left = 1760.0
+offset_top = 540.0
 offset_right = 1920.0
-offset_bottom = 639.0
+offset_bottom = 590.0
 text = "Pass Priority"
 
 [node name="ConfirmDamageButton" type="Button" parent="." unique_id=355363715]
-offset_left = 1763.677
-offset_top = 541.0
+offset_left = 1760.0
+offset_top = 540.0
 offset_right = 1920.0
-offset_bottom = 639.0
+offset_bottom = 590.0
 text = "Confirm Damage"
