@@ -87,6 +87,13 @@ func _ready() -> void:
 
 	if not Engine.is_editor_hint():
 		call_deferred("_post_ready_setup")
+	else:
+		call_deferred("_editor_fit_collisions")
+
+func _editor_fit_collisions() -> void:
+	_setup_battlefield_halves()
+	_fit_zone_collisions()
+	_reposition_scene_nodes()
 
 func _post_ready_setup() -> void:
 	# Wait two frames so the Control layout pass fully resolves panel positions
@@ -236,8 +243,23 @@ func _fit_zone_collisions() -> void:
 	_fit_collision_to_panel(get_node_or_null("../P1_Arena"),           arena_p1_panel)
 	_fit_collision_to_panel(get_node_or_null("../P0/P0_Base"),         player_base_panel)
 	_fit_collision_to_panel(get_node_or_null("../P1/P1_Base"),         opponent_base_panel)
+	_fit_collision_to_panel(get_node_or_null("../P0/P0_Legend"),       player_champion_legend)
+	_fit_collision_to_panel(get_node_or_null("../P1/P1_Legend"),       opponent_champion_legend)
+	_fit_collision_to_panel(get_node_or_null("../P0/P0_Champion"),     player_champion_panel)
+	_fit_collision_to_panel(get_node_or_null("../P1/P1_Champion"),     opponent_champion_panel)
+	_fit_collision_to_panel(get_node_or_null("../P0/P0_MainDeck"),     player_main_deck)
+	_fit_collision_to_panel(get_node_or_null("../P1/P1_MainDeck"),     opponent_main_deck)
+	_fit_collision_to_panel(get_node_or_null("../P0/P0_Runes"),        player_runes_panel)
+	_fit_collision_to_panel(get_node_or_null("../P1/P1_Runes"),        opponent_runes_panel)
+	_fit_collision_to_panel(get_node_or_null("../P0/P0_Trash"),        player_trash_panel)
+	_fit_collision_to_panel(get_node_or_null("../P1/P1_Trash"),        opponent_trash_panel)
+	_fit_rune_deck_to_panel(get_node_or_null("../P0/P0_RuneDeck"),     player_rune_deck)
+	_fit_rune_deck_to_panel(get_node_or_null("../P1/P1_RuneDeck"),     opponent_rune_deck)
 	_resize_hand_collision(get_node_or_null("../P0/P0_Hand"))
 	_resize_hand_collision(get_node_or_null("../P1/P1_Hand"))
+	for i in range(1, 9):
+		_fit_point_collision(get_node_or_null("../P0/P0_Points/P0_Point%d" % i))
+		_fit_point_collision(get_node_or_null("../P1/P1_Points/P1_Point%d" % i))
 
 func _resize_hand_collision(hand: Node) -> void:
 	if hand == null:
@@ -247,7 +269,29 @@ func _resize_hand_collision(hand: Node) -> void:
 		var shape_node = area.get_node_or_null("CollisionShape2D")
 		if shape_node and shape_node.shape is RectangleShape2D:
 			shape_node.shape      = shape_node.shape.duplicate()
-			shape_node.shape.size = Vector2(SCREEN_W - BORDER_W * 2, HAND_H - BORDER_W * 2)
+			shape_node.shape.size = Vector2(SCREEN_W, HAND_H)
+
+func _fit_rune_deck_to_panel(node: Node2D, panel: Panel) -> void:
+	if node == null or panel == null:
+		return
+	node.global_position = panel.global_position + panel.size / 2.0
+	var area = node.get_node_or_null("Area2D")
+	if area:
+		var shape_node = area.get_node_or_null("CollisionShape2D")
+		if shape_node and shape_node.shape is RectangleShape2D:
+			shape_node.position   = Vector2.ZERO
+			shape_node.shape      = shape_node.shape.duplicate()
+			shape_node.shape.size = panel.size / node.scale
+
+func _fit_point_collision(node: Node2D) -> void:
+	if node == null:
+		return
+	var area = node.get_node_or_null("Area2D")
+	if area:
+		var shape_node = area.get_node_or_null("CollisionShape2D")
+		if shape_node and shape_node.shape is CircleShape2D:
+			shape_node.shape        = shape_node.shape.duplicate()
+			shape_node.shape.radius = MANA_SIZE / 2.0
 
 func _fit_collision_to_panel(node: Node2D, panel: Panel) -> void:
 	if node == null or panel == null:
@@ -258,7 +302,7 @@ func _fit_collision_to_panel(node: Node2D, panel: Panel) -> void:
 		var shape_node = area.get_node_or_null("CollisionShape2D")
 		if shape_node and shape_node.shape is RectangleShape2D:
 			shape_node.shape      = shape_node.shape.duplicate()
-			shape_node.shape.size = panel.size - Vector2(BORDER_W * 2, BORDER_W * 2)
+			shape_node.shape.size = panel.size
 
 func _setup_battlefield_halves() -> void:
 	_p0_battlefield_left  = player_battlefield_panel
@@ -292,7 +336,7 @@ func _create_battlefield_slot(panel: Panel, slot_name: String) -> CardSlot:
 		var shape_node = area.get_node_or_null("CollisionShape2D")
 		if shape_node and shape_node.shape is RectangleShape2D:
 			shape_node.shape      = shape_node.shape.duplicate()
-			shape_node.shape.size = panel.size - Vector2(BORDER_W * 2, BORDER_W * 2)
+			shape_node.shape.size = panel.size
 
 	return slot
 
