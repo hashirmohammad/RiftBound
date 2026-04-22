@@ -3,22 +3,22 @@ extends Control
 
 var game_controller: Node
 
-const SCREEN_W     = 1920.0
-const SCREEN_H     = 1080.0
-const COLOR_BG     = Color("#0d1b35")
+const SCREEN_W    = 1920.0
+const SCREEN_H    = 1080.0
+const COLOR_BG    = Color("#0d1b35")
 const COLOR_BORDER = Color(0.83, 0.68, 0.21, 0.95)
-const COLOR_DIV    = Color(1, 1, 1, 0.20)
-const COLOR_HAND   = Color(1, 1, 1, 0.05)
-const BORDER_W     = 2
-const GAP          = 6
-const FONT_SIZE    = 11
-const MANA_X       = 8
-const MANA_SIZE    = 38
-const MANA_COL_W   = 52
-const HAND_H       = 130
-const DIVIDER_H    = 4
-const ARENA_H      = 200
-const END_BTN_W    = 160.0
+const COLOR_DIV   = Color(1, 1, 1, 0.20)
+const COLOR_HAND  = Color(1, 1, 1, 0.05)
+const BORDER_W    = 2
+const GAP         = 6
+const FONT_SIZE   = 11
+const MANA_X      = 8
+const MANA_SIZE   = 38
+const MANA_COL_W  = 52
+const HAND_H      = 180   # increased from 130 — bigger hand area
+const DIVIDER_H   = 4
+const ARENA_H     = 100   # reduced to give player zones more height for cards
+const END_BTN_W   = 160.0
 
 const CARD_SLOT_SCENE = preload("res://Scenes/CardSlot.tscn")
 
@@ -41,6 +41,13 @@ var arena_p1_panel:             Panel = null
 # Base panel references — used to fit slot collisions
 var player_base_panel:   Panel = null
 var opponent_base_panel: Panel = null
+
+# Champion / Trash panel references — stored so _reposition_scene_nodes
+# can call _move_to_panel instead of recalculating geometry manually.
+var player_champion_panel:    Panel = null
+var opponent_champion_panel:  Panel = null
+var player_trash_panel:       Panel = null
+var opponent_trash_panel:     Panel = null
 
 # Slot nodes — used by CardManager for highlight routing
 var _player_slot_nodes: Array = []
@@ -70,9 +77,9 @@ func _ready() -> void:
 	var half_w  = (SCREEN_W - END_BTN_W) / 2.0
 	var arena_y = ph + DIVIDER_H
 
-	arena_p0_panel = add_panel("Arena_P0", Vector2(0, arena_y),                    Vector2(half_w, ARENA_H),            make_style(), "Arena 1", 18)
+	arena_p0_panel = add_panel("Arena_P0", Vector2(0, arena_y),                   Vector2(half_w, ARENA_H),             make_style(), "Arena 1", 18)
 	add_rect(Vector2(half_w, arena_y), Vector2(DIVIDER_H, ARENA_H), COLOR_DIV)
-	arena_p1_panel = add_panel("Arena_P1", Vector2(half_w + DIVIDER_H, arena_y),   Vector2(half_w - DIVIDER_H, ARENA_H), make_style(), "Arena 2", 18)
+	arena_p1_panel = add_panel("Arena_P1", Vector2(half_w + DIVIDER_H, arena_y),  Vector2(half_w - DIVIDER_H, ARENA_H), make_style(), "Arena 2", 18)
 	add_rect(Vector2(SCREEN_W - END_BTN_W, arena_y), Vector2(1, ARENA_H), COLOR_DIV)
 
 	add_rect(Vector2(0, ph + DIVIDER_H + ARENA_H), Vector2(SCREEN_W, DIVIDER_H), COLOR_DIV)
@@ -82,10 +89,125 @@ func _ready() -> void:
 		call_deferred("_post_ready_setup")
 
 func _post_ready_setup() -> void:
+	# Wait two frames so the Control layout pass fully resolves panel positions
+	# before we read global_position for collision placement.
+	await get_tree().process_frame
+	await get_tree().process_frame
 	_cache_player_slots()
 	_setup_battlefield_halves()
 	_spawn_battlefield_slots()
 	_fit_zone_collisions()
+	_reposition_scene_nodes()
+	_debug_panels()
+
+func _debug_panels() -> void:
+	var checks = [
+		["p0_bf1",    player_battlefield_panel],
+		["p0_bf2",    player_battlefield_right],
+		["p0_legend", player_champion_legend],
+		["p0_base",   player_base_panel],
+		["p0_runes",  player_runes_panel],
+		["p1_bf1",    opponent_battlefield_panel],
+		["p1_bf2",    opponent_battlefield_right],
+		["p1_legend", opponent_champion_legend],
+		["p1_base",   opponent_base_panel],
+		["p1_runes",  opponent_runes_panel],
+	]
+	for c in checks:
+		var p = c[1] as Panel
+		if p:
+			print("%s → gpos=%s size=%s centre=%s" % [c[0], str(p.global_position), str(p.size), str(p.global_position + p.size / 2.0)])
+		else:
+			print("%s → NULL" % c[0])
+
+# ─── Scene Node Repositioning ─────────────────────────────────────────────────
+# Uses stored panel references so every node lands exactly at its panel's centre.
+# No manual geometry recalculation — the panels are the single source of truth.
+
+func _reposition_scene_nodes() -> void:
+	# ── P0 (bottom player) ───────────────────────────────────────────────────
+	_move_to_panel("../P0/P0_Battlefield1", player_battlefield_panel)
+	_move_to_panel("../P0/P0_Battlefield2", player_battlefield_right)
+	_move_to_panel("../P0/P0_Legend",       player_champion_legend)
+	_move_to_panel("../P0/P0_Champion",     player_champion_panel)
+	_move_to_panel("../P0/P0_Base",         player_base_panel)
+	_move_to_panel("../P0/P0_MainDeck",     player_main_deck)
+	_move_to_panel("../P0/P0_RuneDeck",     player_rune_deck)
+	_move_to_panel("../P0/P0_Runes",        player_runes_panel)
+	_move_to_panel("../P0/P0_Trash",        player_trash_panel)
+
+	# Hand — centred horizontally in the hand strip
+	var ph     = floor((SCREEN_H - DIVIDER_H * 2 - ARENA_H) / 2.0)
+	var p0_top = ph + DIVIDER_H * 2 + ARENA_H
+	_move("../P0/P0_Hand", Vector2(SCREEN_W / 2.0, p0_top + (ph - HAND_H) + HAND_H / 2.0))
+
+	# Mana points — evenly spaced inside P0's battlefield strip
+	var bh = ph - HAND_H
+	var p0_points = get_node_or_null("../P0/P0_Points")
+	if p0_points:
+		var rh = bh / 8.0
+		for i in range(1, 9):
+			var pt = p0_points.get_node_or_null("P0_Point%d" % i)
+			if pt:
+				pt.position = Vector2(27.0, p0_top + (8 - i) * rh + rh / 2.0)
+
+	# ── P1 (top player) ──────────────────────────────────────────────────────
+	_move_to_panel("../P1/P1_Battlefield1", opponent_battlefield_panel)
+	_move_to_panel("../P1/P1_Battlefield2", opponent_battlefield_right)
+	_move_to_panel("../P1/P1_Legend",       opponent_champion_legend)
+	_move_to_panel("../P1/P1_Champion",     opponent_champion_panel)
+	_move_to_panel("../P1/P1_Base",         opponent_base_panel)
+	_move_to_panel("../P1/P1_MainDeck",     opponent_main_deck)
+	_move_to_panel("../P1/P1_RuneDeck",     opponent_rune_deck)
+	_move_to_panel("../P1/P1_Runes",        opponent_runes_panel)
+	_move_to_panel("../P1/P1_Trash",        opponent_trash_panel)
+
+	_move("../P1/P1_Hand", Vector2(SCREEN_W / 2.0, HAND_H / 2.0))
+
+	var p1_points = get_node_or_null("../P1/P1_Points")
+	if p1_points:
+		p1_points.position = Vector2.ZERO
+		var rh = bh / 8.0
+		for i in range(1, 9):
+			var pt = p1_points.get_node_or_null("P1_Point%d" % i)
+			if pt:
+				pt.position = Vector2(27.0, HAND_H + (i - 1) * rh + rh / 2.0)
+
+	# ── Buttons — snap to arena strip ────────────────────────────────────────
+	var arena_y = ph + DIVIDER_H
+	var btn_h   = 50.0
+	var btn_x   = SCREEN_W - END_BTN_W
+	_move_control("../EndTurnButton",       btn_x, arena_y,           SCREEN_W, arena_y + btn_h)
+	_move_control("../CancelPaymentButton", btn_x, arena_y + btn_h,   SCREEN_W, arena_y + btn_h * 2)
+	_move_control("../PassPriorityButton",  btn_x, arena_y + btn_h,   SCREEN_W, arena_y + btn_h * 2)
+	_move_control("../ConfirmDamageButton", btn_x, arena_y + btn_h,   SCREEN_W, arena_y + btn_h * 2)
+
+# Sets a Node2D's position to the centre of a panel (global coords).
+func _move_to_panel(node_path: String, panel: Panel) -> void:
+	if panel == null:
+		return
+	var node = get_node_or_null(node_path)
+	if node == null:
+		push_warning("Board.gd: _move_to_panel() could not find node: " + node_path)
+		return
+	node.global_position = panel.global_position + panel.size / 2.0
+
+func _move_control(path: String, left: float, top: float, right: float, bottom: float) -> void:
+	var node = get_node_or_null(path)
+	if node == null:
+		push_warning("Board.gd: _move_control() could not find node: " + path)
+		return
+	node.offset_left   = left
+	node.offset_top    = top
+	node.offset_right  = right
+	node.offset_bottom = bottom
+
+func _move(path: String, pos: Vector2) -> void:
+	var node = get_node_or_null(path)
+	if node:
+		node.position = pos
+	else:
+		push_warning("Board.gd: _move() could not find node: " + path)
 
 # ─── Slot Setup ───────────────────────────────────────────────────────────────
 
@@ -110,8 +232,22 @@ func _fit_zone_collisions() -> void:
 	_fit_collision_to_panel(get_node_or_null("../P0/P0_Battlefield2"), player_battlefield_right)
 	_fit_collision_to_panel(get_node_or_null("../P1/P1_Battlefield1"), opponent_battlefield_panel)
 	_fit_collision_to_panel(get_node_or_null("../P1/P1_Battlefield2"), opponent_battlefield_right)
-	_fit_collision_to_panel(get_node_or_null("../P0_Arena"), arena_p0_panel)
-	_fit_collision_to_panel(get_node_or_null("../P1_Arena"), arena_p1_panel)
+	_fit_collision_to_panel(get_node_or_null("../P0_Arena"),           arena_p0_panel)
+	_fit_collision_to_panel(get_node_or_null("../P1_Arena"),           arena_p1_panel)
+	_fit_collision_to_panel(get_node_or_null("../P0/P0_Base"),         player_base_panel)
+	_fit_collision_to_panel(get_node_or_null("../P1/P1_Base"),         opponent_base_panel)
+	_resize_hand_collision(get_node_or_null("../P0/P0_Hand"))
+	_resize_hand_collision(get_node_or_null("../P1/P1_Hand"))
+
+func _resize_hand_collision(hand: Node) -> void:
+	if hand == null:
+		return
+	var area = hand.get_node_or_null("Area2D")
+	if area:
+		var shape_node = area.get_node_or_null("CollisionShape2D")
+		if shape_node and shape_node.shape is RectangleShape2D:
+			shape_node.shape      = shape_node.shape.duplicate()
+			shape_node.shape.size = Vector2(SCREEN_W - BORDER_W * 2, HAND_H - BORDER_W * 2)
 
 func _fit_collision_to_panel(node: Node2D, panel: Panel) -> void:
 	if node == null or panel == null:
@@ -123,7 +259,6 @@ func _fit_collision_to_panel(node: Node2D, panel: Panel) -> void:
 		if shape_node and shape_node.shape is RectangleShape2D:
 			shape_node.shape      = shape_node.shape.duplicate()
 			shape_node.shape.size = panel.size - Vector2(BORDER_W * 2, BORDER_W * 2)
-
 
 func _setup_battlefield_halves() -> void:
 	_p0_battlefield_left  = player_battlefield_panel
@@ -148,8 +283,7 @@ func _create_battlefield_slot(panel: Panel, slot_name: String) -> CardSlot:
 	var slot: CardSlot = CARD_SLOT_SCENE.instantiate()
 	slot.name          = slot_name
 	panel.add_child(slot)
-
-	slot.position = panel.size / 2.0
+	slot.position      = panel.size / 2.0
 
 	var area = slot.get_node_or_null("Area2D")
 	if area:
@@ -165,7 +299,8 @@ func _create_battlefield_slot(panel: Panel, slot_name: String) -> CardSlot:
 # ─── Slot Detection ───────────────────────────────────────────────────────────
 
 func get_slot_index_under_mouse() -> int:
-	if game_controller == null: return -1
+	if game_controller == null:
+		return -1
 	var active_id: int = game_controller.state.get_active_player().id
 	var slots          = _player_slot_nodes if active_id == 0 else _p1_slot_nodes
 	var mouse_pos      = get_global_mouse_position()
@@ -310,15 +445,15 @@ func build_player(y: float, flip: bool, ph: float) -> void:
 	var rb  = inn - re * 2 - GAP * 2
 
 	var zones = [
-		["BATTLEFIELD 1",          xl,         y1, bfw,                 re],
-		["BATTLEFIELD 2",          xl+bfw+GAP, y1, bfw,                 re],
-		["LEGEND",          xc,         y1, cw,                  re],
-		["CHAMPION",        xr,         y1, cw,                  re],
-		["BASE",            xl,         y2, lw + cw + GAP,       re],
-		["MAIN DECK",       xr,         y2, cw,                  re],
-		["RUNE DECK",       xl,         y3, rdw,                 rb],
-		["RUNES",           xl+rdw+GAP, y3, lw-rdw-GAP+cw+GAP,  rb],
-		["TRASH",           xr,         y3, cw,                  rb],
+		["BATTLEFIELD 1", xl,         y1, bfw,                        re],
+		["BATTLEFIELD 2", xl+bfw+GAP, y1, bfw,                        re],
+		["LEGEND",        xc,         y1, cw,                         re],
+		["CHAMPION",      xr,         y1, cw,                         re],
+		["BASE",          xl,         y2, lw + cw + GAP,              re],
+		["MAIN DECK",     xr,         y2, cw,                         re],
+		["RUNE DECK",     xl,         y3, rdw,                        rb],
+		["RUNES",         xl+rdw+GAP, y3, lw-rdw-GAP+cw+GAP,         rb],
+		["TRASH",         xr,         y3, cw,                         rb],
 	]
 
 	var runes_ref: Panel = null
@@ -329,20 +464,24 @@ func build_player(y: float, flip: bool, ph: float) -> void:
 
 		if zname == "RUNES": runes_ref = p
 
-		if   not flip and zname == "BATTLEFIELD 1":           player_battlefield_panel   = p
-		elif flip     and zname == "BATTLEFIELD 1":           opponent_battlefield_panel = p
-		if   not flip and zname == "BATTLEFIELD 2":           player_battlefield_right   = p
-		elif flip     and zname == "BATTLEFIELD 2":           opponent_battlefield_right = p
-		if   not flip and zname == "LEGEND":           player_champion_legend     = p
-		elif flip     and zname == "LEGEND":           opponent_champion_legend   = p
-		if   not flip and zname == "MAIN DECK":       player_main_deck           = p
-		elif flip     and zname == "MAIN DECK":       opponent_main_deck         = p
-		if   not flip and zname == "RUNE DECK":       player_rune_deck           = p
-		elif flip     and zname == "RUNE DECK":       opponent_rune_deck         = p
-		if   not flip and zname == "RUNES":           player_runes_panel         = p
-		elif flip     and zname == "RUNES":           opponent_runes_panel       = p
-		if   not flip and zname == "BASE":            player_base_panel          = p
-		elif flip     and zname == "BASE":            opponent_base_panel        = p
+		if   not flip and zname == "BATTLEFIELD 1": player_battlefield_panel   = p
+		elif flip     and zname == "BATTLEFIELD 1": opponent_battlefield_panel = p
+		if   not flip and zname == "BATTLEFIELD 2": player_battlefield_right   = p
+		elif flip     and zname == "BATTLEFIELD 2": opponent_battlefield_right = p
+		if   not flip and zname == "LEGEND":        player_champion_legend     = p
+		elif flip     and zname == "LEGEND":        opponent_champion_legend   = p
+		if   not flip and zname == "CHAMPION":      player_champion_panel      = p
+		elif flip     and zname == "CHAMPION":      opponent_champion_panel    = p
+		if   not flip and zname == "MAIN DECK":     player_main_deck           = p
+		elif flip     and zname == "MAIN DECK":     opponent_main_deck         = p
+		if   not flip and zname == "RUNE DECK":     player_rune_deck           = p
+		elif flip     and zname == "RUNE DECK":     opponent_rune_deck         = p
+		if   not flip and zname == "RUNES":         player_runes_panel         = p
+		elif flip     and zname == "RUNES":         opponent_runes_panel       = p
+		if   not flip and zname == "BASE":          player_base_panel          = p
+		elif flip     and zname == "BASE":          opponent_base_panel        = p
+		if   not flip and zname == "TRASH":         player_trash_panel         = p
+		elif flip     and zname == "TRASH":         opponent_trash_panel       = p
 
 		if zname == "BASE":
 			add_image(p, tint_gold("res://Assets/RiftBoundLogo.jpg"), -0.2, -0.5, 1.2, 1.5, 0.0, 0.0, 0.0, 0.0, Color(0.83, 0.68, 0.21, 0.55))
