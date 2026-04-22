@@ -12,7 +12,7 @@ var dragged_card = null
 
 # Multi-select state for board cards
 var _selected_uids:      Array[int] = []
-var _pending_board_card              = null   # board card pressed but not yet dragged
+var _pending_board_card              = null
 var _press_position:     Vector2    = Vector2.ZERO
 
 func _ready() -> void:
@@ -21,24 +21,31 @@ func _ready() -> void:
 	game_controller = $"../GameController"
 
 func _process(_delta) -> void:
+	# Promote a pending board card to a real drag once the mouse moves far enough
+	if _pending_board_card != null:
+		var dist: float = get_global_mouse_position().distance_to(_press_position)
+		if dist >= DRAG_THRESHOLD:
+			var card = _pending_board_card
+			_pending_board_card = null
+			_start_drag(card)
+
 	if dragged_card:
-		var mp = get_global_mouse_position()
-		dragged_card.global_position = Vector2(
-			clamp(mp.x - drag_offset.x, 0, screen_size.x),
-			clamp(mp.y - drag_offset.y, 0, screen_size.y)
-		)
+		var mp: Vector2 = get_global_mouse_position()
+		var target: Vector2 = mp + drag_offset
+
+		# 🔑 account for card size
+		var half_w = RiftCard.CARD_WIDTH  * dragged_card.scale.x / 2.0
+		var half_h = RiftCard.CARD_HEIGHT * dragged_card.scale.y / 2.0
+
+		target.x = clamp(target.x, half_w, screen_size.x - half_w)
+		target.y = clamp(target.y, half_h, screen_size.y - half_h)
+
+		dragged_card.global_position = target
 		_highlight_slots()
 		return
 
-	# Threshold-based drag start for board cards
-	if _pending_board_card != null:
-		if get_global_mouse_position().distance_to(_press_position) > DRAG_THRESHOLD:
-			_start_drag(_pending_board_card)
-			_pending_board_card = null
-
 func _input(event) -> void:
 	if event is InputEventMouseButton:
-		# Damage assignment mode — left-click adds, right-click removes
 		if game_controller.state.awaiting_damage_assignment:
 			if event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 				_try_assign_damage(1)
@@ -61,7 +68,6 @@ func _try_start_drag() -> void:
 
 	var state: GameState = game_controller.state
 
-	# Rune tap — handled separately, not a drag
 	var rune := _get_rune_instance(card_found.card_uid)
 	if rune != null:
 		game_controller.try_pick_runes_to_spend(card_found.card_uid)
@@ -81,7 +87,6 @@ func _try_start_drag() -> void:
 	elif zone == "BOARD":
 		var inst = _get_card_instance(card_found.card_uid)
 		if inst != null and not inst.is_exhausted():
-			# Record press; actual drag starts only after threshold movement
 			_pending_board_card = card_found
 			_press_position = get_global_mouse_position()
 
@@ -93,7 +98,6 @@ func _try_start_drag() -> void:
 # ─── Release: place card or toggle selection ──────────────────────────────────
 
 func _try_release() -> void:
-	# Click on board card (no drag started) → toggle selection
 	if _pending_board_card != null:
 		_toggle_board_selection(_pending_board_card.card_uid)
 		_pending_board_card = null
@@ -175,9 +179,36 @@ func _get_commit_uids() -> Array[int]:
 
 # ─── Drag state ───────────────────────────────────────────────────────────────
 
-func _start_drag(card) -> void:
+func _start_drag(card: RiftCard) -> void:
+	var mouse: Vector2 = get_global_mouse_position()
+
+	# 🛑 Kill hover + snap back to original state
+	if card._is_hovered:
+		if card._hover_tween:
+			card._hover_tween.kill()
+
+		card._is_hovered = false
+		RiftCard._hovered_card = null
+
+		# 🔑 Snap back instantly (no tween)
+		card.scale = card._base_scale
+		card.rotation_degrees = card._original_rotation
+		card.position = card._original_position
+		card.z_index = card._original_z_index
+
+	# 🟢 Now everything is stable → compute offset
+	var local_click: Vector2 = card.to_local(mouse)
+
+	# 🟢 Reparent
+	var old_parent = card.get_parent()
+	if old_parent != get_parent():
+		old_parent.remove_child(card)
+		get_parent().add_child(card)
+
+	# 🟢 Apply offset
+	drag_offset  = -local_click
 	dragged_card = card
-	drag_offset  = get_global_mouse_position() - card.global_position
+
 	card.set_card_state(RiftCard.CardState.DRAGGING)
 	card.z_index = 100
 
@@ -185,12 +216,20 @@ func _return_to_hand() -> void:
 	var card     = dragged_card
 	dragged_card = null
 	_clear_slot_highlights()
-	drag_offset  = Vector2.ZERO
+	drag_offset      = Vector2.ZERO
+	card._base_scale = card.scale
+	# return_card() calls add_child(), which re-parents back to the hand node.
 	_active_hand().return_card(card)
 
 func _clear_drag() -> void:
 	if dragged_card != null:
-		_active_hand().remove_card(dragged_card)
+		var zone := _get_card_zone(dragged_card.card_uid)
+		if zone == "HAND":
+			# Hand card that wasn't placed — let HandManager clean it up
+			_active_hand().remove_card(dragged_card)
+		else:
+			# Board/Arena card — just free the node; game state and re-render handle the rest
+			dragged_card.queue_free()
 	dragged_card = null
 	_clear_slot_highlights()
 	drag_offset  = Vector2.ZERO
@@ -243,27 +282,33 @@ func _get_card_under_cursor() -> RiftCard:
 	return null
 
 func _get_card_zone(card_uid: int) -> String:
-	var player = game_controller.state.get_active_player()
-	for c in player.hand:
+	# HAND and BOARD: active player only — prevents opponent from acting out of turn
+	var active = game_controller.state.get_active_player()
+	for c in active.hand:
 		if c.uid == card_uid: return "HAND"
-	for slot in player.board_slots:
+	for slot in active.board_slots:
 		for c in slot:
 			if c.uid == card_uid: return "BOARD"
-	for lane in player.battlefield_slots:
-		for c in lane:
-			if c.uid == card_uid: return "ARENA"
+	# ARENA: search both players — needed to identify opponent units during combat
+	for player in game_controller.state.players:
+		for lane in player.battlefield_slots:
+			for c in lane:
+				if c.uid == card_uid: return "ARENA"
 	return "NONE"
 
 func _get_card_instance(card_uid: int):
-	var player = game_controller.state.get_active_player()
-	for c in player.hand:
+	# HAND and BOARD: active player only
+	var active = game_controller.state.get_active_player()
+	for c in active.hand:
 		if c.uid == card_uid: return c
-	for slot in player.board_slots:
+	for slot in active.board_slots:
 		for c in slot:
 			if c.uid == card_uid: return c
-	for lane in player.battlefield_slots:
-		for c in lane:
-			if c.uid == card_uid: return c
+	# ARENA: both players — needed during combat interactions
+	for player in game_controller.state.players:
+		for lane in player.battlefield_slots:
+			for c in lane:
+				if c.uid == card_uid: return c
 	return null
 
 func _get_battlefield_index(card_uid: int) -> int:
@@ -279,7 +324,6 @@ func _try_assign_damage(delta: int) -> void:
 		return
 	var ctx: CombatContext = game_controller.state.active_combat_context
 	var loser_is_attacker: bool = ctx.total_defender_might > ctx.total_attacker_might
-	# The loser clicks on the WINNER's units to distribute damage
 	var target_units = ctx.defenders if loser_is_attacker else ctx.attackers
 	for unit in target_units:
 		if unit.uid == card_found.card_uid:

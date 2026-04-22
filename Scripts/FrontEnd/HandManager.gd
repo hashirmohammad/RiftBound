@@ -21,7 +21,7 @@ func render_hand(hand_cards: Array) -> void:
 
 		card.setup_from_card_instance(card_instance)
 		card.position = Vector2(start_x + i * spacing, 0)
-		card.scale = Vector2(0.4, 0.4)
+		card.scale = Vector2(0.6, 0.6)
 		card.z_index = i
 		card.set_card_state(RiftCard.CardState.IN_HAND)
 
@@ -61,8 +61,8 @@ func _relayout() -> void:
 		var card = _cards[i]
 		if is_instance_valid(card):
 			card.position = Vector2(start_x + i * spacing, 0)
-			card.scale = Vector2(0.4, 0.4)
-			card.z_index = i
+			card.scale    = Vector2(0.6, 0.6)
+			card.z_index  = i
 			card.set_card_state(RiftCard.CardState.IN_HAND)
 
 func _clear_cards() -> void:
