@@ -17,18 +17,6 @@
 [ext_resource type="PackedScene" uid="uid://23ypgw1gnlhb" path="res://Scenes/MainDeck.tscn" id="11_wsu2k"]
 [ext_resource type="PackedScene" uid="uid://cscpai8v2fbek" path="res://Scenes/Trash.tscn" id="12_k12tt"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_base"]
-size = Vector2(1592, 88)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_bf"]
-size = Vector2(658, 88)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_arena0"]
-size = Vector2(876, 196)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_arena1"]
-size = Vector2(872, 196)
-
 [node name="Main" type="Node2D" unique_id=1554237704]
 script = ExtResource("1_hptm8")
 
@@ -42,14 +30,8 @@ script = ExtResource("6_344ge")
 [node name="P0_Arena" parent="." unique_id=372592103 instance=ExtResource("2_h1bgf")]
 position = Vector2(440, 540)
 
-[node name="CollisionShape2D" parent="P0_Arena/Area2D" unique_id=1861620884]
-shape = SubResource("RectangleShape2D_arena0")
-
 [node name="P1_Arena" parent="." unique_id=2089672518 instance=ExtResource("2_h1bgf")]
 position = Vector2(1322, 540)
-
-[node name="CollisionShape2D" parent="P1_Arena/Area2D" unique_id=1861620884]
-shape = SubResource("RectangleShape2D_arena1")
 
 [node name="P0" type="Node2D" parent="." unique_id=246826101]
 
@@ -82,27 +64,17 @@ position = Vector2(27, 663)
 [node name="P0_Base" parent="P0" unique_id=402928220 instance=ExtResource("2_jjvhh")]
 position = Vector2(850, 796)
 
-[node name="CollisionShape2D" parent="P0/P0_Base/Area2D" unique_id=438244998]
-shape = SubResource("RectangleShape2D_base")
-
 [node name="P0_Battlefield1" parent="P0" unique_id=737844258 instance=ExtResource("4_6iyac")]
 position = Vector2(383, 698)
 
-[node name="CollisionShape2D" parent="P0/P0_Battlefield1/Area2D" unique_id=931943060]
-shape = SubResource("RectangleShape2D_bf")
-
 [node name="P0_Battlefield2" parent="P0" unique_id=200000001 instance=ExtResource("4_6iyac")]
 position = Vector2(1051, 698)
-
-[node name="CollisionShape2D" parent="P0/P0_Battlefield2/Area2D" unique_id=931943060]
-shape = SubResource("RectangleShape2D_bf")
 
 [node name="P0_Legend" parent="P0" unique_id=1188493574 instance=ExtResource("5_6iyac")]
 position = Vector2(1518, 698)
 
 [node name="P0_Champion" parent="P0" unique_id=387825937 instance=ExtResource("4_fdnlq")]
 position = Vector2(1784, 698)
-
 
 [node name="P0_MainDeck" parent="P0" unique_id=189259472 instance=ExtResource("11_wsu2k")]
 position = Vector2(1784, 796)
@@ -152,27 +124,17 @@ position = Vector2(27, 663)
 [node name="P1_Base" parent="P1" unique_id=100000004 instance=ExtResource("2_jjvhh")]
 position = Vector2(850, 284)
 
-[node name="CollisionShape2D" parent="P1/P1_Base/Area2D" unique_id=438244998]
-shape = SubResource("RectangleShape2D_base")
-
 [node name="P1_Battlefield1" parent="P1" unique_id=100000001 instance=ExtResource("4_6iyac")]
 position = Vector2(383, 382)
 
-[node name="CollisionShape2D" parent="P1/P1_Battlefield1/Area2D" unique_id=931943060]
-shape = SubResource("RectangleShape2D_bf")
-
 [node name="P1_Battlefield2" parent="P1" unique_id=200000002 instance=ExtResource("4_6iyac")]
 position = Vector2(1051, 382)
-
-[node name="CollisionShape2D" parent="P1/P1_Battlefield2/Area2D" unique_id=931943060]
-shape = SubResource("RectangleShape2D_bf")
 
 [node name="P1_Legend" parent="P1" unique_id=100000002 instance=ExtResource("5_6iyac")]
 position = Vector2(1518, 382)
 
 [node name="P1_Champion" parent="P1" unique_id=100000003 instance=ExtResource("4_fdnlq")]
 position = Vector2(1784, 382)
-
 
 [node name="P1_MainDeck" parent="P1" unique_id=100000005 instance=ExtResource("11_wsu2k")]
 position = Vector2(1784, 284)

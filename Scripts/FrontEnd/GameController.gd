@@ -201,7 +201,8 @@ func _render_arena_pick(panel: Panel, pick: BattlefieldInstance, player_label: S
 	var card: RiftCard = CARD_SCENE.instantiate()
 	panel.add_child(card)
 	card.position = panel.size / 2.0
-	card.scale    = Vector2(0.8, 0.8)
+	card.scale = Vector2(0.65, 0.65)
+
 	card.z_index  = 5
 	card.setup_from_battlefield_instance(pick)
 	card.set_card_state(RiftCard.CardState.ON_BOARD)

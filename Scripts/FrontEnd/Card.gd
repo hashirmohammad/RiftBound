@@ -12,19 +12,21 @@ enum CardState {
 
 const CARD_WIDTH  := 180.0
 const CARD_HEIGHT := 266.0
-const HOVER_SCALE    := Vector2(0.65, 0.65)
-const NORMAL_SCALE   := Vector2(0.4, 0.4)
 
-var card_uid:      int      = -1
-var card_data:     CardData = null
+static var _hovered_card: RiftCard = null
+
+var card_uid:      int       = -1
+var card_data:     CardData  = null
 var current_state: CardState = CardState.IN_HAND
-var _is_hovered: bool = false
-var _original_scale: Vector2 = Vector2.ONE
-var _original_z_index: int = 0
-var _original_rotation: float = 0.0
-var _hover_tween: Tween = null
-var _original_position: Vector2 = Vector2.ZERO
-var _original_global_position: Vector2 = Vector2.ZERO
+var _is_hovered:   bool      = false
+var _hover_tween_active: bool = false
+var _base_scale:         Vector2 = Vector2(0.55, 0.55)
+var _hover_target_scale: Vector2 = Vector2.ZERO
+var _original_z_index:   int     = 0
+var _original_rotation:  float   = 0.0
+var _original_position:  Vector2 = Vector2.ZERO
+var _anchor_global:      Vector2 = Vector2.ZERO  # stable world-space hit-test origin, never touched by tweens
+var _hover_tween:        Tween   = null
 
 func _ready() -> void:
 	if http_request == null:
@@ -54,7 +56,18 @@ func setup_from_battlefield_instance(instance: BattlefieldInstance) -> void:
 	update_visuals()
 
 func set_card_state(new_state: CardState) -> void:
-	current_state = new_state
+	if new_state == CardState.DRAGGING and _is_hovered:
+		_exit_hover()
+		if _hovered_card == self:
+			_hovered_card = null
+		scale = _base_scale
+
+	current_state      = new_state
+	_original_position = position
+	_anchor_global     = global_position  # snapshot stable anchor whenever state changes
+
+	if not _is_hovered:
+		_base_scale = scale
 
 func update_visuals() -> void:
 	if card_data == null:
@@ -116,66 +129,88 @@ func _set_card_texture(tex: Texture2D) -> void:
 	var scale_factor: float = min(CARD_WIDTH / tex_size.x, CARD_HEIGHT / tex_size.y)
 	card_image.scale = Vector2(scale_factor, scale_factor)
 
-func _on_mouse_entered() -> void:
+# ─── Hover — hit-test uses _anchor_global only, never animated global_position ─
+
+func _process(_delta: float) -> void:
 	if current_state == CardState.DRAGGING:
 		return
 	if card_data != null and card_data.type == CardData.CardType.RUNE:
 		return
-	_is_hovered = true
-	_original_scale    = scale
-	_original_z_index  = z_index
-	_original_rotation = rotation_degrees
-	_original_global_position = global_position
+
+	var mouse_global = get_global_mouse_position()
+	# _anchor_global is set only in set_card_state() — tweens never touch it,
+	# so the hit-test rect is perfectly stable during scale/move animations.
+	var diff   = mouse_global - _anchor_global
+	var half_w = (CARD_WIDTH  * _base_scale.x) / 2.0
+	var half_h = (CARD_HEIGHT * _base_scale.y) / 2.0
+	var is_over = abs(diff.x) <= half_w and abs(diff.y) <= half_h
+
+	if is_over and not _is_hovered:
+		if _hovered_card == null or _hovered_card == self:
+			_hovered_card = self
+			_enter_hover()
+		elif z_index > _hovered_card.z_index:
+			# Steal hover from a lower card
+			_hovered_card._exit_hover()
+			_hovered_card = self
+			_enter_hover()
+	elif not is_over and _is_hovered:
+		if _hovered_card == self:
+			_hovered_card = null
+		_exit_hover()
+
+func _enter_hover() -> void:
+	_is_hovered         = true
+	_hover_tween_active = true
+	_original_z_index   = z_index
+	_original_rotation  = rotation_degrees
 
 	if _hover_tween:
 		_hover_tween.kill()
 
-	# Scale up by 2.7x from whatever the current scale is
-	var target_scale = _original_scale * 2.7
+	_hover_target_scale = _base_scale * 3
 
 	_hover_tween = create_tween()
-	_hover_tween.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
-	_hover_tween.tween_property(self, "scale", target_scale, 0.15)
+	_hover_tween.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
+	_hover_tween.tween_property(self, "scale", _hover_target_scale, 0.15)
 	_hover_tween.parallel().tween_property(self, "rotation_degrees", 0.0, 0.15)
 	z_index = 50
 
-	# Clamp position only for hand cards so they stay within the viewport at full scale
-	if current_state == CardState.IN_HAND:
-		var viewport_size = get_viewport_rect().size
-		var half_w = (CARD_WIDTH  * target_scale.x) / 2.0
-		var half_h = (CARD_HEIGHT * target_scale.y) / 2.0
-		var clamped := global_position
-		clamped.x = clamp(clamped.x, half_w, viewport_size.x - half_w)
-		clamped.y = clamp(clamped.y, half_h, viewport_size.y - half_h)
-		if clamped != global_position:
-			_hover_tween.parallel().tween_property(self, "global_position", clamped, 0.15)
+	var viewport_size = get_viewport_rect().size
+	var half_w = (CARD_WIDTH  * _hover_target_scale.x) / 2.0
+	var half_h = (CARD_HEIGHT * _hover_target_scale.y) / 2.0
+	var gpos   = _anchor_global  # clamp relative to stable anchor, not animated position
+	var needs_clamp = (
+		gpos.x - half_w < 0 or
+		gpos.x + half_w > viewport_size.x or
+		gpos.y - half_h < 0 or
+		gpos.y + half_h > viewport_size.y
+	)
+	if needs_clamp:
+		var clamped_global: Vector2 = gpos
+		clamped_global.x = clamp(gpos.x, half_w, viewport_size.x - half_w)
+		clamped_global.y = clamp(gpos.y, half_h, viewport_size.y - half_h)
+		# Convert global -> local for Control parents that lack to_local()
+		var clamped_local: Vector2 = clamped_global - get_parent().global_position
+		_hover_tween.parallel().tween_property(self, "position", clamped_local, 0.15)
 
-func _on_mouse_exited() -> void:
-	if not _is_hovered:
-		return
-	_is_hovered = false
+func _exit_hover() -> void:
+	_is_hovered         = false
+	_hover_tween_active = false
 
 	if _hover_tween:
 		_hover_tween.kill()
 
 	_hover_tween = create_tween()
 	_hover_tween.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
-	_hover_tween.tween_property(self, "scale", _original_scale, 0.15)
+	_hover_tween.tween_property(self, "scale", _base_scale, 0.15)
 	_hover_tween.parallel().tween_property(self, "rotation_degrees", _original_rotation, 0.15)
+	_hover_tween.parallel().tween_property(self, "position", _original_position, 0.15)
 	z_index = _original_z_index
 
-	# Restore original position for hand cards that were nudged by clamping
-	if current_state == CardState.IN_HAND:
-		_hover_tween.parallel().tween_property(self, "global_position", _original_global_position, 0.15)
+# Keep Area2D signal stubs to avoid errors from scene connections
+func _on_area_2d_mouse_entered() -> void:
+	pass
 
-func _input(event: InputEvent) -> void:
-	if event is InputEventMouseMotion:
-		var local_pos = to_local(get_global_mouse_position())
-		var half_w = (CARD_WIDTH * scale.x) / 2.0
-		var half_h = (CARD_HEIGHT * scale.y) / 2.0
-		var is_over = abs(local_pos.x) <= half_w and abs(local_pos.y) <= half_h
-
-		if is_over and not _is_hovered:
-			_on_mouse_entered()
-		elif not is_over and _is_hovered:
-			_on_mouse_exited()
+func _on_area_2d_mouse_exited() -> void:
+	pass
