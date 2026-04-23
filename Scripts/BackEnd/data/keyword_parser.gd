@@ -71,43 +71,37 @@ static func _make_effect(
 		data: CardData,
 		game_state: GameState) -> EffectInstance:
 
-	var e := EffectInstance.new()
-	e.uid = game_state.next_uid()
-	e.source_uid = -1  # intrinsic to the card; no external source
-	e.expiry = EffectInstance.ExpiryTiming.PERMANENT
-
 	match keyword:
 		"assault":
-			e.effect_type = EffectInstance.EffectType.ASSAULT
-			e.value = value
+			return EffectFactory.make_assault(game_state, -1, value)
 
 		"shield":
-			e.effect_type = EffectInstance.EffectType.SHIELD
-			e.value = value
+			return EffectFactory.make_shield(game_state, -1, value)
 
 		"deflect":
-			e.effect_type = EffectInstance.EffectType.DEFLECT
-			e.value = value
+			return EffectFactory.make_deflect(game_state, -1, value)
 
 		"tank":
-			e.effect_type = EffectInstance.EffectType.TANK
-			e.value = 0  # flag; presence checked via has_any(), value unused
+			return EffectFactory.make_tank(game_state, -1)
 
 		"ganking":
-			e.effect_type = EffectInstance.EffectType.GANKING
-			e.value = 0  # flag
+			return EffectFactory.make_ganking(game_state, -1)
 
 		"deathknell":
-			e.effect_type = EffectInstance.EffectType.DEATHKNELL
-			e.trigger_event = "on_death"
-			e.trigger_fn = CardAbilityRegistry.get_trigger_fn(data.card_id, "on_death")
+			return EffectFactory.make_deathknell(
+				game_state,
+				-1,
+				CardAbilityRegistry.get_trigger_fn(data.card_id, EffectEvents.ON_DEATH)
+			)
 
 		"vision":
-			e.effect_type = EffectInstance.EffectType.VISION
-			e.trigger_event = CardAbilityRegistry.get_vision_event(data.card_id)
-			e.trigger_fn = CardAbilityRegistry.get_trigger_fn(data.card_id, e.trigger_event)
+			var event := CardAbilityRegistry.get_vision_event(data.card_id)
+			return EffectFactory.make_vision(
+				game_state,
+				-1,
+				event,
+				CardAbilityRegistry.get_trigger_fn(data.card_id, event)
+			)
 
 		_:
-			return null  # not a unit-level static effect; skip silently
-
-	return e
+			return null
