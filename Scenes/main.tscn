@@ -150,7 +150,7 @@ position = Vector2(1784, 235)
 position = Vector2(960, 90)
 
 [node name="EndTurnButton" type="Button" parent="." unique_id=283290533]
-offset_left = 1760.0
+offset_left = 1647.0
 offset_top = 490.0
 offset_right = 1920.0
 offset_bottom = 540.0
@@ -171,27 +171,27 @@ offset_bottom = 590.0
 text = "Cancel"
 
 [node name="PassPriorityButton" type="Button" parent="." unique_id=355363714]
-offset_left = 1760.0
+offset_left = 1653.0
 offset_top = 540.0
 offset_right = 1920.0
 offset_bottom = 590.0
 text = "Pass Priority"
 
 [node name="ConfirmDamageButton" type="Button" parent="." unique_id=355363715]
-offset_left = 1760.0
+offset_left = 1653.0
 offset_top = 540.0
-offset_right = 1920.0
+offset_right = 1923.0
 offset_bottom = 590.0
 text = "Confirm Damage"
 
 [node name="ChoiceAButton" type="Button" parent="." unique_id=590261534]
-offset_left = 1607.35
-offset_top = 443.0
-offset_right = 1763.673
-offset_bottom = 541.0
+offset_left = 1387.0
+offset_top = 492.0
+offset_right = 1650.0
+offset_bottom = 537.0
 
 [node name="ChoiceBButton" type="Button" parent="." unique_id=1542843524]
-offset_left = 1607.35
-offset_top = 541.0
-offset_right = 1763.673
-offset_bottom = 639.0
+offset_left = 1384.0
+offset_top = 540.0
+offset_right = 1650.0
+offset_bottom = 590.0
