@@ -69,6 +69,7 @@ func _reposition_cards() -> void:
 
 	for i in range(count):
 		cards[i].position = Vector2(start_x + i * spacing, 0.0)
+		cards[i].refresh_slot_state()
 
 func clear_cards() -> void:
 	for card in cards:
