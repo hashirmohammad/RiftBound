@@ -39,6 +39,17 @@ var awaiting_unit_target: bool = false
 var pending_target_source_uid: int = -1
 var pending_target_card_id: String = ""
 
+var awaiting_spell_targets: bool = false
+var pending_spell_player_id: int = -1
+var pending_spell_card_uid: int = -1
+var pending_spell_card_id: String = ""
+var pending_spell_target_uids: Array[int] = []
+var pending_spell_required_targets: int = 0
+
+var awaiting_spell_destination := false
+var pending_spell_card: CardInstance = null
+var pending_spell_targets: Array[int] = []
+
 var pending_play_metadata: Dictionary = {}
 
 var _next_uid: int = 1
@@ -84,3 +95,11 @@ func remove_unit_from_board(uid: int) -> void:
 					player.trash.append(lane[i])
 					lane.remove_at(i)
 					return
+
+func clear_pending_spell_target_state() -> void:
+	awaiting_spell_targets = false
+	pending_spell_player_id = -1
+	pending_spell_card_uid = -1
+	pending_spell_card_id = ""
+	pending_spell_target_uids.clear()
+	pending_spell_required_targets = 0
