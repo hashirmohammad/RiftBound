@@ -98,8 +98,8 @@ func _post_ready_setup() -> void:
 	_spawn_battlefield_slots()
 	_fit_zone_collisions()
 	_reposition_scene_nodes()
-	_debug_panels()
-
+	#_debug_panels()
+"""
 func _debug_panels() -> void:
 	var checks = [
 		["p0_bf1",    player_battlefield_panel],
@@ -119,7 +119,7 @@ func _debug_panels() -> void:
 			print("%s → gpos=%s size=%s centre=%s" % [c[0], str(p.global_position), str(p.size), str(p.global_position + p.size / 2.0)])
 		else:
 			print("%s → NULL" % c[0])
-
+"""
 # ─── Scene Node Repositioning ─────────────────────────────────────────────────
 # Uses stored panel references so every node lands exactly at its panel's centre.
 # No manual geometry recalculation — the panels are the single source of truth.

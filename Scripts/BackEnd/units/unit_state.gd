@@ -52,7 +52,7 @@ func _init(instance: CardInstance, p_id: int) -> void:
 # ── Health ────────────────────────────────────────────────────────────────────
 
 func is_alive() -> bool:
-	return damage_taken < base_health
+	return damage_taken < MightCalculator.compute_max_health(self)
 
 func apply_pending_damage() -> void:
 	damage_taken += pending_damage

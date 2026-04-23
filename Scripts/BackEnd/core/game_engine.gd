@@ -74,8 +74,13 @@ static func start_game() -> GameState:
 	#rig_card_to_top_of_deck(p0, "OGN-065/298") # Wizened Elder
 	#rig_card_to_top_of_deck(p0, "OGN-075/298") # Tasty Faefolk
 	#rig_card_to_top_of_deck(p0, "OGN-136/298") # Pit Rookie
-	rig_card_to_top_of_deck(p0, "OGN-044/298") # Clockwork Keeper
-	rig_card_to_top_of_deck(p0, "OGN-047/298") # Clockwork Keeper
+	#rig_card_to_top_of_deck(p0, "OGN-044/298") # Clockwork Keeper
+	#rig_card_to_top_of_deck(p0, "OGN-047/298") # Find Your Center
+	#rig_card_to_top_of_deck(p0, "OGN-058/298") # Discipline
+	#rig_card_to_top_of_deck(p0, "OGN-046/298") # En Garde
+	#rig_card_to_top_of_deck(p0, "OGN-128/298") # Challenge
+	rig_card_to_top_of_deck(p0, "OGN-043/298") # Charm
+	rig_card_to_top_of_deck(p0, "OGN-258/298") # Dragon's Rage
 	
 	for i in range(OPENING_HAND_SIZE):
 		state.turn_system._draw_card(p0)
