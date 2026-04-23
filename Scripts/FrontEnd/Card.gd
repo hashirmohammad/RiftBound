@@ -14,6 +14,8 @@ const CARD_WIDTH  := 180.0
 const CARD_HEIGHT := 266.0
 
 static var _hovered_card: RiftCard = null
+# Blocks hover on all cards while any one card is being dragged.
+static var _drag_active:  bool     = false
 
 var card_uid:      int       = -1
 var card_data:     CardData  = null
@@ -65,6 +67,7 @@ func set_card_state(new_state: CardState) -> void:
 	current_state      = new_state
 	_original_position = position
 	_anchor_global     = global_position  # snapshot stable anchor whenever state changes
+	_original_rotation = rotation_degrees  # resting rotation; used by hit-test and exit-hover tween
 
 	if not _is_hovered:
 		_base_scale = scale
@@ -134,16 +137,23 @@ func _set_card_texture(tex: Texture2D) -> void:
 func _process(_delta: float) -> void:
 	if current_state == CardState.DRAGGING:
 		return
+	if _drag_active:
+		return  # a card is being dragged; suppress hover on all other cards
 	if card_data != null and card_data.type == CardData.CardType.RUNE:
 		return
 
 	var mouse_global = get_global_mouse_position()
-	# _anchor_global is set only in set_card_state() — tweens never touch it,
-	# so the hit-test rect is perfectly stable during scale/move animations.
-	var diff   = mouse_global - _anchor_global
+	# _anchor_global is set only in set_card_state()/refresh_slot_state() — tweens never touch it.
+	var diff = mouse_global - _anchor_global
+	# Use _original_rotation (resting state) so the hit-test bounding box stays stable
+	# during the hover tween — prevents the feedback-loop flicker at card edges.
+	var rot_rad  = deg_to_rad(_original_rotation)
+	var cos_r    = cos(-rot_rad)
+	var sin_r    = sin(-rot_rad)
+	var local_diff = Vector2(diff.x * cos_r - diff.y * sin_r, diff.x * sin_r + diff.y * cos_r)
 	var half_w = (CARD_WIDTH  * _base_scale.x) / 2.0
 	var half_h = (CARD_HEIGHT * _base_scale.y) / 2.0
-	var is_over = abs(diff.x) <= half_w and abs(diff.y) <= half_h
+	var is_over = abs(local_diff.x) <= half_w and abs(local_diff.y) <= half_h
 
 	if is_over and not _is_hovered:
 		if _hovered_card == null or _hovered_card == self:
@@ -163,7 +173,8 @@ func _enter_hover() -> void:
 	_is_hovered         = true
 	_hover_tween_active = true
 	_original_z_index   = z_index
-	_original_rotation  = rotation_degrees
+	# _original_rotation is set in set_card_state/refresh_slot_state so it always
+	# holds the true resting rotation, never a mid-tween value.
 
 	if _hover_tween:
 		_hover_tween.kill()
@@ -207,6 +218,16 @@ func _exit_hover() -> void:
 	_hover_tween.parallel().tween_property(self, "rotation_degrees", _original_rotation, 0.15)
 	_hover_tween.parallel().tween_property(self, "position", _original_position, 0.15)
 	z_index = _original_z_index
+
+# Called after _reposition_cards moves a card so the hit-test anchor,
+# base scale, and resting rotation stay in sync with the card's actual position.
+func refresh_slot_state() -> void:
+	if _is_hovered:
+		return
+	_original_position = position
+	_anchor_global     = global_position
+	_base_scale        = scale
+	_original_rotation = rotation_degrees
 
 # Keep Area2D signal stubs to avoid errors from scene connections
 func _on_area_2d_mouse_entered() -> void:
