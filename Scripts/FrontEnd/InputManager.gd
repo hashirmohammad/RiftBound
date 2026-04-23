@@ -209,7 +209,7 @@ func _start_drag(card: RiftCard) -> void:
 	drag_offset  = -local_click
 	dragged_card = card
 
-	RiftCard._drag_active = true
+	RiftCard._drag_active = true  # prevent other cards from entering hover while this card is dragged
 	card.set_card_state(RiftCard.CardState.DRAGGING)
 	card.z_index = 100
 

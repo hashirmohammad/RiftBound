@@ -114,6 +114,8 @@ func _place_card(slot: CardSlot, card_instance: CardInstance, scale: Vector2) ->
 	card.setup_from_card_instance(card_instance)
 	card.set_card_state(RiftCard.CardState.ON_BOARD)
 	card.rotation_degrees = 90.0 if card_instance.is_exhausted() else 0.0
+	# Rotation is assigned after set_card_state, so refresh here to capture the
+	# correct resting rotation for hit-testing and hover exit.
 	card.refresh_slot_state()
 	if selected_board_uids.has(card_instance.uid):
 		card.modulate = Color(0.55, 1.0, 0.55, 1.0)

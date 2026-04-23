@@ -14,6 +14,7 @@ const CARD_WIDTH  := 180.0
 const CARD_HEIGHT := 266.0
 
 static var _hovered_card: RiftCard = null
+# Blocks hover on all cards while any one card is being dragged.
 static var _drag_active:  bool     = false
 
 var card_uid:      int       = -1
@@ -66,7 +67,7 @@ func set_card_state(new_state: CardState) -> void:
 	current_state      = new_state
 	_original_position = position
 	_anchor_global     = global_position  # snapshot stable anchor whenever state changes
-	_original_rotation = rotation_degrees
+	_original_rotation = rotation_degrees  # resting rotation; used by hit-test and exit-hover tween
 
 	if not _is_hovered:
 		_base_scale = scale
@@ -137,7 +138,7 @@ func _process(_delta: float) -> void:
 	if current_state == CardState.DRAGGING:
 		return
 	if _drag_active:
-		return
+		return  # a card is being dragged; suppress hover on all other cards
 	if card_data != null and card_data.type == CardData.CardType.RUNE:
 		return
 
@@ -218,6 +219,8 @@ func _exit_hover() -> void:
 	_hover_tween.parallel().tween_property(self, "position", _original_position, 0.15)
 	z_index = _original_z_index
 
+# Called after _reposition_cards moves a card so the hit-test anchor,
+# base scale, and resting rotation stay in sync with the card's actual position.
 func refresh_slot_state() -> void:
 	if _is_hovered:
 		return
