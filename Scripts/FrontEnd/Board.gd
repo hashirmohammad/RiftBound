@@ -3,26 +3,24 @@ extends Control
 
 var game_controller: Node
 
-const SCREEN_W    = 1920.0
-const SCREEN_H    = 1080.0
-const COLOR_BG    = Color("#0d1b35")
+const SCREEN_W     = 1920.0
+const SCREEN_H     = 1080.0
+const COLOR_BG     = Color("#0d1b35")
 const COLOR_BORDER = Color(0.83, 0.68, 0.21, 0.95)
-const COLOR_DIV   = Color(1, 1, 1, 0.20)
-const COLOR_HAND  = Color(1, 1, 1, 0.05)
-const BORDER_W    = 2
-const GAP         = 6
-const FONT_SIZE   = 11
-const MANA_X      = 8
-const MANA_SIZE   = 38
-const MANA_COL_W  = 52
-const HAND_H      = 180
-const DIVIDER_H   = 4
-const ARENA_H     = 100
-const END_BTN_W   = 160.0
+const COLOR_DIV    = Color(1, 1, 1, 0.20)
+const COLOR_HAND   = Color(1, 1, 1, 0.05)
+const BORDER_W     = 2
+const GAP          = 6
+const FONT_SIZE    = 11
+const MANA_X       = 8
+const MANA_SIZE    = 38
+const MANA_COL_W   = 52
+const HAND_H       = 180
+const DIVIDER_H    = 4
+const ARENA_H      = 100
 
 const CARD_SLOT_SCENE = preload("res://Scenes/CardSlot.tscn")
 
-# Public panel references — GameController renders card visuals into these
 var player_battlefield_panel:   Panel = null
 var player_battlefield_right:   Panel = null
 var opponent_battlefield_panel: Panel = null
@@ -44,17 +42,14 @@ var opponent_champion_panel:    Panel = null
 var player_trash_panel:         Panel = null
 var opponent_trash_panel:       Panel = null
 
-# Slot nodes — used by CardManager for highlight routing
 var _player_slot_nodes: Array = []
 var _p1_slot_nodes:     Array = []
 
-# Battlefield halves — internal structure
 var _p0_battlefield_left:  Panel = null
 var _p0_battlefield_right: Panel = null
 var _p1_battlefield_left:  Panel = null
 var _p1_battlefield_right: Panel = null
 
-# Battlefield CardSlots — used by CardManager for highlight routing
 var _p0_bf_slot_left:  CardSlot = null
 var _p0_bf_slot_right: CardSlot = null
 var _p1_bf_slot_left:  CardSlot = null
@@ -62,12 +57,22 @@ var _p1_bf_slot_right: CardSlot = null
 
 var _ph:        float = 0.0
 var _bh:        float = 0.0
+var _bfw:       float = 0.0
+var _btn_x:     float = 0.0
 var _logo_tex:  ImageTexture
 var _runes_tex: ImageTexture
 
 func _ready() -> void:
 	if not Engine.is_editor_hint():
 		game_controller = get_node_or_null("../GameController")
+
+	var self_style = StyleBoxFlat.new()
+	self_style.bg_color = COLOR_BG
+	self_style.set_border_width_all(0)
+	add_theme_stylebox_override("panel", self_style)
+
+	theme = null
+
 	add_rect(Vector2.ZERO, Vector2(SCREEN_W, SCREEN_H), COLOR_BG)
 
 	_ph        = floor((SCREEN_H - DIVIDER_H * 2 - ARENA_H) / 2.0)
@@ -76,18 +81,46 @@ func _ready() -> void:
 	_runes_tex = tint_gold("res://Assets/runes.jpg")
 
 	build_player(0.0, true)
-	add_rect(Vector2(0, _ph), Vector2(SCREEN_W, DIVIDER_H), COLOR_DIV)
 
-	var half_w  = (SCREEN_W - END_BTN_W) / 2.0
-	var arena_y = _ph + DIVIDER_H
+	# ── Arena strip ──────────────────────────────────────────────────────────
+	var arena_y  = _ph
+	var xl_arena = float(MANA_COL_W)
+	var bf1_w    = _bfw
+	var bf2_w    = _bfw
+	_btn_x       = xl_arena + bf1_w + GAP + bf2_w + GAP
 
-	arena_p0_panel = add_panel("Arena_P0", Vector2(0, arena_y),                   Vector2(half_w, ARENA_H),             make_style(), "Arena 1", 18)
-	add_rect(Vector2(half_w, arena_y), Vector2(DIVIDER_H, ARENA_H), COLOR_DIV)
-	arena_p1_panel = add_panel("Arena_P1", Vector2(half_w + DIVIDER_H, arena_y),  Vector2(half_w - DIVIDER_H, ARENA_H), make_style(), "Arena 2", 18)
-	add_rect(Vector2(SCREEN_W - END_BTN_W, arena_y), Vector2(1, ARENA_H), COLOR_DIV)
+	arena_p0_panel = add_panel(
+		"Arena_P0",
+		Vector2(xl_arena, arena_y),
+		Vector2(bf1_w, ARENA_H),
+		make_style(), "", 18
+	)
+	add_rect(Vector2(xl_arena + bf1_w, arena_y), Vector2(GAP, ARENA_H), COLOR_BG)
+	arena_p1_panel = add_panel(
+		"Arena_P1",
+		Vector2(xl_arena + bf1_w + GAP, arena_y),
+		Vector2(bf2_w, ARENA_H),
+		make_style(), "", 18
+	)
 
-	add_rect(Vector2(0, _ph + DIVIDER_H + ARENA_H), Vector2(SCREEN_W, DIVIDER_H), COLOR_DIV)
-	build_player(_ph + DIVIDER_H * 2 + ARENA_H, false)
+	# ── Four button boxes ─────────────────────────────────────────────────────
+	var btn_total = SCREEN_W - _btn_x
+	var btn_h     = ARENA_H / 2.0
+	var btn_mid_x = _btn_x + btn_total / 2.0
+
+	add_rect(Vector2(_btn_x, arena_y), Vector2(btn_total, ARENA_H), COLOR_BG)
+
+	# Outer border
+	add_rect(Vector2(_btn_x,               arena_y),                      Vector2(btn_total, BORDER_W), COLOR_BORDER)
+	add_rect(Vector2(_btn_x,               arena_y + ARENA_H - BORDER_W), Vector2(btn_total, BORDER_W), COLOR_BORDER)
+	add_rect(Vector2(_btn_x,               arena_y),                      Vector2(BORDER_W,  ARENA_H),  COLOR_BORDER)
+	add_rect(Vector2(SCREEN_W - BORDER_W,  arena_y),                      Vector2(BORDER_W,  ARENA_H),  COLOR_BORDER)
+
+	# Inner dividers
+	add_rect(Vector2(btn_mid_x - floor(BORDER_W / 2.0), arena_y), Vector2(BORDER_W, ARENA_H), COLOR_BORDER)
+	add_rect(Vector2(_btn_x, arena_y + btn_h - floor(BORDER_W / 2.0)), Vector2(btn_total, BORDER_W), COLOR_BORDER)
+
+	build_player(_ph + ARENA_H, false)
 
 	if not Engine.is_editor_hint():
 		call_deferred("_post_ready_setup")
@@ -98,10 +131,10 @@ func _editor_fit_collisions() -> void:
 	_setup_battlefield_halves()
 	_fit_zone_collisions()
 	_reposition_scene_nodes()
+	_style_buttons()
+	_hide_arena_visuals()
 
 func _post_ready_setup() -> void:
-	# Wait two frames so the Control layout pass fully resolves panel positions
-	# before we read global_position for collision placement.
 	await get_tree().process_frame
 	await get_tree().process_frame
 	_cache_player_slots()
@@ -109,8 +142,39 @@ func _post_ready_setup() -> void:
 	_spawn_battlefield_slots()
 	_fit_zone_collisions()
 	_reposition_scene_nodes()
+	_style_buttons()
+	_hide_arena_visuals()
+
+func _hide_arena_visuals() -> void:
+	for path in ["../P0_Arena", "../P1_Arena"]:
+		var node = get_node_or_null(path)
+		if node == null:
+			continue
+		for child in node.get_children():
+			if child is CanvasItem:
+				child.visible = false
+		if node is CanvasItem:
+			node.modulate = Color(1, 1, 1, 0)
 
 # ─── Scene Node Repositioning ─────────────────────────────────────────────────
+
+func _style_buttons() -> void:
+	var btn_style = StyleBoxFlat.new()
+	btn_style.bg_color = COLOR_BG
+	btn_style.set_border_width_all(0)
+
+	var btn_paths = [
+		"../EndTurnButton", "../CancelPaymentButton", "../PassPriorityButton",
+		"../ConfirmDamageButton", "../ChoiceAButton", "../ChoiceBButton"
+	]
+	for path in btn_paths:
+		var btn = get_node_or_null(path)
+		if btn:
+			btn.add_theme_stylebox_override("normal",   btn_style.duplicate())
+			btn.add_theme_stylebox_override("hover",    btn_style.duplicate())
+			btn.add_theme_stylebox_override("pressed",  btn_style.duplicate())
+			btn.add_theme_stylebox_override("disabled", btn_style.duplicate())
+			btn.add_theme_stylebox_override("focus",    btn_style.duplicate())
 
 func _reposition_scene_nodes() -> void:
 	# ── P0 (bottom player) ───────────────────────────────────────────────────
@@ -124,7 +188,7 @@ func _reposition_scene_nodes() -> void:
 	_move_to_panel("../P0/P0_Runes",        player_runes_panel)
 	_move_to_panel("../P0/P0_Trash",        player_trash_panel)
 
-	var p0_top = _ph + DIVIDER_H * 2 + ARENA_H
+	var p0_top = _ph + ARENA_H
 	_move("../P0/P0_Hand", Vector2(SCREEN_W / 2.0, p0_top + _bh + HAND_H / 2.0))
 
 	var p0_points = get_node_or_null("../P0/P0_Points")
@@ -158,16 +222,24 @@ func _reposition_scene_nodes() -> void:
 			if pt:
 				pt.position = Vector2(27.0, HAND_H + (i - 1) * rh + rh / 2.0)
 
-	# ── Buttons — snap to arena strip ────────────────────────────────────────
-	var arena_y = _ph + DIVIDER_H
-	var btn_h   = 50.0
-	var btn_x   = SCREEN_W - END_BTN_W
-	_move_control("../EndTurnButton",       btn_x, arena_y,           SCREEN_W, arena_y + btn_h)
-	_move_control("../CancelPaymentButton", btn_x, arena_y + btn_h,   SCREEN_W, arena_y + btn_h * 2)
-	_move_control("../PassPriorityButton",  btn_x, arena_y + btn_h,   SCREEN_W, arena_y + btn_h * 2)
-	_move_control("../ConfirmDamageButton", btn_x, arena_y + btn_h,   SCREEN_W, arena_y + btn_h * 2)
+	# ── Buttons — arena strip ─────────────────────────────────────────────────
+	var arena_y   = _ph
+	var btn_h     = ARENA_H / 2.0
+	var btn_total = SCREEN_W - _btn_x
+	var btn_mid_x = _btn_x + btn_total / 2.0
 
-# Sets a Node2D's position to the centre of a panel (global coords).
+	# Right half — action buttons (inset by BORDER_W so they don't overlap the gold outline)
+	_move_control("../EndTurnButton",       btn_mid_x,            arena_y + BORDER_W,         SCREEN_W - BORDER_W, arena_y + btn_h)
+	_move_control("../CancelPaymentButton", btn_mid_x,            arena_y + btn_h,             SCREEN_W - BORDER_W, arena_y + btn_h * 2.0 - BORDER_W)
+	_move_control("../PassPriorityButton",  btn_mid_x,            arena_y + btn_h,             SCREEN_W - BORDER_W, arena_y + btn_h * 2.0 - BORDER_W)
+	_move_control("../ConfirmDamageButton", btn_mid_x,            arena_y + btn_h,             SCREEN_W - BORDER_W, arena_y + btn_h * 2.0 - BORDER_W)
+
+	# Left half — choice buttons
+	_move_control("../ChoiceAButton",       _btn_x + BORDER_W,    arena_y + BORDER_W,          btn_mid_x,           arena_y + btn_h)
+	_move_control("../ChoiceBButton",       _btn_x + BORDER_W,    arena_y + btn_h,             btn_mid_x,           arena_y + btn_h * 2.0 - BORDER_W)
+
+# ─── Helpers ──────────────────────────────────────────────────────────────────
+
 func _move_to_panel(node_path: String, panel: Panel) -> void:
 	if panel == null:
 		return
@@ -385,10 +457,11 @@ func add_panel(
 		style := make_style(), label_text := pname,
 		font_size := FONT_SIZE, parent: Node = self
 	) -> Panel:
-	var p = Panel.new()
+	var p      = Panel.new()
 	p.name     = pname
 	p.position = pos
 	p.size     = size
+	style.bg_color = COLOR_BG
 	p.add_theme_stylebox_override("panel", style)
 	parent.add_child(p)
 
@@ -439,7 +512,7 @@ func build_player(y: float, flip: bool) -> void:
 	var by  = y + HAND_H if flip else y
 	var hy  = y if flip else y + bh
 
-	add_panel("Hand", Vector2(0, hy), Vector2(SCREEN_W, HAND_H), make_style(false, COLOR_HAND))
+	_draw_border_box(Vector2(0, hy), Vector2(SCREEN_W, HAND_H))
 
 	var rh = bh / 8.0
 	for i in range(1, 9):
@@ -466,16 +539,19 @@ func build_player(y: float, flip: bool) -> void:
 	var y3  = PAD + re * 2 + GAP * 2
 	var rb  = inn - re * 2 - GAP * 2
 
+	if _bfw == 0.0:
+		_bfw = bfw
+
 	var zones = [
-		["BATTLEFIELD 1", xl,         y1, bfw,                        re],
-		["BATTLEFIELD 2", xl+bfw+GAP, y1, bfw,                        re],
-		["LEGEND",        xc,         y1, cw,                         re],
-		["CHAMPION",      xr,         y1, cw,                         re],
-		["BASE",          xl,         y2, lw + cw + GAP,              re],
-		["MAIN DECK",     xr,         y2, cw,                         re],
-		["RUNE DECK",     xl,         y3, rdw,                        rb],
-		["RUNES",         xl+rdw+GAP, y3, lw-rdw-GAP+cw+GAP,         rb],
-		["TRASH",         xr,         y3, cw,                         rb],
+		["BATTLEFIELD 1", xl,         y1, bfw,                    re],
+		["BATTLEFIELD 2", xl+bfw+GAP, y1, bfw,                    re],
+		["LEGEND",        xc,         y1, cw,                     re],
+		["CHAMPION",      xr,         y1, cw,                     re],
+		["BASE",          xl,         y2, lw + cw + GAP,          re],
+		["MAIN DECK",     xr,         y2, cw,                     re],
+		["RUNE DECK",     xl,         y3, rdw,                    rb],
+		["RUNES",         xl+rdw+GAP, y3, lw-rdw-GAP+cw+GAP,     rb],
+		["TRASH",         xr,         y3, cw,                     rb],
 	]
 
 	var zone_panel_keys := {
@@ -502,3 +578,9 @@ func build_player(y: float, flip: bool) -> void:
 			add_image(p, _logo_tex, -0.2, -0.5, 1.2, 1.5, 0.0, 0.0, 0.0, 0.0, Color(0.83, 0.68, 0.21, 0.55))
 		elif zname == "RUNES":
 			add_image(p, _runes_tex, 0.05, 0.2, 0.25, 1.0, 6.0, 1.0, 0.0, 0.0)
+
+func _draw_border_box(pos: Vector2, size: Vector2) -> void:
+	add_rect(Vector2(pos.x,                      pos.y),                     Vector2(size.x,  BORDER_W), COLOR_BORDER)
+	add_rect(Vector2(pos.x,                      pos.y + size.y - BORDER_W), Vector2(size.x,  BORDER_W), COLOR_BORDER)
+	add_rect(Vector2(pos.x,                      pos.y),                     Vector2(BORDER_W, size.y),  COLOR_BORDER)
+	add_rect(Vector2(pos.x + size.x - BORDER_W,  pos.y),                     Vector2(BORDER_W, size.y),  COLOR_BORDER)
