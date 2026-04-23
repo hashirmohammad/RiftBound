@@ -127,6 +127,9 @@ static func end_turn(state: GameState) -> void:
 	state.active_player_index = 1 - state.active_player_index
 	state.turn_number += 1
 	start_turn(state)
+	
+static func rig_card_to_top_of_deck(player: PlayerState, card_id: String) -> void:
+	var found_index := -1
 
 static func _assign_random_champion_and_rest_to_deck(
 		state: GameState,
