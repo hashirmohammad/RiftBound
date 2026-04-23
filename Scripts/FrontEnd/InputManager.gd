@@ -67,7 +67,11 @@ func _try_start_drag() -> void:
 		return
 
 	var state: GameState = game_controller.state
-
+	
+	if state.awaiting_unit_target:
+		game_controller.try_select_unit_target(card_found.card_uid)
+		return
+	
 	var rune := _get_rune_instance(card_found.card_uid)
 	if rune != null:
 		game_controller.try_pick_runes_to_spend(card_found.card_uid)
@@ -117,8 +121,15 @@ func _try_release() -> void:
 		if space.intersect_point(params).size() > 0:
 			var slot_index: int = board_reference.get_slot_index_under_mouse()
 			if slot_index != -1:
-				var played: bool = game_controller.try_play_card_to_slot(dragged_card.card_uid, slot_index)
-				if played:
+				var result: String = game_controller.try_play_card(dragged_card.card_uid, slot_index)
+
+				if result == "choice":
+					# Keep the dragged card alive for now, but return it visually to hand
+					# so the player can click a choice button.
+					_return_to_hand()
+					return
+
+				if result == "played":
 					if game_controller.state.awaiting_rune_payment:
 						_return_to_hand()
 						game_controller.refresh_payment_ui()

@@ -40,12 +40,22 @@ static func _ensure_loaded() -> void:
 
 static func _populate() -> void:
 	
+	# OGN-044/298 — Clockwork Keeper
+	# As you play me, you may pay Calm as an additional cost. If you do, draw 1.
+	_on_play["OGN-044/298"] = func(unit: UnitState, state: GameState, payload := {}) -> void:
+		var extra_paid: bool = bool(payload.get("extra_calm_paid", false))
+		if not extra_paid:
+			return
+
+		EffectResolver.draw_cards(state, unit.player_id, 1)
+		state.add_event("Clockwork Keeper extra cost paid: P%d drew 1." % unit.player_id)
+	
 	# OGN-075/298 — Tasty Faefolk
-	# [Deathknell] — Channel 2 runes exhausted and draw 1.
+	# [Deathknell] — Channel 2 runes exhausted and draw 1. (When I die, get the effect.)
 	_registry["OGN-075/298"] = {
-		"on_death": func(unit: UnitState, state: GameState) -> void:
-			EffectResolver.resolve_tasty_faefolk_deathknell(unit, state)
-	}
+	"on_death": func(unit: UnitState, state: GameState) -> void:
+		EffectResolver.resolve_tasty_faefolk_deathknell(unit, state)
+}
 	
 	# OGN-096/298 — Watchful Sentry
 	# [Deathknell] — Draw 1. (When I die, get the effect.)
@@ -53,17 +63,6 @@ static func _populate() -> void:
 		"on_death": func(unit: UnitState, state: GameState) -> void:
 			_draw_cards(unit.player_id, 1, state)
 			state.add_event("Watchful Sentry deathknell: P%d drew 1." % unit.player_id)
-	}
-
-	# OGN-075/298 — Tasty Faefolk
-	# [Deathknell] — Channel 2 runes exhausted and draw 1. (When I die, get the effect.)
-	_registry["OGN-075/298"] = {
-		"on_death": func(unit: UnitState, state: GameState) -> void:
-			# TODO: channel 2 runes exhausted (requires rune channel logic)
-			_draw_cards(unit.player_id, 1, state)
-			state.add_event(
-				"Tasty Faefolk deathknell: P%d drew 1 (channel runes: TODO)." % unit.player_id
-			)
 	}
 
 	# OGN-110/298 — Ekko, Recurrent
@@ -75,7 +74,15 @@ static func _populate() -> void:
 				"Ekko deathknell: P%d (recycle + ready runes: TODO)." % unit.player_id
 			)
 	}
-
+	
+	# OGN-136/298 — Pit Rookie
+	# When you play me, buff another friendly unit. (If it doesn't have a buff, it gets a +1 Might buff.)
+	_on_play["OGN-136/298"] = func(unit: UnitState, state: GameState, payload := {}) -> void:
+		state.awaiting_unit_target = true
+		state.pending_target_source_uid = unit.uid
+		state.pending_target_card_id = unit.card_instance.data.card_id
+		state.add_event("Pit Rookie: choose another friendly unit to buff.")
+	
 	# OGN-178/298 — Undercover Agent
 	# [Deathknell] — Discard 2, then draw 2. (When I die, get the effect.)
 	_registry["OGN-178/298"] = {
@@ -98,3 +105,45 @@ static func _draw_cards(player_id: int, count: int, state: GameState) -> void:
 		var card: CardInstance = player.deck.pop_back()
 		player.hand.append(card)
 		card.zone = CardInstance.Zone.HAND
+
+static func resolve_pending_unit_target(target_uid: int, state: GameState) -> void:
+	_ensure_loaded()
+
+	if not state.awaiting_unit_target:
+		state.add_event("No unit target is currently being selected.")
+		return
+
+	var source: UnitState = state.unit_registry.get_unit(state.pending_target_source_uid)
+	var target: UnitState = state.unit_registry.get_unit(target_uid)
+
+	if source == null:
+		state.add_event("Target resolution failed: source unit not found.")
+		_clear_pending_target_state(state)
+		return
+
+	if target == null:
+		state.add_event("Target resolution failed: target unit not found.")
+		_clear_pending_target_state(state)
+		return
+
+	match state.pending_target_card_id:
+		"OGN-136/298":
+			if target.player_id != source.player_id:
+				state.add_event("Pit Rookie target must be friendly.")
+				return
+			if target.uid == source.uid:
+				state.add_event("Pit Rookie must target another friendly unit.")
+				return
+
+			EffectResolver.buff_unit(state, source.uid, target, 1)
+			state.add_event("Pit Rookie buffed %s." % target.card_instance.data.card_name)
+
+		_:
+			state.add_event("Unknown pending target card: %s" % state.pending_target_card_id)
+
+	_clear_pending_target_state(state)
+
+static func _clear_pending_target_state(state: GameState) -> void:
+	state.awaiting_unit_target = false
+	state.pending_target_source_uid = -1
+	state.pending_target_card_id = ""

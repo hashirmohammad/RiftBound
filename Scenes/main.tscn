@@ -183,3 +183,15 @@ offset_top = 540.0
 offset_right = 1920.0
 offset_bottom = 590.0
 text = "Confirm Damage"
+
+[node name="ChoiceAButton" type="Button" parent="." unique_id=590261534]
+offset_left = 1607.35
+offset_top = 443.0
+offset_right = 1763.673
+offset_bottom = 541.0
+
+[node name="ChoiceBButton" type="Button" parent="." unique_id=1542843524]
+offset_left = 1607.35
+offset_top = 541.0
+offset_right = 1763.673
+offset_bottom = 639.0
