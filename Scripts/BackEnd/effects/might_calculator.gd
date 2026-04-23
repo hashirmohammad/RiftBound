@@ -1,17 +1,15 @@
 class_name MightCalculator
 
 static func compute_attack_might(unit: UnitState, game_state: GameState) -> int:
-	# STUN prevents dealing damage entirely — short-circuit before any bonus
 	if unit.is_stunned():
 		return 0
 
 	var might: int = unit.card_instance.data.might
-	might += unit.effects.max_of(EffectInstance.EffectType.BUFF)
+	might += unit.effects.sum_of(EffectInstance.EffectType.BUFF)
 	might += unit.effects.sum_of(EffectInstance.EffectType.ASSAULT)
 	might += _evaluate_conditional(unit, EffectInstance.EffectType.MIGHTY, game_state)
 	might += _evaluate_conditional(unit, EffectInstance.EffectType.LEGION, game_state)
 
-	# Wizened Elder — while buffed, +1 additional Might
 	if _is_wizened_elder(unit) and _has_any_buff(unit):
 		might += 1
 
@@ -20,12 +18,11 @@ static func compute_attack_might(unit: UnitState, game_state: GameState) -> int:
 
 static func compute_defense_might(unit: UnitState, game_state: GameState) -> int:
 	var might: int = unit.card_instance.data.might
-	might += unit.effects.max_of(EffectInstance.EffectType.BUFF)
+	might += unit.effects.sum_of(EffectInstance.EffectType.BUFF)
 	might += unit.effects.sum_of(EffectInstance.EffectType.SHIELD)
 	might += _evaluate_conditional(unit, EffectInstance.EffectType.MIGHTY, game_state)
 	might += _evaluate_conditional(unit, EffectInstance.EffectType.LEGION, game_state)
 
-	# Wizened Elder — while buffed, +1 additional Might
 	if _is_wizened_elder(unit) and _has_any_buff(unit):
 		might += 1
 
@@ -51,6 +48,26 @@ static func _evaluate_conditional(
 static func _is_wizened_elder(unit: UnitState) -> bool:
 	return unit.card_instance.data.card_id == "OGN-065/298"
 
-
+static func compute_max_health(unit: UnitState) -> int:
+	var hp: int = unit.base_health
+	hp += unit.effects.sum_of(EffectInstance.EffectType.BUFF)
+	return maxi(hp, 0)
+	
 static func _has_any_buff(unit: UnitState) -> bool:
 	return unit.effects.max_of(EffectInstance.EffectType.BUFF) > 0
+
+static func get_total_might(unit: UnitState, game_state: GameState) -> int:
+	if unit.is_stunned():
+		return 0
+
+	var might: int = unit.card_instance.data.might
+	might += unit.effects.sum_of(EffectInstance.EffectType.BUFF)
+	might += unit.effects.sum_of(EffectInstance.EffectType.ASSAULT)
+	might += unit.effects.sum_of(EffectInstance.EffectType.SHIELD)
+	might += _evaluate_conditional(unit, EffectInstance.EffectType.MIGHTY, game_state)
+	might += _evaluate_conditional(unit, EffectInstance.EffectType.LEGION, game_state)
+
+	if _is_wizened_elder(unit) and _has_any_buff(unit):
+		might += 1
+
+	return maxi(might, 0)

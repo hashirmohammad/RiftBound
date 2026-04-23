@@ -19,13 +19,14 @@ func validate(state: GameState) -> bool:
 		_error_message = "Invalid PLAY_CARD: not this player's turn."
 		return false
 
-	if state.phase != "MAIN":
-		_error_message = "Invalid PLAY_CARD: not in MAIN phase."
-		return false
-
 	var p := state.get_active_player()
 	var card := _find_card_in_hand(p)
-
+	
+	# 🔥 Allow spells outside MAIN phase
+	if card.data.type != CardData.CardType.SPELL and state.phase != "MAIN":
+		_error_message = "Invalid PLAY_CARD: not in MAIN phase."
+		return false
+	
 	if card == null:
 		_error_message = "Invalid PLAY_CARD: card uid not found in hand."
 		return false
@@ -155,14 +156,30 @@ static func finalize_spell_play(state: GameState, p: PlayerState, card: CardInst
 		state.add_event("SPELL finalize failed: card disappeared from hand.")
 		return
 
+	var card_id := card.data.card_id
+
+	# Targeted spells: do NOT remove from hand yet
+	if SpellRegistry.requires_targets(card_id):
+		state.awaiting_spell_targets = true
+		state.pending_spell_player_id = p.id
+		state.pending_spell_card_uid = card.uid
+		state.pending_spell_card_id = card_id
+		state.pending_spell_required_targets = SpellRegistry.required_target_count(card_id)
+		state.pending_spell_target_uids.clear()
+
+		state.add_event("P%d is selecting targets for %s." % [
+			p.id, card.data.card_name
+		])
+
+		return
+
+	# Non-targeted spells: resolve immediately, then trash
 	p.hand.remove_at(hand_index)
 
-	var resolver := SpellRegistry.get_resolver(card.data.card_id)
-	if resolver.is_valid():
-		var payload: Dictionary = state.pending_play_metadata.duplicate(true)
-		resolver.call(card, state, payload)
-	else:
-		state.add_event("No spell resolver found for %s." % card.data.card_name)
+	var payload: Dictionary = state.pending_play_metadata.duplicate(true)
+	payload["player_id"] = p.id
+
+	SpellRegistry.resolve(card, state, payload)
 
 	card.zone = CardInstance.Zone.TRASH
 	p.trash.append(card)

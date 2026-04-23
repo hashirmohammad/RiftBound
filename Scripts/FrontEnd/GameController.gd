@@ -8,6 +8,7 @@ const ReturnFromBattlefieldAction = preload("res://Scripts/BackEnd/actions/retur
 const CommitToBattlefieldAction   = preload("res://Scripts/BackEnd/actions/commit_to_battlefield_action.gd")
 const PassPriorityAction          = preload("res://Scripts/BackEnd/actions/pass_priority_action.gd")
 const ConfirmDamageAction         = preload("res://Scripts/BackEnd/actions/confirm_damage_action.gd")
+const SpellRegistry               = preload("res://Scripts/BackEnd/spell/spell_registry.gd")
 const CARD_SCENE                  = preload("res://Scenes/Card.tscn")
 
 var state: GameState
@@ -130,13 +131,25 @@ func _place_card(slot: CardSlot, card_instance: CardInstance, scale: Vector2) ->
 		card.modulate = Color(0.55, 1.0, 0.55, 1.0)
 	if state.awaiting_unit_target:
 		var source_uid: int = state.pending_target_source_uid
-		var source_unit: UnitState = state.unit_registry.get_unit(source_uid)
-		var current_unit: UnitState = state.unit_registry.get_unit(card_instance.uid)
+		var source_unit: UnitState = state.unit_registry.get_by_uid(source_uid)
+		var current_unit: UnitState = state.unit_registry.get_by_uid(card_instance.uid)
 
 		if source_unit != null and current_unit != null:
 			if current_unit.player_id == source_unit.player_id and current_unit.uid != source_unit.uid:
 				card.modulate = Color(0.6, 1.0, 0.6, 1.0)
-
+	
+	if state.awaiting_spell_targets:
+		var current_unit: UnitState = state.unit_registry.get_by_uid(card_instance.uid)
+		if current_unit != null:
+			if SpellRegistry.can_select_target(
+				state.pending_spell_card_id,
+				state,
+				state.pending_spell_player_id,
+				state.pending_spell_target_uids,
+				current_unit.uid
+			):
+				card.modulate = Color(0.6, 1.0, 0.6, 1.0)
+	
 # ─── Static State Rendering ───────────────────────────────────────────────────
 
 func render_static_state(player: PlayerState, opponent: PlayerState) -> void:
@@ -360,9 +373,7 @@ func try_play_card_to_slot(card_uid: int, slot_index: int) -> bool:
 	if state.awaiting_rune_payment:
 		refresh_payment_ui()
 	else:
-		refresh_hand_ui()
-		render_slot(player, slot_index)
-		_update_status_label()
+		refresh_all_ui()
 
 	return true
 
@@ -493,6 +504,35 @@ func _update_status_label() -> void:
 	if state.awaiting_unit_target:
 		status_label.text = "Choose a friendly unit for Pit Rookie."
 		status_label.text += "\nScore: P0=%d | P1=%d" % [state.scores[0], state.scores[1]]
+		cancel_payment_button.visible = false
+		pass_priority_button.visible = false
+		confirm_damage_button.visible = false
+		return
+	
+	if state.awaiting_spell_destination:
+		status_label.text = "Choose destination battlefield."
+		cancel_payment_button.visible = false
+		pass_priority_button.visible = false
+		confirm_damage_button.visible = false
+		return
+	
+	if state.awaiting_spell_targets:
+		var chosen: int = state.pending_spell_target_uids.size()
+		var needed: int = state.pending_spell_required_targets
+
+		match state.pending_spell_card_id:
+			"OGN-058/298": # Discipline
+				status_label.text = "Choose a unit for Discipline (%d/%d)." % [chosen, needed]
+			"OGN-046/298": # En Garde
+				status_label.text = "Choose a friendly unit for En Garde (%d/%d)." % [chosen, needed]
+			"OGN-128/298": # Challenge
+				if chosen == 0:
+					status_label.text = "Choose a friendly unit for Challenge (1/2)."
+				else:
+					status_label.text = "Choose an enemy unit for Challenge (2/2)."
+			_:
+				status_label.text = "Choose spell target(s) (%d/%d)." % [chosen, needed]
+
 		cancel_payment_button.visible = false
 		pass_priority_button.visible = false
 		confirm_damage_button.visible = false
@@ -696,3 +736,151 @@ func try_select_unit_target(target_uid: int) -> bool:
 	CardAbilityRegistry.resolve_pending_unit_target(target_uid, state)
 	refresh_all_ui()
 	return true
+
+func try_select_spell_target(target_uid: int) -> bool:
+	if not state.awaiting_spell_targets:
+		return false
+
+	if not SpellRegistry.can_select_target(
+		state.pending_spell_card_id,
+		state,
+		state.pending_spell_player_id,
+		state.pending_spell_target_uids,
+		target_uid
+	):
+		status_label.text = "Invalid target for %s." % state.pending_spell_card_id
+		return false
+
+	state.pending_spell_target_uids.append(target_uid)
+
+	if state.pending_spell_target_uids.size() >= state.pending_spell_required_targets:
+		match state.pending_spell_card_id:
+			"OGN-043/298": # Charm
+				state.awaiting_spell_targets = false
+				state.awaiting_spell_destination = true
+				status_label.text = "Choose destination battlefield for Charm."
+				refresh_all_ui()
+				return true
+
+			"OGN-258/298": # Dragon's Rage
+				resolve_pending_spell()
+				return true
+
+			_:
+				resolve_pending_spell()
+				return true
+
+	refresh_all_ui()
+	return true
+
+func resolve_pending_spell() -> void:
+	if not state.awaiting_spell_targets:
+		return
+
+	var player_id: int = state.pending_spell_player_id
+	var p: PlayerState = state.players[player_id]
+
+	var card: CardInstance = null
+	for c in p.hand:
+		if c.uid == state.pending_spell_card_uid:
+			card = c
+			break
+
+	if card == null:
+		state.add_event("Pending spell failed: card not found.")
+		state.clear_pending_spell_target_state()
+		refresh_all_ui()
+		return
+
+	var payload: Dictionary = {
+		"player_id": player_id
+	}
+
+	match state.pending_spell_card_id:
+		"OGN-128/298": # Challenge
+			payload["friendly_uid"] = state.pending_spell_target_uids[0]
+			payload["enemy_uid"] = state.pending_spell_target_uids[1]
+		"OGN-258/298": # Dragon's Rage
+			var moved_uid: int = state.pending_spell_target_uids[0]
+			var other_uid: int = state.pending_spell_target_uids[1]
+
+			var loc := EffectResolver.find_unit_location(state, other_uid)
+			if loc.is_empty() or loc["zone"] != "BATTLEFIELD":
+				status_label.text = "Second target must already be at a battlefield."
+				return
+
+			payload["moved_uid"] = moved_uid
+			payload["other_uid"] = other_uid
+			payload["target_uids"] = state.pending_spell_target_uids
+			payload["destination_lane"] = int(loc["index"])
+		_:
+			payload["target_uid"] = state.pending_spell_target_uids[0]
+
+	SpellRegistry.resolve(card, state, payload)
+
+	# Remove from hand and send to trash now that it resolved
+	for i in range(p.hand.size()):
+		if p.hand[i].uid == card.uid:
+			p.hand.remove_at(i)
+			break
+
+	card.zone = CardInstance.Zone.TRASH
+	p.trash.append(card)
+
+	state.add_event("P%d resolved %s and sent it to trash." % [
+		player_id, card.data.card_name
+	])
+
+	state.pending_play_metadata.clear()
+	state.clear_pending_spell_target_state()
+	refresh_all_ui()
+
+func try_select_spell_destination(destination_player_id: int, destination_lane: int) -> void:
+	if not state.awaiting_spell_destination:
+		return
+
+	var player_id: int = state.pending_spell_player_id
+	var p: PlayerState = state.players[player_id]
+
+	var card: CardInstance = null
+	for c in p.hand:
+		if c.uid == state.pending_spell_card_uid:
+			card = c
+			break
+
+	if card == null:
+		state.add_event("Pending spell failed: card not found.")
+		state.clear_pending_spell_target_state()
+		state.awaiting_spell_destination = false
+		refresh_all_ui()
+		return
+
+	var payload := {
+		"player_id": player_id,
+		"target_uid": state.pending_spell_target_uids[0],
+		"target_uids": state.pending_spell_target_uids,
+		"destination_player_id": destination_player_id,
+		"destination_lane": destination_lane
+	}
+
+	SpellRegistry.resolve(card, state, payload)
+
+	for i in range(p.hand.size()):
+		if p.hand[i].uid == card.uid:
+			p.hand.remove_at(i)
+			break
+
+	card.zone = CardInstance.Zone.TRASH
+	p.trash.append(card)
+
+	state.add_event("P%d resolved %s and sent it to trash." % [
+		player_id, card.data.card_name
+	])
+
+	state.awaiting_spell_destination = false
+	state.pending_play_metadata.clear()
+	state.clear_pending_spell_target_state()
+	var input_manager = $"../InputManager"
+	if input_manager != null:
+		input_manager._clear_slot_highlights()
+	refresh_all_ui()

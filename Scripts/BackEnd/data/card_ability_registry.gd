@@ -135,9 +135,9 @@ static func resolve_pending_unit_target(target_uid: int, state: GameState) -> vo
 				state.add_event("Pit Rookie must target another friendly unit.")
 				return
 
-			EffectResolver.buff_unit(state, source.uid, target, 1)
+			EffectResolver.buff_unit(state, source.uid, target, 1, EffectInstance.ExpiryTiming.PERMANENT)
 			state.add_event("Pit Rookie buffed %s." % target.card_instance.data.card_name)
-
+			print("DEBUG Pit Rookie target uid=", target.uid, " buff=", target.effects.max_of(EffectInstance.EffectType.BUFF))
 		_:
 			state.add_event("Unknown pending target card: %s" % state.pending_target_card_id)
 

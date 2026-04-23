@@ -111,3 +111,107 @@ static func summon_unit_to_board(state: GameState, player_id: int, card_data: Ca
 
 	state.add_event("P%d summoned %s into slot %d." % [player_id, card_data.card_name, slot_index])
 	return unit
+
+static func units_strike_each_other(state: GameState, unit_a: UnitState, unit_b: UnitState) -> void:
+	if unit_a == null or unit_b == null:
+		return
+
+	var a_might: int = MightCalculator.get_total_might(unit_a, state)
+	var b_might: int = MightCalculator.get_total_might(unit_b, state)
+
+	state.add_event("%s and %s strike each other." % [
+		unit_a.card_instance.data.card_name,
+		unit_b.card_instance.data.card_name
+	])
+
+	# Store damage first (simulate simultaneous damage)
+	var damage_to_b := a_might
+	var damage_to_a := b_might
+
+	# Apply both damages
+	EffectResolver.deal_damage_to_unit(state, unit_a.uid, unit_b, damage_to_b)
+	EffectResolver.deal_damage_to_unit(state, unit_b.uid, unit_a, damage_to_a)
+
+static func find_unit_location(state: GameState, unit_uid: int) -> Dictionary:
+	for player in state.players:
+		for slot_i in range(player.board_slots.size()):
+			for card in player.board_slots[slot_i]:
+				if card.uid == unit_uid:
+					return {
+						"player_id": player.id,
+						"zone": "BOARD",
+						"index": slot_i
+					}
+
+		for lane_i in range(player.battlefield_slots.size()):
+			for card in player.battlefield_slots[lane_i]:
+				if card.uid == unit_uid:
+					return {
+						"player_id": player.id,
+						"zone": "BATTLEFIELD",
+						"index": lane_i
+					}
+
+	return {}
+
+
+static func move_unit_to_battlefield(
+	state: GameState,
+	unit: UnitState,
+	destination_player_id: int,
+	destination_lane: int
+) -> bool:
+	if unit == null:
+		state.add_event("Move failed: unit is null.")
+		return false
+
+	if destination_lane < 0 or destination_lane >= state.players[destination_player_id].battlefield_slots.size():
+		state.add_event("Move failed: invalid destination lane.")
+		return false
+
+	var source_location := find_unit_location(state, unit.uid)
+	if source_location.is_empty():
+		state.add_event("Move failed: source unit location not found.")
+		return false
+
+	var source_player: PlayerState = state.players[int(source_location["player_id"])]
+	var card: CardInstance = unit.card_instance
+
+	if source_location["zone"] == "BOARD":
+		source_player.board_slots[int(source_location["index"])].erase(card)
+	elif source_location["zone"] == "BATTLEFIELD":
+		source_player.battlefield_slots[int(source_location["index"])].erase(card)
+
+	var destination_player: PlayerState = state.players[destination_player_id]
+	card.zone = CardInstance.Zone.ARENA
+	destination_player.battlefield_slots[destination_lane].append(card)
+
+	state.add_event("%s moved to P%d battlefield lane %d." % [
+		card.data.card_name,
+		destination_player_id,
+		destination_lane
+	])
+
+	return true
+
+
+static func get_units_at_battlefield(
+	state: GameState,
+	player_id: int,
+	lane: int
+) -> Array[UnitState]:
+	var result: Array[UnitState] = []
+
+	if player_id < 0 or player_id >= state.players.size():
+		return result
+
+	var player: PlayerState = state.players[player_id]
+	if lane < 0 or lane >= player.battlefield_slots.size():
+		return result
+
+	for card in player.battlefield_slots[lane]:
+		var unit: UnitState = state.unit_registry.get_unit(card.uid)
+		if unit != null:
+			result.append(unit)
+
+	return result

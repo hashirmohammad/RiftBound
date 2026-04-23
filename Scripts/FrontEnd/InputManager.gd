@@ -21,6 +21,10 @@ func _ready() -> void:
 	game_controller = $"../GameController"
 
 func _process(_delta) -> void:
+	if game_controller.state.awaiting_spell_destination and dragged_card == null:
+		highlight_spell_destinations()
+	elif dragged_card == null:
+		_clear_slot_highlights()
 	# Promote a pending board card to a real drag once the mouse moves far enough
 	if _pending_board_card != null:
 		var dist: float = get_global_mouse_position().distance_to(_press_position)
@@ -62,14 +66,35 @@ func _input(event) -> void:
 # ─── Press: pick up a card or begin selection ─────────────────────────────────
 
 func _try_start_drag() -> void:
+	var state: GameState = game_controller.state
+
+	if state.awaiting_spell_destination:
+		var bf_data = board_reference.get_battlefield_half_under_mouse()
+		if not bf_data.is_empty():
+			var destination_player_id := int(bf_data["player"])
+
+			var target: UnitState = null
+			if state.pending_spell_target_uids.size() > 0:
+				target = state.unit_registry.get_unit(state.pending_spell_target_uids[0])
+
+			if target != null and destination_player_id == target.player_id:
+				game_controller.try_select_spell_destination(
+					destination_player_id,
+					int(bf_data["lane"])
+				)
+			else:
+				game_controller.status_label.text = "Choose the target unit's battlefield."
+		return
 	var card_found = _get_card_under_cursor()
 	if card_found == null:
 		return
-
-	var state: GameState = game_controller.state
 	
 	if state.awaiting_unit_target:
 		game_controller.try_select_unit_target(card_found.card_uid)
+		return
+
+	if state.awaiting_spell_targets:
+		game_controller.try_select_spell_target(card_found.card_uid)
 		return
 	
 	var rune := _get_rune_instance(card_found.card_uid)
@@ -352,3 +377,33 @@ func _get_rune_instance(rune_uid: int) -> RuneInstance:
 	for rune in player.rune_pool:
 		if rune.uid == rune_uid: return rune
 	return null
+
+func highlight_spell_destinations() -> void:
+	_clear_slot_highlights()
+
+	var state: GameState = game_controller.state
+	if not state.awaiting_spell_destination:
+		return
+
+	var destination_player_id := -1
+
+	if state.pending_spell_target_uids.size() > 0:
+		var target_uid: int = state.pending_spell_target_uids[0]
+		var target: UnitState = state.unit_registry.get_unit(target_uid)
+		if target != null:
+			destination_player_id = target.player_id
+
+	if destination_player_id == -1:
+		return
+
+	var bf_slots: Array = [
+		board_reference._p0_bf_slot_left,
+		board_reference._p0_bf_slot_right
+	] if destination_player_id == 0 else [
+		board_reference._p1_bf_slot_left,
+		board_reference._p1_bf_slot_right
+	]
+
+	for bf_slot in bf_slots:
+		if bf_slot != null:
+			bf_slot.highlight(true, true)
