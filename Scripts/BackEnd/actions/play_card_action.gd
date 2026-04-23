@@ -80,13 +80,34 @@ func _finalize_play(state: GameState, p: PlayerState, card: CardInstance) -> voi
 		p.id, card.data.card_name, slot_index
 	])
 
+	var created_unit: UnitState = null
+
 	if card.data.type == CardData.CardType.UNIT or card.data.type == CardData.CardType.CHAMPION:
 		var unit := UnitState.new(card, p.id)
+
 		for effect in KeywordParser.parse(card.data, state):
 			unit.effects.add(effect)
-		state.unit_registry.register(unit)
-		state.add_event("P%d unit registered: %s (uid=%d)." % [p.id, card.data.card_name, card.uid])
 
+		var extra_fn := CardAbilityRegistry.get_extra_unit_effects_fn(card.data.card_id)
+		if extra_fn.is_valid():
+			var extra_effects: Array[EffectInstance] = extra_fn.call(unit, state)
+			for e in extra_effects:
+				unit.effects.add(e)
+
+		state.unit_registry.register(unit)
+		created_unit = unit
+
+		state.add_event("P%d unit registered: %s (uid=%d)." % [
+			p.id, card.data.card_name, card.uid
+		])
+
+	var on_play_fn := CardAbilityRegistry.get_on_play_fn(card.data.card_id)
+	if on_play_fn.is_valid():
+		if created_unit != null:
+			on_play_fn.call(created_unit, state)
+		else:
+			on_play_fn.call(card, state)
+			
 func get_error_message() -> String:
 	return _error_message
 
