@@ -73,35 +73,20 @@ func execute(state: GameState) -> void:
 		_finalize_pending_card_play(state)
 
 func _finalize_pending_card_play(state: GameState) -> void:
-	var p : PlayerState = state.players[state.pending_payment_player_id]
+	var p: PlayerState = state.players[state.pending_payment_player_id]
 
 	var hand_index := _find_pending_card_index(p, state.pending_card_uid)
-
 	if hand_index == -1:
 		state.add_event("Finalize pending play failed: card not found in hand.")
 		_clear_pending_payment(state)
 		return
 
 	var card: CardInstance = p.hand[hand_index]
-	p.hand.remove_at(hand_index)
 
-	card.zone = CardInstance.Zone.BOARD
-	card.exhaust()
-	p.board_slots[state.pending_slot_index].append(card)
-
-	state.add_event("P%d played %s into slot %d after paying %d runes." % [
-		p.id,
-		card.data.card_name,
-		state.pending_slot_index,
-		state.pending_card_cost
-	])
-
-	if card.data.type == CardData.CardType.UNIT or card.data.type == CardData.CardType.CHAMPION:
-		var unit := UnitState.new(card, p.id)
-		for effect in KeywordParser.parse(card.data, state):
-			unit.effects.add(effect)
-		state.unit_registry.register(unit)
-		state.add_event("P%d unit registered: %s (uid=%d)." % [p.id, card.data.card_name, card.uid])
+	if card.data.type == CardData.CardType.SPELL:
+		PlayCardAction.finalize_spell_play(state, p, card)
+	else:
+		PlayCardAction.finalize_play(state, p, card, state.pending_slot_index)
 
 	_clear_pending_payment(state)
 

@@ -69,10 +69,14 @@ static func start_game() -> GameState:
 	p0.rune_deck.shuffle()
 	p1.rune_deck.shuffle()
 	
-	rig_card_to_top_of_deck(p0, "OGN-052/298") # Stalwart Poro
-	rig_card_to_top_of_deck(p0, "OGN-054/298") # Sunlit Guardian
-	rig_card_to_top_of_deck(p0, "OGN-065/298") # Wizened Elder
-	rig_card_to_top_of_deck(p0, "OGN-075/298") # Tasty Faefolk
+	#rig_card_to_top_of_deck(p0, "OGN-052/298") # Stalwart Poro
+	#rig_card_to_top_of_deck(p0, "OGN-054/298") # Sunlit Guardian
+	#rig_card_to_top_of_deck(p0, "OGN-065/298") # Wizened Elder
+	#rig_card_to_top_of_deck(p0, "OGN-075/298") # Tasty Faefolk
+	#rig_card_to_top_of_deck(p0, "OGN-136/298") # Pit Rookie
+	rig_card_to_top_of_deck(p0, "OGN-044/298") # Clockwork Keeper
+	rig_card_to_top_of_deck(p0, "OGN-047/298") # Clockwork Keeper
+	
 	for i in range(OPENING_HAND_SIZE):
 		state.turn_system._draw_card(p0)
 		state.turn_system._draw_card(p1)

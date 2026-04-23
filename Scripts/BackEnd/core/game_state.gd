@@ -35,6 +35,12 @@ var awaiting_damage_assignment: bool = false
 var active_combat_context: CombatContext
 var active_showdown: ShowdownContext
 
+var awaiting_unit_target: bool = false
+var pending_target_source_uid: int = -1
+var pending_target_card_id: String = ""
+
+var pending_play_metadata: Dictionary = {}
+
 var _next_uid: int = 1
 
 func next_uid() -> int:
