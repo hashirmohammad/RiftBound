@@ -1,17 +1,10 @@
 class_name CardAbilityRegistry
 
-# Stores card-specific ability functions that cannot be expressed generically.
-# Covers DEATHKNELL trigger_fns and VISION trigger_fns.
-#
-# All trigger callables share the same signature:
-#   func(source_unit: UnitState, game_state: GameState) -> void
-#
-# Add new entries to _populate() as cards are implemented.
-# Cards not yet implemented log a warning and no-op safely.
-
-static var _registry: Dictionary = {}       # card_id -> { event -> Callable }
-static var _vision_events: Dictionary = {}  # card_id -> trigger_event string
-static var _loaded: bool = false
+static var _registry: Dictionary = {}         # card_id -> { event -> Callable }
+static var _vision_events: Dictionary = {}    # card_id -> trigger_event
+static var _on_play: Dictionary = {}          # card_id -> Callable
+static var _extra_unit_effects: Dictionary = {}  # card_id -> Callable
+static var _loaded := false
 
 # ── Public API ────────────────────────────────────────────────────────────────
 
@@ -19,16 +12,19 @@ static func get_trigger_fn(card_id: String, event: String) -> Callable:
 	_ensure_loaded()
 	if _registry.has(card_id) and _registry[card_id].has(event):
 		return _registry[card_id][event]
-	push_warning(
-		"CardAbilityRegistry: no '%s' trigger for card '%s' — ability is a no-op." \
-		% [event, card_id]
-	)
 	return Callable()
 
-# Returns the trigger_event string registered for a VISION effect on this card.
 static func get_vision_event(card_id: String) -> String:
 	_ensure_loaded()
 	return _vision_events.get(card_id, "")
+
+static func get_on_play_fn(card_id: String) -> Callable:
+	_ensure_loaded()
+	return _on_play.get(card_id, Callable())
+
+static func get_extra_unit_effects_fn(card_id: String) -> Callable:
+	_ensure_loaded()
+	return _extra_unit_effects.get(card_id, Callable())
 
 # ── Init ──────────────────────────────────────────────────────────────────────
 
@@ -43,7 +39,14 @@ static func _ensure_loaded() -> void:
 # Complex effects that aren't yet fully supported are stubbed with a TODO log.
 
 static func _populate() -> void:
-
+	
+	# OGN-075/298 — Tasty Faefolk
+	# [Deathknell] — Channel 2 runes exhausted and draw 1.
+	_registry["OGN-075/298"] = {
+		"on_death": func(unit: UnitState, state: GameState) -> void:
+			EffectResolver.resolve_tasty_faefolk_deathknell(unit, state)
+	}
+	
 	# OGN-096/298 — Watchful Sentry
 	# [Deathknell] — Draw 1. (When I die, get the effect.)
 	_registry["OGN-096/298"] = {
