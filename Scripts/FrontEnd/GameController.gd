@@ -23,7 +23,10 @@ var selected_board_uids: Array[int] = []
 @onready var cancel_payment_button = $"../CancelPaymentButton"
 @onready var pass_priority_button  = $"../PassPriorityButton"
 @onready var confirm_damage_button = $"../ConfirmDamageButton"
+@onready var choice_a_button      = $"../ChoiceAButton"
+@onready var choice_b_button      = $"../ChoiceBButton"
 
+var pending_play_choice: Dictionary = {}
 # Attacker's pending damage assignments during the assignment phase: uid -> damage
 var _pending_assignments: Dictionary = {}
 
@@ -37,6 +40,10 @@ func _ready() -> void:
 	pass_priority_button.visible   = false
 	confirm_damage_button.pressed.connect(_on_confirm_damage_pressed)
 	confirm_damage_button.visible  = false
+	choice_a_button.pressed.connect(_on_choice_a_pressed)
+	choice_b_button.pressed.connect(_on_choice_b_pressed)
+	choice_a_button.visible = false
+	choice_b_button.visible = false
 
 # ─── UI Refresh ───────────────────────────────────────────────────────────────
 
@@ -116,6 +123,14 @@ func _place_card(slot: CardSlot, card_instance: CardInstance, scale: Vector2) ->
 	card.rotation_degrees = 90.0 if card_instance.is_exhausted() else 0.0
 	if selected_board_uids.has(card_instance.uid):
 		card.modulate = Color(0.55, 1.0, 0.55, 1.0)
+	if state.awaiting_unit_target:
+		var source_uid: int = state.pending_target_source_uid
+		var source_unit: UnitState = state.unit_registry.get_unit(source_uid)
+		var current_unit: UnitState = state.unit_registry.get_unit(card_instance.uid)
+
+		if source_unit != null and current_unit != null:
+			if current_unit.player_id == source_unit.player_id and current_unit.uid != source_unit.uid:
+				card.modulate = Color(0.6, 1.0, 0.6, 1.0)
 
 # ─── Static State Rendering ───────────────────────────────────────────────────
 
@@ -252,6 +267,22 @@ func _render_runes(panel: Panel, runes: Array, player_id: int) -> void:
 
 		card.set_card_state(RiftCard.CardState.ON_BOARD)
 
+func _hide_play_choice_ui() -> void:
+	choice_a_button.visible = false
+	choice_b_button.visible = false
+	choice_a_button.disabled = false
+	choice_b_button.disabled = false
+	pending_play_choice.clear()
+
+func _show_play_choice_ui(label_text: String, a_text: String, b_text: String, context: Dictionary, disable_b := false) -> void:
+	choice_a_button.text = a_text
+	choice_b_button.text = b_text
+	choice_a_button.visible = true
+	choice_b_button.visible = true
+	choice_b_button.disabled = disable_b
+
+	pending_play_choice = context.duplicate(true)
+
 func _clear_panel_images(panel: Panel) -> void:
 	if panel == null:
 		return
@@ -295,6 +326,19 @@ func apply_backend_action_and_wait(action: GameAction) -> void:
 		return
 	await wait_until_main()
 	refresh_all_ui()
+
+func try_play_card(card_uid: int, slot_index: int) -> String:
+	var card := _find_hand_card(card_uid)
+	if card == null:
+		status_label.text = "Card not found in hand."
+		return "failed"
+
+	if _card_needs_play_choice(card):
+		_show_choice_for_card(card, slot_index)
+		return "choice"
+
+	var played: bool = try_play_card_to_slot(card_uid, slot_index)
+	return "played" if played else "failed"
 
 func try_play_card_to_slot(card_uid: int, slot_index: int) -> bool:
 	var player = state.get_active_player()
@@ -441,6 +485,13 @@ func wait_until_main() -> void:
 		push_warning("wait_until_main() timed out. Current phase: %s" % state.phase)
 
 func _update_status_label() -> void:
+	if state.awaiting_unit_target:
+		status_label.text = "Choose a friendly unit for Pit Rookie."
+		cancel_payment_button.visible = false
+		pass_priority_button.visible = false
+		confirm_damage_button.visible = false
+		return
+	
 	if state.awaiting_rune_payment:
 		var remaining: int    = state.pending_card_cost - state.selected_rune_uids.size()
 		var card_name: String = _get_pending_card_name()
@@ -523,3 +574,106 @@ func _on_cancel_payment_pressed() -> void:
 	state.pending_card_cost     = 0
 	state.selected_rune_uids.clear()
 	refresh_all_ui()
+
+func request_play_card(card_uid: int, slot_index: int, metadata := {}) -> void:
+	state.pending_play_metadata = metadata.duplicate(true)
+
+	var action := PlayCardAction.new(state.get_active_player().id, card_uid, slot_index)
+	if action.validate(state):
+		action.execute(state)
+	else:
+		state.add_event(action.get_error_message())
+		state.pending_play_metadata.clear()
+
+	refresh_all_ui()
+
+func _find_hand_card(card_uid: int) -> CardInstance:
+	var p := state.get_active_player()
+	for card in p.hand:
+		if card.uid == card_uid:
+			return card
+	return null
+
+func _card_needs_play_choice(card: CardInstance) -> bool:
+	match card.data.card_id:
+		"OGN-075/298": # Tasty Faefolk
+			return true
+		"OGN-044/298": # Clockwork Keeper
+			return true
+		_:
+			return false
+
+func _show_choice_for_card(card: CardInstance, slot_index: int) -> void:
+	var p := state.get_active_player()
+
+	match card.data.card_id:
+		"OGN-075/298": # Tasty Faefolk
+			var accelerate_total_cost: int = card.data.cost + 1
+			var disable_b: bool = p.awaken_rune_count() < accelerate_total_cost
+
+			_show_play_choice_ui(
+				"Choose how to play %s" % card.data.card_name,
+				"Play Normally",
+				"Accelerate (+1 Calm)",
+				{
+					"type": "accelerate",
+					"card_uid": card.uid,
+					"slot_index": slot_index
+				},
+				disable_b
+			)
+
+		"OGN-044/298": # Clockwork Keeper
+			var extra_total_cost: int = card.data.cost + 1
+			var disable_b: bool = p.awaken_rune_count() < extra_total_cost
+
+			_show_play_choice_ui(
+				"Choose how to play %s" % card.data.card_name,
+				"Play Normally",
+				"Pay extra Calm and draw 1",
+				{
+					"type": "extra_calm",
+					"card_uid": card.uid,
+					"slot_index": slot_index
+				},
+				disable_b
+			)
+
+func _on_choice_a_pressed() -> void:
+	if pending_play_choice.is_empty():
+		return
+
+	var card_uid: int = int(pending_play_choice.get("card_uid", -1))
+	var slot_index: int = int(pending_play_choice.get("slot_index", -1))
+
+	_hide_play_choice_ui()
+	try_play_card_to_slot(card_uid, slot_index)
+
+func _on_choice_b_pressed() -> void:
+	if pending_play_choice.is_empty():
+		return
+
+	var card_uid: int = int(pending_play_choice.get("card_uid", -1))
+	var slot_index: int = int(pending_play_choice.get("slot_index", -1))
+	var choice_type: String = str(pending_play_choice.get("type", ""))
+
+	var metadata: Dictionary = {}
+
+	match choice_type:
+		"accelerate":
+			metadata["accelerate"] = true
+			metadata["accelerate_cost"] = 1
+
+		"extra_calm":
+			metadata["extra_calm_paid"] = true
+
+	_hide_play_choice_ui()
+	request_play_card(card_uid, slot_index, metadata)
+
+func try_select_unit_target(target_uid: int) -> bool:
+	if not state.awaiting_unit_target:
+		return false
+
+	CardAbilityRegistry.resolve_pending_unit_target(target_uid, state)
+	refresh_all_ui()
+	return true

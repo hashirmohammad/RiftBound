@@ -105,3 +105,10 @@ static func _make_effect(
 
 		_:
 			return null
+			
+static func has_keyword(card_data: CardData, keyword: String) -> bool:
+	var lower := keyword.to_lower()
+	for raw in card_data.rules_text.split("["):
+		if raw.to_lower().begins_with(lower + "]"):
+			return true
+	return false
