@@ -69,6 +69,9 @@ func _reposition_cards() -> void:
 
 	for i in range(count):
 		cards[i].position = Vector2(start_x + i * spacing, 0.0)
+		# Sync anchor and resting state so hover detection and exit-hover tween
+		# use the updated position rather than where the card was before this layout pass.
+		cards[i].refresh_slot_state()
 
 func clear_cards() -> void:
 	for card in cards:
