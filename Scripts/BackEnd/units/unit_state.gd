@@ -17,7 +17,7 @@ extends RefCounted
 enum CombatRole { NONE, ATTACKER, DEFENDER }
 
 # ── Identity ──────────────────────────────────────────────────────────────────
-
+var chosen_modes_this_turn: Array[String] = []
 var uid: int                       # mirrors card_instance.uid
 var card_instance: CardInstance
 var player_id: int

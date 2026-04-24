@@ -7,7 +7,7 @@
   "domain": "Body",
   "type": "Champion Unit",
   "keywords": [
-    "Qiyana",
+	"Qiyana",
     "Ixtal"
   ],
   "rules_text": "[Deflect] (Opponents must pay Rune Rainbow to choose me with a spell or ability.)When I conquer, draw 1 or channel 1 rune exhausted.",

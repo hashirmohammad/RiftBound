@@ -69,21 +69,49 @@ func _try_start_drag() -> void:
 	var state: GameState = game_controller.state
 
 	if state.awaiting_spell_destination:
-		var bf_data = board_reference.get_battlefield_half_under_mouse()
-		if not bf_data.is_empty():
-			var destination_player_id := int(bf_data["player"])
+		var target: UnitState = null
+		if state.pending_spell_target_uids.size() > 0:
+			target = state.unit_registry.get_unit(state.pending_spell_target_uids[0])
 
-			var target: UnitState = null
-			if state.pending_spell_target_uids.size() > 0:
-				target = state.unit_registry.get_unit(state.pending_spell_target_uids[0])
+		if target == null:
+			return
 
-			if target != null and destination_player_id == target.player_id:
+		var space = get_world_2d().direct_space_state
+		var params = PhysicsPointQueryParameters2D.new()
+		params.position = get_global_mouse_position()
+		params.collide_with_areas = true
+
+		# 1. Try board slot destination
+		params.collision_mask = COLLISION_MASK_SLOT
+		if space.intersect_point(params).size() > 0:
+			var slot_data: Dictionary = board_reference.get_board_slot_data_under_mouse()
+
+			if not slot_data.is_empty():
+				var destination_player_id := int(slot_data["player"])
+				var slot_index := int(slot_data["slot"])
+
+				if destination_player_id == target.player_id:
+					game_controller.try_select_spell_destination(
+						"BOARD",
+						destination_player_id,
+						slot_index
+					)
+				else:
+					game_controller.status_label.text = "Choose the target unit's board."
+				return
+
+		# 2. Try battlefield destination
+		params.collision_mask = COLLISION_MASK_ARENA
+		if space.intersect_point(params).size() > 0:
+			var bf_data = board_reference.get_battlefield_half_under_mouse()
+			if not bf_data.is_empty() and int(bf_data["player"]) == target.player_id:
 				game_controller.try_select_spell_destination(
-					destination_player_id,
+					"BATTLEFIELD",
+					target.player_id,
 					int(bf_data["lane"])
 				)
-			else:
-				game_controller.status_label.text = "Choose the target unit's battlefield."
+			return
+
 		return
 	var card_found = _get_card_under_cursor()
 	if card_found == null:
@@ -121,9 +149,15 @@ func _try_start_drag() -> void:
 
 	elif zone == "ARENA":
 		var inst = _get_card_instance(card_found.card_uid)
+		var unit: UnitState = state.unit_registry.get_unit(card_found.card_uid)
+		var active_id: int = state.get_active_player().id
+
+		if unit == null or unit.player_id != active_id:
+			game_controller.status_label.text = "You do not control this unit."
+			return
+
 		if inst != null and not inst.is_exhausted():
 			_start_drag(card_found)
-
 # ─── Release: place card or toggle selection ──────────────────────────────────
 
 func _try_release() -> void:
@@ -142,6 +176,24 @@ func _try_release() -> void:
 	params.collide_with_areas = true
 
 	if origin_zone == "HAND":
+		params.collision_mask = COLLISION_MASK_ARENA
+		if space.intersect_point(params).size() > 0:
+			var bf_data = board_reference.get_battlefield_half_under_mouse()
+			if not bf_data.is_empty():
+				var active_id: int = game_controller.state.get_active_player().id
+				var card : CardInstance = _get_card_instance(dragged_card.card_uid)
+
+				if card != null and card.data.card_id == "OGN-161/298" and int(bf_data["player"]) != active_id:
+					var played_enemy_bf : bool = game_controller.try_play_card_to_enemy_battlefield(
+						dragged_card.card_uid,
+						int(bf_data["player"]),
+						int(bf_data["lane"])
+					)
+
+					if played_enemy_bf:
+						_clear_drag()
+						return
+		
 		params.collision_mask = COLLISION_MASK_SLOT
 		if space.intersect_point(params).size() > 0:
 			var slot_index: int = board_reference.get_slot_index_under_mouse()
@@ -187,9 +239,15 @@ func _try_release() -> void:
 		params.collision_mask = COLLISION_MASK_SLOT
 		if space.intersect_point(params).size() > 0:
 			var slot_index: int = board_reference.get_slot_index_under_mouse()
-			var bf_index:   int = _get_battlefield_index(dragged_card.card_uid)
-			if slot_index != -1 and bf_index != -1:
-				var returned: bool = game_controller.try_return_from_battlefield(dragged_card.card_uid, bf_index, slot_index)
+			var bf_location := _get_battlefield_location(dragged_card.card_uid)
+
+			if slot_index != -1 and not bf_location.is_empty():
+				var returned: bool = game_controller.try_return_from_any_battlefield(
+					dragged_card.card_uid,
+					int(bf_location["player_id"]),
+					int(bf_location["battlefield_index"]),
+					slot_index
+				)
 				if returned:
 					_clear_drag()
 					return
@@ -287,6 +345,22 @@ func _highlight_slots() -> void:
 	if zone == "HAND" or zone == "ARENA":
 		for slot in base_slots:
 			slot.highlight(true, true)
+		var card : CardInstance = _get_card_instance(dragged_card.card_uid)
+		if card != null and card.data.card_id == "OGN-161/298":
+			var active_id : int = game_controller.state.get_active_player().id
+			var enemy_id := 1 - active_id
+			var enemy_player: PlayerState = game_controller.state.players[enemy_id]
+			var enemy_bf_slots := [
+				board_reference._p1_bf_slot_left,
+				board_reference._p1_bf_slot_right
+			] if enemy_id == 1 else [
+				board_reference._p0_bf_slot_left,
+				board_reference._p0_bf_slot_right
+			]
+
+			for i in range(enemy_bf_slots.size()):
+				if enemy_bf_slots[i] != null and not enemy_player.battlefield_slots[i].is_empty():
+					enemy_bf_slots[i].highlight(true, true)
 	elif zone == "BOARD":
 		var inst = _get_card_instance(dragged_card.card_uid)
 		if inst != null and not inst.is_exhausted():
@@ -295,12 +369,22 @@ func _highlight_slots() -> void:
 					bf_slot.highlight(true, true)
 
 func _clear_slot_highlights() -> void:
-	var player     = game_controller.state.get_active_player()
-	var base_slots = board_reference._player_slot_nodes if player.id == 0 else board_reference._p1_slot_nodes
-	for slot in base_slots:
-		slot.highlight(false)
-	for bf_slot in [board_reference._p0_bf_slot_left, board_reference._p0_bf_slot_right,
-					board_reference._p1_bf_slot_left, board_reference._p1_bf_slot_right]:
+	# Clear BOTH players' base slots
+	for slot in board_reference._player_slot_nodes:
+		if slot != null:
+			slot.highlight(false)
+
+	for slot in board_reference._p1_slot_nodes:
+		if slot != null:
+			slot.highlight(false)
+
+	# Clear BOTH players' battlefield slots
+	for bf_slot in [
+		board_reference._p0_bf_slot_left,
+		board_reference._p0_bf_slot_right,
+		board_reference._p1_bf_slot_left,
+		board_reference._p1_bf_slot_right
+	]:
 		if bf_slot != null:
 			bf_slot.highlight(false)
 
@@ -347,12 +431,16 @@ func _get_card_instance(card_uid: int):
 				if c.uid == card_uid: return c
 	return null
 
-func _get_battlefield_index(card_uid: int) -> int:
-	var player = game_controller.state.get_active_player()
-	for i in range(player.battlefield_slots.size()):
-		for c in player.battlefield_slots[i]:
-			if c.uid == card_uid: return i
-	return -1
+func _get_battlefield_location(card_uid: int) -> Dictionary:
+	for player in game_controller.state.players:
+		for i in range(player.battlefield_slots.size()):
+			for c in player.battlefield_slots[i]:
+				if c.uid == card_uid:
+					return {
+						"player_id": player.id,
+						"battlefield_index": i
+					}
+	return {}
 
 func _try_assign_damage(delta: int) -> void:
 	var card_found = _get_card_under_cursor()
@@ -377,7 +465,11 @@ func _get_rune_instance(rune_uid: int) -> RuneInstance:
 
 func highlight_spell_destinations() -> void:
 	_clear_slot_highlights()
-
+	
+	if not game_controller.state.awaiting_spell_destination:
+		_clear_slot_highlights()
+		return
+	
 	var state: GameState = game_controller.state
 	if not state.awaiting_spell_destination:
 		return
@@ -404,3 +496,8 @@ func highlight_spell_destinations() -> void:
 	for bf_slot in bf_slots:
 		if bf_slot != null:
 			bf_slot.highlight(true, true)
+			
+	var board_slots: Array = board_reference._player_slot_nodes if destination_player_id == 0 else board_reference._p1_slot_nodes
+	for slot in board_slots:
+		if slot != null:
+			slot.highlight(true, true)
