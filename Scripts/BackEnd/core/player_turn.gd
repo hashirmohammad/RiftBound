@@ -130,7 +130,12 @@ func _awaken_phase(player: PlayerState):
 
 func _end_phase(player: PlayerState):
 	var all_units: Array[UnitState] = state.unit_registry.get_all()
+
 	state.timing_manager.expire_end_of_turn(all_units, state)
+
+	for unit in all_units:
+		unit.chosen_modes_this_turn.clear()
+
 	state.add_event("P%d ends turn." % player.id)
 
 func _draw_card(player: PlayerState):

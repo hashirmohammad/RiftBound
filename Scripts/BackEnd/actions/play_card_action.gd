@@ -95,7 +95,67 @@ static func finalize_play(state: GameState, p: PlayerState, card: CardInstance, 
 	if hand_index == -1:
 		state.add_event("PLAY_CARD finalize failed: card disappeared from hand.")
 		return
+	var play_to_enemy_bf: bool = bool(state.pending_play_metadata.get("play_to_enemy_battlefield", false))
+	
+	if play_to_enemy_bf:
+		var enemy_player_id: int = int(state.pending_play_metadata.get("enemy_player_id", -1))
+		var battlefield_index: int = int(state.pending_play_metadata.get("battlefield_index", -1))
 
+		if card.data.card_id != "OGN-161/298":
+			state.add_event("Only Deadbloom Predator can be played to an enemy battlefield.")
+			state.pending_play_metadata.clear()
+			return
+		
+		if enemy_player_id < 0 or enemy_player_id >= state.players.size():
+			state.add_event("Deadbloom failed: invalid enemy player.")
+			state.pending_play_metadata.clear()
+			return
+
+		if enemy_player_id == p.id:
+			state.add_event("Deadbloom failed: must choose enemy battlefield.")
+			state.pending_play_metadata.clear()
+			return
+
+		if battlefield_index < 0 or battlefield_index >= state.players[enemy_player_id].battlefield_slots.size():
+			state.add_event("Deadbloom failed: invalid battlefield.")
+			state.pending_play_metadata.clear()
+			return
+		var enemy_battlefield: Array = state.players[enemy_player_id].battlefield_slots[battlefield_index]
+
+		if enemy_battlefield.is_empty():
+			state.add_event("Deadbloom failed: enemy battlefield must be occupied.")
+			state.pending_play_metadata.clear()
+			return
+		p.hand.remove_at(hand_index)
+		card.zone = CardInstance.Zone.ARENA
+		card.exhaust()
+
+		state.players[enemy_player_id].battlefield_slots[battlefield_index].append(card)
+
+		var unit := UnitState.new(card, p.id)
+
+		for effect in KeywordParser.parse(card.data, state):
+			unit.effects.add(effect)
+
+		var extra_fn := CardAbilityRegistry.get_extra_unit_effects_fn(card.data.card_id)
+		if extra_fn.is_valid():
+			var extra_effects: Array[EffectInstance] = extra_fn.call(unit, state)
+			for e in extra_effects:
+				unit.effects.add(e)
+
+		state.unit_registry.register(unit)
+		if card.data.card_id == "OGN-157/298":
+			print("DEBUG Udyr registered effects:")
+			for e in unit.effects.get_all():
+				print("  effect uid=", e.uid, " type=", e.effect_type, " timing=", e.timing_window)
+		state.add_event("P%d played %s to enemy battlefield %d." % [
+			p.id,
+			card.data.card_name,
+			battlefield_index
+		])
+
+		state.pending_play_metadata.clear()
+		return
 	p.hand.remove_at(hand_index)
 	card.zone = CardInstance.Zone.BOARD
 

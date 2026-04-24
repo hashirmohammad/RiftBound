@@ -501,6 +501,26 @@ func wait_until_main() -> void:
 		push_warning("wait_until_main() timed out. Current phase: %s" % state.phase)
 
 func _update_status_label() -> void:
+	choice_a_button.visible = state.awaiting_choice
+	choice_b_button.visible = state.awaiting_choice
+	if state.awaiting_choice:
+		choice_a_button.visible = true
+		choice_b_button.visible = true
+
+		match state.pending_choice_card_id:
+			"OGN-155/298": # Qiyana
+				choice_a_button.text = "Draw 1"
+				choice_b_button.text = "Channel 1 exhausted"
+
+			"OGN-157/298": # Udyr
+				choice_a_button.text = "Ready Udyr"
+				choice_b_button.text = "Gain Ganking"
+
+		status_label.text = "Choose an effect."
+		cancel_payment_button.visible = false
+		pass_priority_button.visible = false
+		confirm_damage_button.visible = false
+		return
 	if state.awaiting_unit_target:
 		status_label.text = "Choose a friendly unit for Pit Rookie."
 		status_label.text += "\nScore: P0=%d | P1=%d" % [state.scores[0], state.scores[1]]
@@ -699,6 +719,10 @@ func _show_choice_for_card(card: CardInstance, slot_index: int) -> void:
 			)
 
 func _on_choice_a_pressed() -> void:
+	if state.awaiting_choice:
+		_resolve_pending_choice("A")
+		return
+
 	if pending_play_choice.is_empty():
 		return
 
@@ -708,7 +732,12 @@ func _on_choice_a_pressed() -> void:
 	_hide_play_choice_ui()
 	try_play_card_to_slot(card_uid, slot_index)
 
+
 func _on_choice_b_pressed() -> void:
+	if state.awaiting_choice:
+		_resolve_pending_choice("B")
+		return
+
 	if pending_play_choice.is_empty():
 		return
 
@@ -728,6 +757,33 @@ func _on_choice_b_pressed() -> void:
 
 	_hide_play_choice_ui()
 	request_play_card(card_uid, slot_index, metadata)
+
+func _resolve_pending_choice(choice: String) -> void:
+	match state.pending_choice_card_id:
+		"OGN-155/298": # Qiyana
+			if choice == "A":
+				EffectResolver.draw_cards(state, state.pending_choice_player_id, 1)
+				state.add_event("Qiyana choice: draw 1.")
+			else:
+				EffectResolver.channel_runes_exhausted(state, state.pending_choice_player_id, 1)
+				state.add_event("Qiyana choice: channel 1 rune exhausted.")
+
+		"OGN-157/298": # Udyr
+			_resolve_udyr_choice(choice)
+
+	_clear_pending_choice()
+	refresh_all_ui()
+
+func _clear_pending_choice() -> void:
+	state.awaiting_choice = false
+	state.pending_choice_card_id = ""
+	state.pending_choice_source_uid = -1
+	state.pending_choice_player_id = -1
+
+	choice_a_button.visible = false
+	choice_b_button.visible = false
+	choice_a_button.disabled = false
+	choice_b_button.disabled = false
 
 func try_select_unit_target(target_uid: int) -> bool:
 	if not state.awaiting_unit_target:
@@ -791,7 +847,45 @@ func resolve_pending_spell() -> void:
 		state.clear_pending_spell_target_state()
 		refresh_all_ui()
 		return
+	
+	if card.data.card_id == "OGN-045/298":
+		# DEFY → goes to reaction stack
+		var effect := EffectFactory.make_reaction_ability(
+			state,
+			card.uid,
+			func(source: UnitState, context: CombatContext, game_state: GameState) -> void:
+				var countered: bool = false
 
+				if game_state.timing_manager != null:
+					countered = game_state.timing_manager.counter_top_spell_with_limit(4)
+
+				if countered:
+					game_state.add_event("Defy countered a spell.")
+				else:
+					game_state.add_event("Defy failed: no valid spell.")
+		)
+
+		state.timing_manager.queue_reaction(
+			effect,
+			null,
+			state.active_combat_context,
+			state.active_showdown
+		)
+		
+		for i in range(p.hand.size()):
+			if p.hand[i].uid == card.uid:
+				p.hand.remove_at(i)
+				break
+
+		card.zone = CardInstance.Zone.TRASH
+		p.trash.append(card)
+
+		state.clear_pending_spell_target_state()
+		refresh_all_ui()
+		
+		state.add_event("Defy added to reaction stack.")
+		return
+	
 	var payload: Dictionary = {
 		"player_id": player_id
 	}
@@ -801,22 +895,19 @@ func resolve_pending_spell() -> void:
 			payload["friendly_uid"] = state.pending_spell_target_uids[0]
 			payload["enemy_uid"] = state.pending_spell_target_uids[1]
 		"OGN-258/298": # Dragon's Rage
-			var moved_uid: int = state.pending_spell_target_uids[0]
-			var other_uid: int = state.pending_spell_target_uids[1]
-
-			var loc := EffectResolver.find_unit_location(state, other_uid)
-			if loc.is_empty() or loc["zone"] != "BATTLEFIELD":
-				status_label.text = "Second target must already be at a battlefield."
-				return
-
-			payload["moved_uid"] = moved_uid
-			payload["other_uid"] = other_uid
+			payload["moved_uid"] = state.pending_spell_target_uids[0]
+			payload["other_uid"] = state.pending_spell_target_uids[1]
 			payload["target_uids"] = state.pending_spell_target_uids
-			payload["destination_lane"] = int(loc["index"])
 		_:
 			payload["target_uid"] = state.pending_spell_target_uids[0]
 
-	SpellRegistry.resolve(card, state, payload)
+	var resolver: Callable = SpellRegistry.get_resolver(card.data.card_id)
+
+	if state.timing_manager != null:
+		state.timing_manager.queue_spell(card, resolver, payload)
+		state.add_event("%s added to spell stack." % card.data.card_name)
+	else:
+		resolver.call(card, state, payload)
 
 	# Remove from hand and send to trash now that it resolved
 	for i in range(p.hand.size()):
@@ -835,7 +926,7 @@ func resolve_pending_spell() -> void:
 	state.clear_pending_spell_target_state()
 	refresh_all_ui()
 
-func try_select_spell_destination(destination_player_id: int, destination_lane: int) -> void:
+func try_select_spell_destination(destination_zone: String, destination_player_id: int, destination_index: int) -> void:
 	if not state.awaiting_spell_destination:
 		return
 
@@ -859,8 +950,9 @@ func try_select_spell_destination(destination_player_id: int, destination_lane: 
 		"player_id": player_id,
 		"target_uid": state.pending_spell_target_uids[0],
 		"target_uids": state.pending_spell_target_uids,
+		"destination_zone": destination_zone,
 		"destination_player_id": destination_player_id,
-		"destination_lane": destination_lane
+		"destination_index": destination_index
 	}
 
 	SpellRegistry.resolve(card, state, payload)
@@ -880,7 +972,118 @@ func try_select_spell_destination(destination_player_id: int, destination_lane: 
 	state.awaiting_spell_destination = false
 	state.pending_play_metadata.clear()
 	state.clear_pending_spell_target_state()
+
 	var input_manager = $"../InputManager"
 	if input_manager != null:
 		input_manager._clear_slot_highlights()
+
 	refresh_all_ui()
+
+func try_play_card_to_enemy_battlefield(card_uid: int, enemy_player_id: int, battlefield_index: int) -> bool:
+	var player := state.get_active_player()
+	var card := _find_hand_card(card_uid)
+
+	if card == null:
+		status_label.text = "Card not found in hand."
+		return false
+
+	if not _can_play_to_enemy_battlefield(card):
+		status_label.text = "This card cannot be played to enemy battlefield."
+		return false
+
+	if enemy_player_id == player.id:
+		status_label.text = "Must choose enemy battlefield."
+		return false
+
+	state.pending_play_metadata = {
+		"play_to_enemy_battlefield": true,
+		"enemy_player_id": enemy_player_id,
+		"battlefield_index": battlefield_index
+	}
+
+	var action := PlayCardAction.new(player.id, card_uid, 0)
+	var success := GameEngine.apply_action(state, action)
+
+	if not success:
+		status_label.text = action.get_error_message()
+		state.pending_play_metadata.clear()
+		return false
+
+	refresh_all_ui()
+	return true
+
+func _can_play_to_enemy_battlefield(card: CardInstance) -> bool:
+	return card != null and card.data.card_id == "OGN-161/298"
+
+func try_return_from_any_battlefield(card_uid: int, source_player_id: int, battlefield_index: int, slot_index: int = 0) -> bool:
+	var active_player := state.get_active_player()
+	var unit: UnitState = state.unit_registry.get_unit(card_uid)
+
+	if unit == null:
+		status_label.text = "Return failed: unit not found."
+		return false
+
+	if unit.player_id != active_player.id:
+		status_label.text = "Return failed: you do not control this unit."
+		return false
+
+	var source_player: PlayerState = state.players[source_player_id]
+	var card: CardInstance = null
+
+	for c in source_player.battlefield_slots[battlefield_index]:
+		if c.uid == card_uid:
+			card = c
+			break
+
+	if card == null:
+		status_label.text = "Return failed: card not found in battlefield."
+		return false
+
+	source_player.battlefield_slots[battlefield_index].erase(card)
+
+	card.zone = CardInstance.Zone.BOARD
+	card.exhaust()
+	active_player.board_slots[slot_index].append(card)
+
+	state.add_event("P%d returned %s from P%d battlefield %d to board slot %d." % [
+		active_player.id,
+		card.data.card_name,
+		source_player_id,
+		battlefield_index,
+		slot_index
+	])
+
+	refresh_all_ui()
+	return true
+
+func _resolve_udyr_choice(choice: String) -> void:
+	var udyr: UnitState = state.unit_registry.get_unit(state.pending_choice_source_uid)
+	if udyr == null:
+		state.add_event("Udyr choice failed: Udyr not found.")
+		return
+
+	var mode := "ready" if choice == "A" else "ganking"
+
+	if udyr.chosen_modes_this_turn.has(mode):
+		state.add_event("Udyr already chose %s this turn." % mode)
+		return
+
+	if not EffectResolver.spend_one_buff(state, udyr):
+		return
+
+	udyr.chosen_modes_this_turn.append(mode)
+
+	match mode:
+		"ready":
+			udyr.card_instance.awaken()
+			state.add_event("Udyr readied himself.")
+
+		"ganking":
+			udyr.effects.add(
+				EffectFactory.make_ganking(
+					state,
+					udyr.uid,
+					EffectInstance.ExpiryTiming.END_OF_TURN
+				)
+			)
+			state.add_event("Udyr gained Ganking this turn.")

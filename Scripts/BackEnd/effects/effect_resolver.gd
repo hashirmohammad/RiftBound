@@ -194,6 +194,58 @@ static func move_unit_to_battlefield(
 
 	return true
 
+static func move_unit_to_location(
+	state: GameState,
+	unit: UnitState,
+	destination_player_id: int,
+	destination_zone: String,
+	destination_index: int
+) -> bool:
+	if unit == null:
+		state.add_event("Move failed: unit is null.")
+		return false
+
+	var loc := find_unit_location(state, unit.uid)
+	if loc.is_empty():
+		state.add_event("Move failed: source not found.")
+		return false
+
+	var source_player: PlayerState = state.players[int(loc["player_id"])]
+	var card := unit.card_instance
+
+	if loc["zone"] == "BOARD":
+		source_player.board_slots[int(loc["index"])].erase(card)
+	elif loc["zone"] == "BATTLEFIELD":
+		source_player.battlefield_slots[int(loc["index"])].erase(card)
+
+	var dest_player: PlayerState = state.players[destination_player_id]
+
+	if destination_zone == "BOARD":
+		if destination_index < 0 or destination_index >= dest_player.board_slots.size():
+			state.add_event("Move failed: invalid board slot.")
+			return false
+		card.zone = CardInstance.Zone.BOARD
+		dest_player.board_slots[destination_index].append(card)
+
+	elif destination_zone == "BATTLEFIELD":
+		if destination_index < 0 or destination_index >= dest_player.battlefield_slots.size():
+			state.add_event("Move failed: invalid battlefield lane.")
+			return false
+		card.zone = CardInstance.Zone.ARENA
+		dest_player.battlefield_slots[destination_index].append(card)
+
+	else:
+		state.add_event("Move failed: invalid destination zone.")
+		return false
+
+	state.add_event("%s moved to P%d %s %d." % [
+		card.data.card_name,
+		destination_player_id,
+		destination_zone,
+		destination_index
+	])
+
+	return true
 
 static func get_units_at_battlefield(
 	state: GameState,
@@ -215,3 +267,35 @@ static func get_units_at_battlefield(
 			result.append(unit)
 
 	return result
+	
+static func recall_unit_exhausted(state: GameState, unit: UnitState, slot_index: int = 0) -> void:
+	var loc := find_unit_location(state, unit.uid)
+	if loc.is_empty():
+		state.add_event("Recall failed: unit location not found.")
+		return
+
+	var player: PlayerState = state.players[unit.player_id]
+	var card: CardInstance = unit.card_instance
+
+	if loc["zone"] == "BOARD":
+		player.board_slots[int(loc["index"])].erase(card)
+	elif loc["zone"] == "BATTLEFIELD":
+		player.battlefield_slots[int(loc["index"])].erase(card)
+
+	card.zone = CardInstance.Zone.BOARD
+	card.exhaust()
+
+	var safe_slot := clampi(slot_index, 0, player.board_slots.size() - 1)
+	player.board_slots[safe_slot].append(card)
+
+	state.add_event("%s was recalled exhausted." % card.data.card_name)
+
+static func spend_one_buff(state: GameState, unit: UnitState) -> bool:
+	for effect in unit.effects.get_all():
+		if effect.effect_type == EffectInstance.EffectType.BUFF and effect.value > 0:
+			unit.effects.remove(effect)
+			state.add_event("%s spent a buff." % unit.card_instance.data.card_name)
+			return true
+
+	state.add_event("%s has no buff to spend." % unit.card_instance.data.card_name)
+	return false

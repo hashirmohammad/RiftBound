@@ -27,6 +27,8 @@ static func required_target_count(card_id: String) -> int:
 			return 1
 		"OGN-258/298": # Dragon's Rage
 			return 2
+		"OGN-045/298": # Defy
+			return 0
 		_:
 			return 0
 
@@ -80,8 +82,7 @@ static func resolve(card: CardInstance, state: GameState, payload := {}) -> void
 		return
 
 	resolver.call(card, state, payload)
-
-
+	
 static func _ensure_loaded() -> void:
 	if _loaded:
 		return
@@ -94,7 +95,6 @@ static func _populate() -> void:
 	_resolvers["OGN-043/298"] = func(card: CardInstance, state: GameState, payload := {}) -> void:
 		var player_id: int = payload.get("player_id", state.get_active_player().id)
 		var target_uid: int = payload.get("target_uid", -1)
-		var destination_lane: int = payload.get("destination_lane", -1)
 
 		var target: UnitState = state.unit_registry.get_unit(target_uid)
 		if target == null:
@@ -105,24 +105,36 @@ static func _populate() -> void:
 			state.add_event("Charm failed: target must be enemy.")
 			return
 
-		if destination_lane == -1:
-			var loc := EffectResolver.find_unit_location(state, target.uid)
-			if loc.is_empty() or loc["zone"] != "BATTLEFIELD":
-				state.add_event("Charm failed: target must be at a battlefield.")
-				return
+		var destination_zone: String = payload.get("destination_zone", "BATTLEFIELD")
+		var destination_player_id: int = payload.get("destination_player_id", target.player_id)
+		var destination_index: int = payload.get("destination_index", payload.get("destination_lane", -1))
 
-			destination_lane = 1 - int(loc["index"])
-			state.add_event("Charm auto-chose destination lane %d." % destination_lane)
+		if destination_index == -1:
+			state.add_event("Charm failed: no destination chosen.")
+			return
 
-		var ok := EffectResolver.move_unit_to_battlefield(
+		var ok := EffectResolver.move_unit_to_location(
 			state,
 			target,
-			target.player_id,
-			destination_lane
+			destination_player_id,
+			destination_zone,
+			destination_index
 		)
 
 		if ok:
 			state.add_event("Charm resolved on %s." % target.card_instance.data.card_name)
+	
+	# OGN-045/298 — Defy
+	_resolvers["OGN-045/298"] = func(card: CardInstance, state: GameState, payload := {}) -> void:
+		var countered: bool = false
+
+		if state.timing_manager != null:
+			countered = state.timing_manager.counter_top_spell_with_limit(4)
+
+		if countered:
+			state.add_event("Defy countered a spell.")
+		else:
+			state.add_event("Defy found no valid spell to counter.")
 	
 	# OGN-047/298 — Find Your Center
 	_resolvers["OGN-047/298"] = func(card: CardInstance, state: GameState, payload := {}) -> void:
@@ -214,8 +226,6 @@ static func _populate() -> void:
 				moved_uid = int(target_uids[0])
 				other_uid = int(target_uids[1])
 
-		var destination_lane: int = payload.get("destination_lane", -1)
-
 		var moved_unit: UnitState = state.unit_registry.get_unit(moved_uid)
 		var other_unit: UnitState = state.unit_registry.get_unit(other_uid)
 
@@ -231,35 +241,25 @@ static func _populate() -> void:
 			state.add_event("Dragon's Rage failed: targets must belong to same opponent.")
 			return
 
-		if destination_lane == -1 and other_unit != null:
-			var other_loc := EffectResolver.find_unit_location(state, other_unit.uid)
-			if not other_loc.is_empty() and other_loc["zone"] == "BATTLEFIELD":
-				destination_lane = int(other_loc["index"])
-				state.add_event("Dragon's Rage destination set to second target's lane %d." % destination_lane)
-
-		if destination_lane == -1:
-			state.add_event("Dragon's Rage failed: no destination chosen.")
+		var other_loc := EffectResolver.find_unit_location(state, other_unit.uid)
+		if other_loc.is_empty():
+			state.add_event("Dragon's Rage failed: second target location missing.")
 			return
 
-		var ok := EffectResolver.move_unit_to_battlefield(
+		var destination_zone: String = str(other_loc["zone"])
+		var destination_player_id: int = int(other_loc["player_id"])
+		var destination_index: int = int(other_loc["index"])
+
+		var ok := EffectResolver.move_unit_to_location(
 			state,
 			moved_unit,
-			moved_unit.player_id,
-			destination_lane
+			destination_player_id,
+			destination_zone,
+			destination_index
 		)
 
 		if not ok:
 			return
 
-		var loc := EffectResolver.find_unit_location(state, other_unit.uid)
-		if loc.is_empty():
-			state.add_event("Dragon's Rage failed: second target location missing.")
-			return
-
-		if loc["zone"] != "BATTLEFIELD" or int(loc["index"]) != destination_lane:
-			state.add_event("Dragon's Rage failed: second enemy is not at destination.")
-			return
-		
-		print("destination_lane=", destination_lane)
 		EffectResolver.units_strike_each_other(state, moved_unit, other_unit)
 		state.add_event("Dragon's Rage resolved.")

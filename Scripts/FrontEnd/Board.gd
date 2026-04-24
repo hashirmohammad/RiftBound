@@ -584,3 +584,27 @@ func _draw_border_box(pos: Vector2, size: Vector2) -> void:
 	add_rect(Vector2(pos.x,                      pos.y + size.y - BORDER_W), Vector2(size.x,  BORDER_W), COLOR_BORDER)
 	add_rect(Vector2(pos.x,                      pos.y),                     Vector2(BORDER_W, size.y),  COLOR_BORDER)
 	add_rect(Vector2(pos.x + size.x - BORDER_W,  pos.y),                     Vector2(BORDER_W, size.y),  COLOR_BORDER)
+
+func get_board_slot_data_under_mouse() -> Dictionary:
+	var mouse_pos = get_global_mouse_position()
+
+	var entries = [
+		{"player": 0, "slot": 0, "node": _player_slot_nodes[0] if _player_slot_nodes.size() > 0 else null},
+		{"player": 1, "slot": 0, "node": _p1_slot_nodes[0] if _p1_slot_nodes.size() > 0 else null},
+	]
+
+	for entry in entries:
+		var slot = entry["node"]
+		if slot == null:
+			continue
+
+		var local_mouse: Vector2 = slot.to_local(mouse_pos)
+		var half: Vector2 = slot._get_collision_size() / 2.0
+
+		if abs(local_mouse.x) <= half.x and abs(local_mouse.y) <= half.y:
+			return {
+				"player": entry["player"],
+				"slot": entry["slot"]
+			}
+
+	return {}
