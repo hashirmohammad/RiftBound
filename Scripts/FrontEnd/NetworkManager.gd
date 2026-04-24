@@ -28,12 +28,14 @@ func setup_firewall_rules(force: bool = false) -> void:
 		return
 
 	var script_local := "user://riftbound_fw.ps1"
+	var flag_abs: String = ProjectSettings.globalize_path(flag).replace("/", "\\")
 	var f := FileAccess.open(script_local, FileAccess.WRITE)
 	if f == null:
 		return
 	f.store_string(
 		"New-NetFirewallRule -DisplayName 'RiftBound ENet' -Direction Inbound -Protocol UDP -LocalPort 7777 -Action Allow -ErrorAction SilentlyContinue\r\n" +
-		"New-NetFirewallRule -DisplayName 'RiftBound Discovery' -Direction Inbound -Protocol UDP -LocalPort 7778 -Action Allow -ErrorAction SilentlyContinue\r\n"
+		"New-NetFirewallRule -DisplayName 'RiftBound Discovery' -Direction Inbound -Protocol UDP -LocalPort 7778 -Action Allow -ErrorAction SilentlyContinue\r\n" +
+		"New-Item -ItemType File -Path '%s' -Force | Out-Null\r\n" % flag_abs
 	)
 	f.close()
 
@@ -42,10 +44,6 @@ func setup_firewall_rules(force: bool = false) -> void:
 		"-Command",
 		"Start-Process powershell -Verb RunAs -WindowStyle Hidden -ArgumentList '-ExecutionPolicy Bypass -File \"%s\"'" % abs_path
 	])
-
-	var done := FileAccess.open(flag, FileAccess.WRITE)
-	if done:
-		done.close()
 
 # ─── Local / Host / Join ──────────────────────────────────────────────────────
 
