@@ -7,7 +7,14 @@ static var _extra_unit_effects: Dictionary = {}  # card_id -> Callable
 static var _loaded := false
 
 # ── Public API ────────────────────────────────────────────────────────────────
+static func get_on_play_fn(card_id: String) -> Callable:
+	_ensure_loaded()
+	return _on_play.get(card_id, Callable())
 
+static func get_extra_unit_effects_fn(card_id: String) -> Callable:
+	_ensure_loaded()
+	return _extra_unit_effects.get(card_id, Callable())
+	
 static func get_trigger_fn(card_id: String, event: String) -> Callable:
 	_ensure_loaded()
 	if _registry.has(card_id) and _registry[card_id].has(event):
@@ -17,14 +24,6 @@ static func get_trigger_fn(card_id: String, event: String) -> Callable:
 static func get_vision_event(card_id: String) -> String:
 	_ensure_loaded()
 	return _vision_events.get(card_id, "")
-
-static func get_on_play_fn(card_id: String) -> Callable:
-	_ensure_loaded()
-	return _on_play.get(card_id, Callable())
-
-static func get_extra_unit_effects_fn(card_id: String) -> Callable:
-	_ensure_loaded()
-	return _extra_unit_effects.get(card_id, Callable())
 
 # ── Init ──────────────────────────────────────────────────────────────────────
 
@@ -82,6 +81,25 @@ static func _populate() -> void:
 		state.pending_target_source_uid = unit.uid
 		state.pending_target_card_id = unit.card_instance.data.card_id
 		state.add_event("Pit Rookie: choose another friendly unit to buff.")
+	
+	# OGN-157/298 — Udyr, Wildman
+	_extra_unit_effects["OGN-157/298"] = func(unit: UnitState, state: GameState) -> Array[EffectInstance]:
+		var ability_fn := func(source: UnitState, context: CombatContext, game_state: GameState) -> void:
+			if not source.effects.has_any(EffectInstance.EffectType.BUFF):
+				game_state.add_event("Udyr cannot use ability: no buff to spend.")
+				return
+
+			game_state.awaiting_choice = true
+			game_state.pending_choice_card_id = "OGN-157/298"
+			game_state.pending_choice_source_uid = source.uid
+			game_state.pending_choice_player_id = source.player_id
+			game_state.add_event("Udyr: choose a mode.")
+			print("DEBUG Udyr ability used")
+			print("DEBUG awaiting_choice=", game_state.awaiting_choice)
+			print("DEBUG pending_choice_card_id=", game_state.pending_choice_card_id)
+		return [
+			EffectFactory.make_action_ability(state, unit.uid, ability_fn)
+		]
 	
 	# OGN-178/298 — Undercover Agent
 	# [Deathknell] — Discard 2, then draw 2. (When I die, get the effect.)

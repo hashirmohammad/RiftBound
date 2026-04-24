@@ -50,6 +50,11 @@ var awaiting_spell_destination := false
 var pending_spell_card: CardInstance = null
 var pending_spell_targets: Array[int] = []
 
+var awaiting_choice: bool = false
+var pending_choice_card_id: String = ""
+var pending_choice_source_uid: int = -1
+var pending_choice_player_id: int = -1
+
 var pending_play_metadata: Dictionary = {}
 
 var _next_uid: int = 1

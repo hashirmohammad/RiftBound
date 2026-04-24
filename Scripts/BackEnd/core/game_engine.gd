@@ -73,15 +73,21 @@ static func start_game() -> GameState:
 	#rig_card_to_top_of_deck(p0, "OGN-054/298") # Sunlit Guardian
 	#rig_card_to_top_of_deck(p0, "OGN-065/298") # Wizened Elder
 	#rig_card_to_top_of_deck(p0, "OGN-075/298") # Tasty Faefolk
-	#rig_card_to_top_of_deck(p0, "OGN-136/298") # Pit Rookie
+	rig_card_to_top_of_deck(p0, "OGN-136/298") # Pit Rookie
 	#rig_card_to_top_of_deck(p0, "OGN-044/298") # Clockwork Keeper
 	#rig_card_to_top_of_deck(p0, "OGN-047/298") # Find Your Center
 	#rig_card_to_top_of_deck(p0, "OGN-058/298") # Discipline
 	#rig_card_to_top_of_deck(p0, "OGN-046/298") # En Garde
 	#rig_card_to_top_of_deck(p0, "OGN-128/298") # Challenge
-	rig_card_to_top_of_deck(p0, "OGN-043/298") # Charm
-	rig_card_to_top_of_deck(p0, "OGN-258/298") # Dragon's Rage
-	
+	#rig_card_to_top_of_deck(p0, "OGN-043/298") # Charm
+	#rig_card_to_top_of_deck(p0, "OGN-258/298") # Dragon's Rage
+	#rig_card_to_top_of_deck(p0, "OGN-161/298") # Deadbloom Predator
+	#rig_card_to_top_of_deck(p0, "OGN-151/298") # Lee Sin, Centered
+	#rig_card_to_top_of_deck(p0, "OGN-155/298") # Qiyana, Victorious
+	rig_card_to_top_of_deck(p0, "OGN-045/298") # Defy
+	rig_card_to_top_of_deck(p0, "OGN-077/298") # Zhonya's Hourglass
+	rig_card_to_top_of_deck(p0, "OGN-157/298") # Udyr, Wildman
+
 	for i in range(OPENING_HAND_SIZE):
 		state.turn_system._draw_card(p0)
 		state.turn_system._draw_card(p1)

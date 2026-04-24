@@ -121,6 +121,7 @@ func resolve_combat(context: CombatContext) -> void:
 
 	var dead: Array[UnitState] = CombatResolver.collect_dead(context)
 	_process_deaths(dead, context)
+	_check_conquer_triggers(context)
 	_cleanup(context)
 	combat_resolved.emit(context)
 
@@ -129,7 +130,10 @@ func resolve_combat(context: CombatContext) -> void:
 func _process_deaths(dead: Array[UnitState], context: CombatContext) -> void:
 	if dead.is_empty():
 		return
+	dead = _apply_zhonyas_replacements(dead, context)
 
+	if dead.is_empty():
+		return
 	# Collect all DEATHKNELL triggers BEFORE any unit moves to trash
 	# Ordering: turn player's triggers first, then opponent's, registration order within
 	var pending_triggers: Array[Dictionary] = _collect_deathknell_triggers(dead, context)
@@ -203,6 +207,7 @@ func complete_resolve(context: CombatContext) -> void:
 	CombatResolver.apply_all_damage(context)
 	var dead: Array[UnitState] = CombatResolver.collect_dead(context)
 	_process_deaths(dead, context)
+	_check_conquer_triggers(context)
 	_cleanup(context)
 	combat_resolved.emit(context)
 
@@ -228,3 +233,64 @@ func _cleanup(context: CombatContext) -> void:
 	for unit in context.all_units():
 		unit.effects.expire_by_timing(EffectInstance.ExpiryTiming.END_OF_COMBAT, context.game_state)
 		unit.combat_role = UnitState.CombatRole.NONE
+
+func _check_conquer_triggers(context: CombatContext) -> void:
+
+	var qiyana_units: Array[UnitState] = []
+
+	for unit in context.attackers:
+		if unit != null and unit.card_instance.data.card_id == "OGN-155/298":
+			qiyana_units.append(unit)
+
+	for unit in context.defenders:
+		if unit != null and unit.card_instance.data.card_id == "OGN-155/298":
+			qiyana_units.append(unit)
+
+	for unit in qiyana_units:
+
+		if not unit.is_alive():
+			continue
+
+		context.game_state.awaiting_choice = true
+		context.game_state.pending_choice_card_id = "OGN-155/298"
+		context.game_state.pending_choice_source_uid = unit.uid
+		context.game_state.pending_choice_player_id = unit.player_id
+		context.game_state.add_event("Qiyana conquered: choose draw 1 or channel 1 rune exhausted.")
+		return
+		
+func _apply_zhonyas_replacements(dead: Array[UnitState], context: CombatContext) -> Array[UnitState]:
+	var remaining_dead: Array[UnitState] = []
+
+	for unit in dead:
+		var zhonyas: CardInstance = _find_friendly_zhonyas(unit.player_id, context)
+
+		if zhonyas == null:
+			remaining_dead.append(unit)
+			continue
+
+		# Kill Zhonya's instead
+		context.game_state.remove_unit_from_board(zhonyas.uid)
+		zhonyas.zone = CardInstance.Zone.TRASH
+
+		# Save original unit
+		unit.damage_taken = 0
+		EffectResolver.recall_unit_exhausted(context.game_state, unit)
+
+		context.game_state.add_event("Zhonya's Hourglass died instead of %s." % unit.card_instance.data.card_name)
+
+	return remaining_dead
+	
+func _find_friendly_zhonyas(player_id: int, context: CombatContext) -> CardInstance:
+	var player: PlayerState = context.game_state.players[player_id]
+
+	for slot in player.board_slots:
+		for card in slot:
+			if card.data.card_id == "OGN-077/298":
+				return card
+
+	for lane in player.battlefield_slots:
+		for card in lane:
+			if card.data.card_id == "OGN-077/298":
+				return card
+
+	return null

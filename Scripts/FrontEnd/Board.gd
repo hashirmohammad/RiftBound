@@ -488,3 +488,27 @@ func build_player(y: float, flip: bool, ph: float) -> void:
 
 	if runes_ref:
 		add_image(runes_ref, tint_gold("res://Assets/runes.jpg"), 0.05, 0.2, 0.25, 1.0, 6.0, 1.0, 0.0, 0.0)
+
+func get_board_slot_data_under_mouse() -> Dictionary:
+	var mouse_pos = get_global_mouse_position()
+
+	var entries = [
+		{"player": 0, "slot": 0, "node": _player_slot_nodes[0] if _player_slot_nodes.size() > 0 else null},
+		{"player": 1, "slot": 0, "node": _p1_slot_nodes[0] if _p1_slot_nodes.size() > 0 else null},
+	]
+
+	for entry in entries:
+		var slot = entry["node"]
+		if slot == null:
+			continue
+
+		var local_mouse: Vector2 = slot.to_local(mouse_pos)
+		var half: Vector2 = slot._get_collision_size() / 2.0
+
+		if abs(local_mouse.x) <= half.x and abs(local_mouse.y) <= half.y:
+			return {
+				"player": entry["player"],
+				"slot": entry["slot"]
+			}
+
+	return {}
