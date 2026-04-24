@@ -97,6 +97,18 @@ static func start_turn(state: GameState) -> void:
 	state.turn_system.start_turn(state)
 
 static func end_turn(state: GameState) -> void:
+	var ending_player := state.active_player_index
+
+	_score_end_turn(state, ending_player)
+
+	if state.game_over:
+		return
+
+	_check_opponent_win(state, ending_player)
+
+	if state.game_over:
+		return
+
 	state.active_player_index = 1 - state.active_player_index
 	state.turn_number += 1
 	start_turn(state)

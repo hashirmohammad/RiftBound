@@ -46,7 +46,9 @@ func _ready() -> void:
 	choice_b_button.visible = false
 
 # ─── UI Refresh ───────────────────────────────────────────────────────────────
-
+func _process(_delta: float) -> void:
+	_update_status_label()
+	
 func refresh_all_ui() -> void:
 	var p0 = state.players[0]
 	var p1 = state.players[1]
