@@ -114,12 +114,24 @@ func stop_discovery() -> void:
 		_udp_listener = null
 	_broadcast_timer = 0.0
 
+func _get_broadcast_address() -> String:
+	for addr in IP.get_local_addresses():
+		if ":" in addr:
+			continue
+		var parts := addr.split(".")
+		if parts.size() != 4:
+			continue
+		if parts[0] == "127" or (parts[0] == "169" and parts[1] == "254"):
+			continue
+		return "%s.%s.%s.255" % [parts[0], parts[1], parts[2]]
+	return "255.255.255.255"
+
 func _process(delta: float) -> void:
 	if _udp_broadcaster != null:
 		_broadcast_timer += delta
 		if _broadcast_timer >= BROADCAST_INTERVAL:
 			_broadcast_timer = 0.0
-			_udp_broadcaster.set_dest_address("255.255.255.255", DISCOVERY_PORT)
+			_udp_broadcaster.set_dest_address(_get_broadcast_address(), DISCOVERY_PORT)
 			_udp_broadcaster.put_packet("riftbound".to_utf8_buffer())
 
 	if _udp_listener != null:
