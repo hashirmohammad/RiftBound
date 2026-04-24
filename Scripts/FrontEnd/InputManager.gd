@@ -45,6 +45,8 @@ func _process(_delta) -> void:
 		return
 
 func _input(event) -> void:
+	if not _is_local_turn():
+		return
 	if event is InputEventMouseButton:
 		if game_controller.state.awaiting_damage_assignment:
 			if event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
@@ -352,3 +354,16 @@ func _get_rune_instance(rune_uid: int) -> RuneInstance:
 	for rune in player.rune_pool:
 		if rune.uid == rune_uid: return rune
 	return null
+
+func _is_local_turn() -> bool:
+	if not NetworkManager.is_network_mode:
+		return true
+	var gstate: GameState = game_controller.state
+	if gstate.awaiting_damage_assignment:
+		var ctx := gstate.active_combat_context
+		if ctx == null:
+			return false
+		var loser_is_attacker := ctx.total_defender_might > ctx.total_attacker_might
+		var assigner_id: int = ctx.attackers[0].player_id if loser_is_attacker else ctx.defenders[0].player_id
+		return assigner_id == NetworkManager.local_player_id
+	return NetworkManager.local_player_id == gstate.get_active_player().id

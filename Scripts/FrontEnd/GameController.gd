@@ -31,6 +31,8 @@ var pending_play_choice: Dictionary = {}
 var _pending_assignments: Dictionary = {}
 
 func _ready() -> void:
+	if NetworkManager.is_network_mode:
+		seed(NetworkManager.game_seed)
 	state = GameEngine.start_game()
 	await wait_until_main()
 	refresh_all_ui()
@@ -277,7 +279,7 @@ func _hide_play_choice_ui() -> void:
 	choice_b_button.disabled = false
 	pending_play_choice.clear()
 
-func _show_play_choice_ui(label_text: String, a_text: String, b_text: String, context: Dictionary, disable_b := false) -> void:
+func _show_play_choice_ui(_label_text: String, a_text: String, b_text: String, context: Dictionary, disable_b := false) -> void:
 	choice_a_button.text = a_text
 	choice_b_button.text = b_text
 	choice_a_button.visible = true
@@ -297,32 +299,38 @@ func _add_panel_texture(panel: Panel, tex: Texture2D, modulate_color := Color.WH
 	if panel == null or tex == null:
 		return
 
-	var tr           = TextureRect.new()
-	tr.texture       = tex
-	tr.anchor_left   = 0.0
-	tr.anchor_top    = 0.0
-	tr.anchor_right  = 1.0
-	tr.anchor_bottom = 1.0
-	tr.offset_left   = 4.0
-	tr.offset_top    = 4.0
-	tr.offset_right  = -4.0
-	tr.offset_bottom = -4.0
-	tr.expand_mode   = TextureRect.EXPAND_IGNORE_SIZE
-	tr.stretch_mode  = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	tr.mouse_filter  = Control.MOUSE_FILTER_IGNORE
-	tr.modulate      = modulate_color
-	panel.add_child(tr)
+	var rect           = TextureRect.new()
+	rect.texture       = tex
+	rect.anchor_left   = 0.0
+	rect.anchor_top    = 0.0
+	rect.anchor_right  = 1.0
+	rect.anchor_bottom = 1.0
+	rect.offset_left   = 4.0
+	rect.offset_top    = 4.0
+	rect.offset_right  = -4.0
+	rect.offset_bottom = -4.0
+	rect.expand_mode   = TextureRect.EXPAND_IGNORE_SIZE
+	rect.stretch_mode  = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	rect.mouse_filter  = Control.MOUSE_FILTER_IGNORE
+	rect.modulate      = modulate_color
+	panel.add_child(rect)
 
 # ─── Actions ──────────────────────────────────────────────────────────────────
 
-func apply_backend_action(action: GameAction) -> void:
+func _apply_action(action: GameAction) -> bool:
 	var success := GameEngine.apply_action(state, action)
+	if success and NetworkManager.is_network_mode:
+		_receive_action.rpc(_serialize_action(action))
+	return success
+
+func apply_backend_action(action: GameAction) -> void:
+	var success := _apply_action(action)
 	if not success:
 		print("Action failed: ", action.get_error_message())
 	refresh_all_ui()
 
 func apply_backend_action_and_wait(action: GameAction) -> void:
-	var success := GameEngine.apply_action(state, action)
+	var success := _apply_action(action)
 	if not success:
 		print("Action failed: ", action.get_error_message())
 		refresh_all_ui()
@@ -345,12 +353,9 @@ func try_play_card(card_uid: int, slot_index: int) -> String:
 
 func try_play_card_to_slot(card_uid: int, slot_index: int) -> bool:
 	var player = state.get_active_player()
-	var action = PlayCardAction.new()
-	action.player_id  = player.id
-	action.card_uid   = card_uid
-	action.slot_index = slot_index
+	var action = PlayCardAction.new(player.id, card_uid, slot_index)
 
-	var success: bool = GameEngine.apply_action(state, action)
+	var success: bool = _apply_action(action)
 	if not success:
 		status_label.text = action.get_error_message()
 		return false
@@ -367,7 +372,7 @@ func try_play_card_to_slot(card_uid: int, slot_index: int) -> bool:
 func try_pick_runes_to_spend(rune_uid: int) -> bool:
 	var player  = state.get_active_player()
 	var action  = PickRuneAction.new(player.id, rune_uid)
-	var success: bool = GameEngine.apply_action(state, action)
+	var success: bool = _apply_action(action)
 
 	if not success:
 		status_label.text = action.get_error_message()
@@ -383,7 +388,7 @@ func try_pick_runes_to_spend(rune_uid: int) -> bool:
 func try_commit_to_battlefield(card_uids: Array[int], battlefield_index: int) -> bool:
 	var player  = state.get_active_player()
 	var action  = CommitToBattlefieldAction.new(player.id, card_uids, battlefield_index)
-	var success = GameEngine.apply_action(state, action)
+	var success = _apply_action(action)
 
 	if not success:
 		status_label.text = action.get_error_message()
@@ -394,6 +399,8 @@ func try_commit_to_battlefield(card_uids: Array[int], battlefield_index: int) ->
 
 func try_pass_priority() -> void:
 	if not state.awaiting_showdown:
+		return
+	if not _is_local_active():
 		return
 
 	var showdown := state.active_showdown
@@ -427,13 +434,15 @@ func adjust_damage_assignment(unit_uid: int, delta: int) -> void:
 func try_confirm_damage() -> void:
 	if not state.awaiting_damage_assignment:
 		return
+	if not _is_local_assigner():
+		return
 	var ctx := state.active_combat_context
 	var loser_is_attacker: bool = ctx.total_defender_might > ctx.total_attacker_might
 	# Loser is the one submitting: attacker if they lost, defender if they lost
 	var player_id: int = ctx.attackers[0].player_id if loser_is_attacker \
 		else ctx.defenders[0].player_id
 	var action := ConfirmDamageAction.new(player_id, _pending_assignments)
-	var success := GameEngine.apply_action(state, action)
+	var success := _apply_action(action)
 	if not success:
 		status_label.text = action.get_error_message()
 		return
@@ -443,7 +452,7 @@ func try_confirm_damage() -> void:
 func try_move_to_battlefield(card_uid: int, battlefield_index: int) -> bool:
 	var player  = state.get_active_player()
 	var action  = MoveToBattlefieldAction.new(player.id, card_uid, battlefield_index)
-	var success = GameEngine.apply_action(state, action)
+	var success = _apply_action(action)
 
 	if not success:
 		print("MoveToBattlefield failed: ", action.get_error_message())
@@ -456,7 +465,7 @@ func try_move_to_battlefield(card_uid: int, battlefield_index: int) -> bool:
 func try_return_from_battlefield(card_uid: int, battlefield_index: int, slot_index: int = 0) -> bool:
 	var player  = state.get_active_player()
 	var action  = ReturnFromBattlefieldAction.new(player.id, card_uid, battlefield_index, slot_index)
-	var success: bool = GameEngine.apply_action(state, action)
+	var success: bool = _apply_action(action)
 
 	if not success:
 		print("ReturnFromBattlefield failed: ", action.get_error_message())
@@ -467,14 +476,125 @@ func try_return_from_battlefield(card_uid: int, battlefield_index: int, slot_ind
 	return true
 
 func try_end_turn() -> void:
+	if not _is_local_active():
+		return
 	if state.awaiting_rune_payment:
 		status_label.text = "Finish or cancel rune payment first."
 		return
 
 	var player = state.get_active_player()
-	var action = EndTurnAction.new()
-	action.player_id = player.id
+	var action = EndTurnAction.new(player.id)
 	await apply_backend_action_and_wait(action)
+
+func request_play_card(card_uid: int, slot_index: int, metadata := {}) -> void:
+	state.pending_play_metadata = metadata.duplicate(true)
+
+	var action := PlayCardAction.new(state.get_active_player().id, card_uid, slot_index)
+	if action.validate(state):
+		action.execute(state)
+		if NetworkManager.is_network_mode:
+			var data := _serialize_action(action)
+			data["meta"] = metadata.duplicate(true)
+			_receive_action.rpc(data)
+	else:
+		state.add_event(action.get_error_message())
+		state.pending_play_metadata.clear()
+
+	refresh_all_ui()
+
+# ─── Network ──────────────────────────────────────────────────────────────────
+
+@rpc("any_peer")
+func _receive_action(data: Dictionary) -> void:
+	if data.get("t") == "play" and data.has("meta"):
+		state.pending_play_metadata = (data["meta"] as Dictionary).duplicate(true)
+	var action := _deserialize_action(data)
+	if action == null:
+		return
+	GameEngine.apply_action(state, action)
+	await wait_until_main()
+	refresh_all_ui()
+
+@rpc("any_peer")
+func _receive_cancel_payment() -> void:
+	_cancel_payment_locally()
+
+func _cancel_payment_locally() -> void:
+	var player := state.get_active_player()
+	for rune_uid in state.selected_rune_uids:
+		for rune in player.rune_pool:
+			if rune.uid == rune_uid:
+				rune.awaken()
+	state.awaiting_rune_payment = false
+	state.pending_card_uid      = -1
+	state.pending_slot_index    = -1
+	state.pending_card_cost     = 0
+	state.selected_rune_uids.clear()
+	refresh_all_ui()
+
+func _serialize_action(action: GameAction) -> Dictionary:
+	if action is EndTurnAction:
+		return {"t": "end", "pid": action.player_id}
+	if action is PlayCardAction:
+		return {"t": "play", "pid": action.player_id, "uid": action.card_uid, "slot": action.slot_index}
+	if action is PickRuneAction:
+		return {"t": "rune", "pid": action.player_id, "uid": action.rune_uid}
+	if action is MoveToBattlefieldAction:
+		return {"t": "move_bf", "pid": action.player_id, "uid": action.card_uid, "bf": action.battlefield_index}
+	if action is ReturnFromBattlefieldAction:
+		return {"t": "ret_bf", "pid": action.player_id, "uid": action.card_uid, "bf": action.battlefield_index, "slot": action.board_slot_index}
+	if action is CommitToBattlefieldAction:
+		var uids: Array = []
+		for u in action.card_uids: uids.append(u)
+		return {"t": "commit", "pid": action.player_id, "uids": uids, "bf": action.battlefield_index}
+	if action is PassPriorityAction:
+		return {"t": "pass", "pid": action.player_id}
+	if action is ConfirmDamageAction:
+		return {"t": "dmg", "pid": action.player_id, "asgn": action.assignments.duplicate()}
+	push_warning("GameController: unknown action type for serialization")
+	return {}
+
+func _deserialize_action(data: Dictionary) -> GameAction:
+	var pid: int = int(data.get("pid", -1))
+	match data.get("t", ""):
+		"end":
+			return EndTurnAction.new(pid)
+		"play":
+			return PlayCardAction.new(pid, int(data["uid"]), int(data["slot"]))
+		"rune":
+			return PickRuneAction.new(pid, int(data["uid"]))
+		"move_bf":
+			return MoveToBattlefieldAction.new(pid, int(data["uid"]), int(data["bf"]))
+		"ret_bf":
+			return ReturnFromBattlefieldAction.new(pid, int(data["uid"]), int(data["bf"]), int(data["slot"]))
+		"commit":
+			var uids: Array[int] = []
+			for u in data["uids"]: uids.append(int(u))
+			return CommitToBattlefieldAction.new(pid, uids, int(data["bf"]))
+		"pass":
+			return PassPriorityAction.new(pid)
+		"dmg":
+			# RPC may stringify int keys — convert them back
+			var asgn: Dictionary = {}
+			for k in data["asgn"]: asgn[int(k)] = int(data["asgn"][k])
+			return ConfirmDamageAction.new(pid, asgn)
+	push_warning("GameController: unknown action type '%s'" % data.get("t", "?"))
+	return null
+
+func _is_local_active() -> bool:
+	if not NetworkManager.is_network_mode:
+		return true
+	return NetworkManager.local_player_id == state.get_active_player().id
+
+func _is_local_assigner() -> bool:
+	if not NetworkManager.is_network_mode:
+		return true
+	var ctx := state.active_combat_context
+	if ctx == null:
+		return false
+	var loser_is_attacker := ctx.total_defender_might > ctx.total_attacker_might
+	var assigner_id: int = ctx.attackers[0].player_id if loser_is_attacker else ctx.defenders[0].player_id
+	return assigner_id == NetworkManager.local_player_id
 
 # ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -494,7 +614,7 @@ func _update_status_label() -> void:
 		pass_priority_button.visible = false
 		confirm_damage_button.visible = false
 		return
-	
+
 	if state.awaiting_rune_payment:
 		var remaining: int    = state.pending_card_cost - state.selected_rune_uids.size()
 		var card_name: String = _get_pending_card_name()
@@ -559,36 +679,61 @@ func _on_pass_priority_pressed() -> void:
 	try_pass_priority()
 
 func _on_confirm_damage_pressed() -> void:
+	if not _is_local_assigner():
+		return
 	try_confirm_damage()
 
 func _on_cancel_payment_pressed() -> void:
 	if not state.awaiting_rune_payment:
 		return
+	if not _is_local_active():
+		return
+	_cancel_payment_locally()
+	if NetworkManager.is_network_mode:
+		_receive_cancel_payment.rpc()
 
-	var player := state.get_active_player()
-	for rune_uid in state.selected_rune_uids:
-		for rune in player.rune_pool:
-			if rune.uid == rune_uid:
-				rune.awaken()
+func _on_choice_a_pressed() -> void:
+	if pending_play_choice.is_empty():
+		return
+	if not _is_local_active():
+		return
 
-	state.awaiting_rune_payment = false
-	state.pending_card_uid      = -1
-	state.pending_slot_index    = -1
-	state.pending_card_cost     = 0
-	state.selected_rune_uids.clear()
+	var card_uid: int = int(pending_play_choice.get("card_uid", -1))
+	var slot_index: int = int(pending_play_choice.get("slot_index", -1))
+
+	_hide_play_choice_ui()
+	try_play_card_to_slot(card_uid, slot_index)
+
+func _on_choice_b_pressed() -> void:
+	if pending_play_choice.is_empty():
+		return
+	if not _is_local_active():
+		return
+
+	var card_uid: int = int(pending_play_choice.get("card_uid", -1))
+	var slot_index: int = int(pending_play_choice.get("slot_index", -1))
+	var choice_type: String = str(pending_play_choice.get("type", ""))
+
+	var metadata: Dictionary = {}
+
+	match choice_type:
+		"accelerate":
+			metadata["accelerate"] = true
+			metadata["accelerate_cost"] = 1
+
+		"extra_calm":
+			metadata["extra_calm_paid"] = true
+
+	_hide_play_choice_ui()
+	request_play_card(card_uid, slot_index, metadata)
+
+func try_select_unit_target(target_uid: int) -> bool:
+	if not state.awaiting_unit_target:
+		return false
+
+	CardAbilityRegistry.resolve_pending_unit_target(target_uid, state)
 	refresh_all_ui()
-
-func request_play_card(card_uid: int, slot_index: int, metadata := {}) -> void:
-	state.pending_play_metadata = metadata.duplicate(true)
-
-	var action := PlayCardAction.new(state.get_active_player().id, card_uid, slot_index)
-	if action.validate(state):
-		action.execute(state)
-	else:
-		state.add_event(action.get_error_message())
-		state.pending_play_metadata.clear()
-
-	refresh_all_ui()
+	return true
 
 func _find_hand_card(card_uid: int) -> CardInstance:
 	var p := state.get_active_player()
@@ -641,42 +786,3 @@ func _show_choice_for_card(card: CardInstance, slot_index: int) -> void:
 				},
 				disable_b
 			)
-
-func _on_choice_a_pressed() -> void:
-	if pending_play_choice.is_empty():
-		return
-
-	var card_uid: int = int(pending_play_choice.get("card_uid", -1))
-	var slot_index: int = int(pending_play_choice.get("slot_index", -1))
-
-	_hide_play_choice_ui()
-	try_play_card_to_slot(card_uid, slot_index)
-
-func _on_choice_b_pressed() -> void:
-	if pending_play_choice.is_empty():
-		return
-
-	var card_uid: int = int(pending_play_choice.get("card_uid", -1))
-	var slot_index: int = int(pending_play_choice.get("slot_index", -1))
-	var choice_type: String = str(pending_play_choice.get("type", ""))
-
-	var metadata: Dictionary = {}
-
-	match choice_type:
-		"accelerate":
-			metadata["accelerate"] = true
-			metadata["accelerate_cost"] = 1
-
-		"extra_calm":
-			metadata["extra_calm_paid"] = true
-
-	_hide_play_choice_ui()
-	request_play_card(card_uid, slot_index, metadata)
-
-func try_select_unit_target(target_uid: int) -> bool:
-	if not state.awaiting_unit_target:
-		return false
-
-	CardAbilityRegistry.resolve_pending_unit_target(target_uid, state)
-	refresh_all_ui()
-	return true
