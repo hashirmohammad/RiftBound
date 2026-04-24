@@ -93,7 +93,9 @@ static func _populate() -> void:
 			game_state.pending_choice_card_id = "OGN-157/298"
 			game_state.pending_choice_source_uid = source.uid
 			game_state.pending_choice_player_id = source.player_id
-			game_state.add_event("Udyr: choose a mode.")
+			game_state.pending_choice_step = "udyr_category"
+			game_state.pending_choice_mode = ""
+			game_state.add_event("Udyr: choose a mode category.")
 			print("DEBUG Udyr ability used")
 			print("DEBUG awaiting_choice=", game_state.awaiting_choice)
 			print("DEBUG pending_choice_card_id=", game_state.pending_choice_card_id)
@@ -156,6 +158,30 @@ static func resolve_pending_unit_target(target_uid: int, state: GameState) -> vo
 			EffectResolver.buff_unit(state, source.uid, target, 1, EffectInstance.ExpiryTiming.PERMANENT)
 			state.add_event("Pit Rookie buffed %s." % target.card_instance.data.card_name)
 			print("DEBUG Pit Rookie target uid=", target.uid, " buff=", target.effects.max_of(EffectInstance.EffectType.BUFF))
+		"UDYR_deal2":
+			if target.player_id == source.player_id:
+				state.add_event("Udyr must target an enemy unit.")
+				return
+
+			if not _is_unit_at_battlefield(target, state):
+				state.add_event("Udyr target must be at a battlefield.")
+				return
+
+			EffectResolver.deal_damage_to_unit(state, source.uid, target, 2)
+			state.add_event("Udyr dealt 2 to %s." % target.card_instance.data.card_name)
+
+
+		"UDYR_stun":
+			if target.player_id == source.player_id:
+				state.add_event("Udyr must target an enemy unit.")
+				return
+
+			if not _is_unit_at_battlefield(target, state):
+				state.add_event("Udyr target must be at a battlefield.")
+				return
+
+			EffectResolver.stun_unit(state, source.uid, target)
+			state.add_event("Udyr stunned %s." % target.card_instance.data.card_name)
 		_:
 			state.add_event("Unknown pending target card: %s" % state.pending_target_card_id)
 
@@ -165,3 +191,7 @@ static func _clear_pending_target_state(state: GameState) -> void:
 	state.awaiting_unit_target = false
 	state.pending_target_source_uid = -1
 	state.pending_target_card_id = ""
+
+static func _is_unit_at_battlefield(unit: UnitState, state: GameState) -> bool:
+	var loc := EffectResolver.find_unit_location(state, unit.uid)
+	return not loc.is_empty() and str(loc["zone"]) == "BATTLEFIELD"

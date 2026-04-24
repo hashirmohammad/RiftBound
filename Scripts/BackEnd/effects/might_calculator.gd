@@ -18,6 +18,9 @@ static func compute_attack_might(unit: UnitState, game_state: GameState) -> int:
 
 
 static func compute_defense_might(unit: UnitState, game_state: GameState) -> int:
+	if unit.is_stunned():
+		return 0
+	
 	var might: int = unit.card_instance.data.might
 	might += unit.effects.sum_of(EffectInstance.EffectType.BUFF)
 	might += unit.effects.sum_of(EffectInstance.EffectType.SHIELD)

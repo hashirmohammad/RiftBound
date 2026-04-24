@@ -23,7 +23,11 @@ func validate(state: GameState) -> bool:
 	if source.player_id != player_id:
 		_error_message = "Invalid USE_ACTION: unit does not belong to this player."
 		return false
-
+	
+	if source.is_stunned():
+		_error_message = "Unit is stunned and cannot act."
+		return false
+	
 	var effect: EffectInstance = _find_effect(source)
 	if effect == null:
 		_error_message = "Invalid USE_ACTION: effect uid not found on unit."

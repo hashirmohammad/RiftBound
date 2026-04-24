@@ -11,6 +11,7 @@ const ConfirmDamageAction         = preload("res://Scripts/BackEnd/actions/confi
 const SpellRegistry               = preload("res://Scripts/BackEnd/spell/spell_registry.gd")
 const CARD_SCENE                  = preload("res://Scenes/Card.tscn")
 
+var legend_mode := false
 var state: GameState
 
 # UIDs of board cards currently selected for group commit; written by InputManager
@@ -130,8 +131,14 @@ func _place_card(slot: CardSlot, card_instance: CardInstance, scale: Vector2) ->
 		var current_unit: UnitState = state.unit_registry.get_by_uid(card_instance.uid)
 
 		if source_unit != null and current_unit != null:
-			if current_unit.player_id == source_unit.player_id and current_unit.uid != source_unit.uid:
-				card.modulate = Color(0.6, 1.0, 0.6, 1.0)
+			match state.pending_target_card_id:
+				"OGN-136/298": # Pit Rookie
+					if current_unit.player_id == source_unit.player_id and current_unit.uid != source_unit.uid:
+						card.modulate = Color(0.6, 1.0, 0.6, 1.0)
+
+				"UDYR_deal2", "UDYR_stun":
+					if current_unit.player_id != source_unit.player_id and _is_card_on_battlefield(card_instance.uid):
+						card.modulate = Color(0.6, 1.0, 0.6, 1.0)
 	
 	if state.awaiting_spell_targets:
 		var current_unit: UnitState = state.unit_registry.get_by_uid(card_instance.uid)
@@ -155,8 +162,11 @@ func render_static_state(player: PlayerState, opponent: PlayerState) -> void:
 			_clear_panel_images(panel)
 			_add_panel_texture(panel, deck_tex)
 
-	_render_legend_panel(board.player_champion_legend, player.legend)
-	_render_legend_panel(board.opponent_champion_legend, opponent.legend)
+	_render_static_card_panel(board.player_champion_legend, player.legend)
+	_render_static_card_panel(board.opponent_champion_legend, opponent.legend)
+
+	_render_static_card_panel(board.player_champion_panel, player.champion)
+	_render_static_card_panel(board.opponent_champion_panel, opponent.champion)
 
 	_render_battlefields(board.player_battlefield_panel, player.battlefields, player.picked_battlefield)
 	_render_battlefields(board.opponent_battlefield_panel, opponent.battlefields, opponent.picked_battlefield)
@@ -170,22 +180,22 @@ func render_rune_panels(p0: PlayerState, p1: PlayerState) -> void:
 	_render_runes(board.player_runes_panel, p0.rune_pool, p0.id)
 	_render_runes(board.opponent_runes_panel, p1.rune_pool, p1.id)
 
-func _render_legend_panel(panel: Panel, legend_instance: CardInstance) -> void:
-	if panel == null or legend_instance == null or legend_instance.data == null:
+func _render_static_card_panel(panel: Panel, card_instance: CardInstance) -> void:
+	if panel == null:
 		return
 
 	_clear_panel_images(panel)
-	if legend_instance.data.image_url == "":
-		if legend_instance.data.texture != null:
-			_add_panel_texture(panel, legend_instance.data.texture)
+
+	if card_instance == null or card_instance.data == null:
 		return
 
 	var card: RiftCard = CARD_SCENE.instantiate()
 	panel.add_child(card)
 	card.position = panel.size / 2.0
 	card.scale    = Vector2(0.35, 0.35)
-	card.setup_from_card_instance(legend_instance)
+	card.setup_from_card_instance(card_instance)
 	card.set_card_state(RiftCard.CardState.ON_BOARD)
+	card.rotation_degrees = 90.0 if card_instance.is_exhausted() else 0.0
 
 func _render_battlefields(panel: Panel, battlefield_instances: Array, pick: BattlefieldInstance) -> void:
 	if panel == null:
@@ -503,13 +513,21 @@ func _update_status_label() -> void:
 		choice_b_button.visible = true
 
 		match state.pending_choice_card_id:
-			"OGN-155/298": # Qiyana
+			"OGN-155/298":
 				choice_a_button.text = "Draw 1"
 				choice_b_button.text = "Channel 1 exhausted"
 
-			"OGN-157/298": # Udyr
-				choice_a_button.text = "Ready Udyr"
-				choice_b_button.text = "Gain Ganking"
+			"OGN-157/298":
+				match state.pending_choice_step:
+					"udyr_category":
+						choice_a_button.text = "Combat Effect"
+						choice_b_button.text = "Self Effect"
+					"udyr_combat":
+						choice_a_button.text = "Deal 2"
+						choice_b_button.text = "Stun"
+					"udyr_self":
+						choice_a_button.text = "Ready Udyr"
+						choice_b_button.text = "Gain Ganking"
 
 		status_label.text = "Choose an effect."
 		cancel_payment_button.visible = false
@@ -741,19 +759,16 @@ func _on_choice_b_pressed() -> void:
 
 func _resolve_pending_choice(choice: String) -> void:
 	match state.pending_choice_card_id:
-		"OGN-155/298": # Qiyana
+		"OGN-155/298":
 			if choice == "A":
 				EffectResolver.draw_cards(state, state.pending_choice_player_id, 1)
-				state.add_event("Qiyana choice: draw 1.")
 			else:
 				EffectResolver.channel_runes_exhausted(state, state.pending_choice_player_id, 1)
-				state.add_event("Qiyana choice: channel 1 rune exhausted.")
+			_clear_pending_choice()
+			refresh_all_ui()
 
-		"OGN-157/298": # Udyr
+		"OGN-157/298":
 			_resolve_udyr_choice(choice)
-
-	_clear_pending_choice()
-	refresh_all_ui()
 
 func _clear_pending_choice() -> void:
 	state.awaiting_choice = false
@@ -1041,15 +1056,43 @@ func _resolve_udyr_choice(choice: String) -> void:
 	var udyr: UnitState = state.unit_registry.get_unit(state.pending_choice_source_uid)
 	if udyr == null:
 		state.add_event("Udyr choice failed: Udyr not found.")
+		_clear_pending_choice()
+		refresh_all_ui()
 		return
 
-	var mode := "ready" if choice == "A" else "ganking"
+	match state.pending_choice_step:
+		"udyr_category":
+			if choice == "A":
+				state.pending_choice_step = "udyr_combat"
+				state.add_event("Udyr: choose Deal 2 or Stun.")
+			else:
+				state.pending_choice_step = "udyr_self"
+				state.add_event("Udyr: choose Ready or Ganking.")
 
+			state.awaiting_choice = true
+			refresh_all_ui()
+			return
+
+		"udyr_combat":
+			var mode := "deal2" if choice == "A" else "stun"
+			_begin_udyr_target_mode(udyr, mode)
+			return
+
+		"udyr_self":
+			var mode := "ready" if choice == "A" else "ganking"
+			_resolve_udyr_self_mode(udyr, mode)
+			return
+
+func _resolve_udyr_self_mode(udyr: UnitState, mode: String) -> void:
 	if udyr.chosen_modes_this_turn.has(mode):
 		state.add_event("Udyr already chose %s this turn." % mode)
+		_clear_pending_choice()
+		refresh_all_ui()
 		return
 
 	if not EffectResolver.spend_one_buff(state, udyr):
+		_clear_pending_choice()
+		refresh_all_ui()
 		return
 
 	udyr.chosen_modes_this_turn.append(mode)
@@ -1068,3 +1111,59 @@ func _resolve_udyr_choice(choice: String) -> void:
 				)
 			)
 			state.add_event("Udyr gained Ganking this turn.")
+
+	_clear_pending_choice()
+	refresh_all_ui()
+
+func _begin_udyr_target_mode(udyr: UnitState, mode: String) -> void:
+	if udyr.chosen_modes_this_turn.has(mode):
+		state.add_event("Udyr already chose %s this turn." % mode)
+		_clear_pending_choice()
+		refresh_all_ui()
+		return
+
+	if not EffectResolver.spend_one_buff(state, udyr):
+		_clear_pending_choice()
+		refresh_all_ui()
+		return
+
+	udyr.chosen_modes_this_turn.append(mode)
+
+	state.awaiting_choice = false
+	state.awaiting_unit_target = true
+	state.pending_target_source_uid = udyr.uid
+	state.pending_target_card_id = "UDYR_" + mode
+
+	refresh_all_ui()
+
+func _is_card_on_battlefield(card_uid: int) -> bool:
+	for player in state.players:
+		for lane in player.battlefield_slots:
+			for card in lane:
+				if card.uid == card_uid:
+					return true
+	return false
+	
+func try_use_legend_ability(target_uid: int) -> bool:
+	var player := state.get_active_player()
+	var action := UseLegendAbilityAction.new(player.id, target_uid)
+
+	var success := GameEngine.apply_action(state, action)
+	if not success:
+		status_label.text = action.get_error_message()
+		return false
+
+	refresh_all_ui()
+	return true
+
+func start_legend_mode():
+	var player := state.get_active_player()
+
+	if player.legend == null:
+		return
+
+	legend_mode = true
+	status_label.text = "Select a friendly unit for legend ability."
+
+func cancel_legend_mode():
+	legend_mode = false

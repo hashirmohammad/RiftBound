@@ -37,8 +37,16 @@ static func start_game() -> GameState:
 	var p1_legend_data := CardDatabase._load_legend(p1_deck_name)
 	if p0_legend_data:
 		p0.legend = CardInstance.new(state.next_uid(), p0_legend_data)
+		p0.legend.awaken()
 	if p1_legend_data:
 		p1.legend = CardInstance.new(state.next_uid(), p1_legend_data)
+		p1.legend.awaken()
+	# ── Load champion units: pick 1 as champion, rest into main deck ──────────
+	var p0_champions := CardDatabase._load_champion_units_from_deck(p0_deck_name)
+	var p1_champions := CardDatabase._load_champion_units_from_deck(p1_deck_name)
+
+	_assign_random_champion_and_rest_to_deck(state, p0, p0_champions)
+	_assign_random_champion_and_rest_to_deck(state, p1, p1_champions)
 
 	# ── Load battlefields and pick 1 of 3 ─────────────────────────────────────
 	for b in CardDatabase._load_battlefields_from_deck(p0_deck_name):
@@ -73,7 +81,10 @@ static func start_game() -> GameState:
 	#rig_card_to_top_of_deck(p0, "OGN-054/298") # Sunlit Guardian
 	#rig_card_to_top_of_deck(p0, "OGN-065/298") # Wizened Elder
 	#rig_card_to_top_of_deck(p0, "OGN-075/298") # Tasty Faefolk
-	rig_card_to_top_of_deck(p0, "OGN-136/298") # Pit Rookie
+	#rig_card_to_top_of_deck(p0, "OGN-136/298") # Pit Rookie
+	#rig_card_to_top_of_deck(p0, "OGN-136/298") # Pit Rookie
+	#rig_card_to_top_of_deck(p0, "OGN-136/298") # Pit Rookie
+	#rig_card_to_top_of_deck(p0, "OGN-136/298") # Pit Rookie
 	#rig_card_to_top_of_deck(p0, "OGN-044/298") # Clockwork Keeper
 	#rig_card_to_top_of_deck(p0, "OGN-047/298") # Find Your Center
 	#rig_card_to_top_of_deck(p0, "OGN-058/298") # Discipline
@@ -84,9 +95,9 @@ static func start_game() -> GameState:
 	#rig_card_to_top_of_deck(p0, "OGN-161/298") # Deadbloom Predator
 	#rig_card_to_top_of_deck(p0, "OGN-151/298") # Lee Sin, Centered
 	#rig_card_to_top_of_deck(p0, "OGN-155/298") # Qiyana, Victorious
-	rig_card_to_top_of_deck(p0, "OGN-045/298") # Defy
-	rig_card_to_top_of_deck(p0, "OGN-077/298") # Zhonya's Hourglass
-	rig_card_to_top_of_deck(p0, "OGN-157/298") # Udyr, Wildman
+	#rig_card_to_top_of_deck(p0, "OGN-045/298") # Defy
+	#rig_card_to_top_of_deck(p0, "OGN-077/298") # Zhonya's Hourglass
+	#rig_card_to_top_of_deck(p0, "OGN-157/298") # Udyr, Wildman
 
 	for i in range(OPENING_HAND_SIZE):
 		state.turn_system._draw_card(p0)
@@ -111,7 +122,33 @@ static func end_turn(state: GameState) -> void:
 	state.active_player_index = 1 - state.active_player_index
 	state.turn_number += 1
 	start_turn(state)
-	
+
+static func _assign_random_champion_and_rest_to_deck(
+		state: GameState,
+		player: PlayerState,
+		champion_datas: Array[CardData]) -> void:
+
+	if champion_datas.is_empty():
+		state.add_event("P%d has no champion unit cards." % player.id)
+		return
+
+	var picked_index := randi() % champion_datas.size()
+
+	for i in range(champion_datas.size()):
+		var ci := CardInstance.new(state.next_uid(), champion_datas[i])
+
+		if i == picked_index:
+			player.champion = ci
+			ci.zone = CardInstance.Zone.BOARD
+			ci.awaken()
+			state.add_event("P%d champion selected: %s." % [
+				player.id,
+				ci.data.card_name
+			])
+		else:
+			ci.zone = CardInstance.Zone.DECK
+			player.deck.append(ci)
+
 static func rig_card_to_top_of_deck(player: PlayerState, card_id: String) -> void:
 	var found_index := -1
 

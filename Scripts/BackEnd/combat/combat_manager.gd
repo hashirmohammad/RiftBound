@@ -78,7 +78,30 @@ func declare_attack(
 		"defender": intended.uid,
 		"tank_priority_count": context.tank_priority_order.size()
 	})
+	
+	print("DEBUG declare_attack attackers count=", context.attackers.size(), " defenders count=", context.defenders.size())
 
+	for unit in context.attackers:
+		print("DEBUG attacker in context = ", unit.card_instance.data.card_name)
+
+	for unit in context.defenders:
+		print("DEBUG defender in context = ", unit.card_instance.data.card_name)
+
+	var all_units: Array[UnitState] = []
+	all_units.append_array(context.attackers)
+	all_units.append_array(context.defenders)
+
+	for unit in all_units:
+		if unit.card_instance.data.card_id == "OGN-157/298":
+			print("DEBUG found Udyr during declare_attack")
+
+			for e in unit.effects.get_all():
+				print("DEBUG Udyr effect type=", e.effect_type, " timing=", e.timing_window)
+
+				if e.timing_window == "action":
+					print("DEBUG forcing Udyr ACTION ability from declare_attack")
+					e.ability_fn.call(unit, context, game_state)
+	
 	combat_declared.emit(context)
 	return context
 
@@ -88,6 +111,20 @@ func begin_showdown(context: CombatContext) -> ShowdownContext:
 	var showdown := timing_manager.open_showdown(context)
 	context.game_state.event_log.append({"event": "showdown_opened"})
 	showdown_opened.emit(showdown)
+	var all_units: Array[UnitState] = []
+	all_units.append_array(context.attackers)
+	all_units.append_array(context.defenders)
+
+	for unit in all_units:
+		if unit.card_instance.data.card_id == "OGN-157/298":
+			print("DEBUG found attacking Udyr in showdown")
+
+			for e in unit.effects.get_all():
+				print("DEBUG Udyr effect type=", e.effect_type, " timing=", e.timing_window)
+
+				if e.timing_window == "action":
+					print("DEBUG forcing Udyr ACTION ability")
+					timing_manager.queue_action(e, unit, context)
 	return showdown
 
 # ── Step 4: Close Showdown ────────────────────────────────────────────────────
