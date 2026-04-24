@@ -18,6 +18,35 @@ var _udp_broadcaster: PacketPeerUDP = null
 var _udp_listener:    PacketPeerUDP = null
 var _broadcast_timer: float         = 0.0
 
+# ─── Firewall setup (Windows only, runs once) ────────────────────────────────
+
+func setup_firewall_rules() -> void:
+	if OS.get_name() != "Windows":
+		return
+	var flag := "user://fw_done"
+	if FileAccess.file_exists(flag):
+		return
+
+	var script_local := "user://riftbound_fw.ps1"
+	var f := FileAccess.open(script_local, FileAccess.WRITE)
+	if f == null:
+		return
+	f.store_string(
+		"New-NetFirewallRule -DisplayName 'RiftBound ENet' -Direction Inbound -Protocol UDP -LocalPort 7777 -Action Allow -ErrorAction SilentlyContinue\r\n" +
+		"New-NetFirewallRule -DisplayName 'RiftBound Discovery' -Direction Inbound -Protocol UDP -LocalPort 7778 -Action Allow -ErrorAction SilentlyContinue\r\n"
+	)
+	f.close()
+
+	var abs_path: String = ProjectSettings.globalize_path(script_local).replace("/", "\\")
+	OS.create_process("powershell", [
+		"-Command",
+		"Start-Process powershell -Verb RunAs -WindowStyle Hidden -ArgumentList '-ExecutionPolicy Bypass -File \"%s\"'" % abs_path
+	])
+
+	var done := FileAccess.open(flag, FileAccess.WRITE)
+	if done:
+		done.close()
+
 # ─── Local / Host / Join ──────────────────────────────────────────────────────
 
 func start_local() -> void:

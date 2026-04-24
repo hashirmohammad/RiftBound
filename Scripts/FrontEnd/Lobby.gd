@@ -9,8 +9,10 @@ extends Control
 @onready var back_button    = $VBox/BackButton
 
 var _discovered: Array[String] = []
+var _connect_timer: SceneTreeTimer = null
 
 func _ready() -> void:
+	NetworkManager.setup_firewall_rules()
 	host_button.pressed.connect(_on_host_pressed)
 	join_button.pressed.connect(_on_join_pressed)
 	back_button.pressed.connect(_on_back_pressed)
@@ -35,9 +37,11 @@ func _on_host_discovered(ip: String) -> void:
 func _connect_to(ip: String) -> void:
 	NetworkManager.stop_discovery()
 	NetworkManager.join_host(ip)
-	status_label.text   = "Connecting to %s..." % ip
+	status_label.text    = "Connecting to %s..." % ip
 	host_button.disabled = true
 	join_button.disabled = true
+	_connect_timer = get_tree().create_timer(8.0)
+	_connect_timer.timeout.connect(_on_connect_timeout)
 
 func _on_host_pressed() -> void:
 	NetworkManager.stop_discovery()
@@ -53,10 +57,20 @@ func _on_join_pressed() -> void:
 		ip = "127.0.0.1"
 	_connect_to(ip)
 
+func _on_connect_timeout() -> void:
+	_connect_timer = null
+	status_label.text    = "Connection timed out. Check firewall / IP."
+	host_button.disabled = false
+	join_button.disabled = false
+	NetworkManager._close_peer()
+	NetworkManager.start_listening()
+
 func _on_game_ready(_local_id: int) -> void:
+	_connect_timer = null
 	get_tree().change_scene_to_file("res://Scenes/main.tscn")
 
 func _on_connection_failed() -> void:
+	_connect_timer = null
 	status_label.text    = "Connection failed. Try again."
 	host_button.disabled = false
 	join_button.disabled = false
