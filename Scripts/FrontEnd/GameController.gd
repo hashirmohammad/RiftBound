@@ -490,6 +490,7 @@ func wait_until_main() -> void:
 func _update_status_label() -> void:
 	if state.awaiting_unit_target:
 		status_label.text = "Choose a friendly unit for Pit Rookie."
+		status_label.text += "\nScore: P0=%d | P1=%d" % [state.scores[0], state.scores[1]]
 		cancel_payment_button.visible = false
 		pass_priority_button.visible = false
 		confirm_damage_button.visible = false
@@ -498,9 +499,11 @@ func _update_status_label() -> void:
 	if state.awaiting_rune_payment:
 		var remaining: int    = state.pending_card_cost - state.selected_rune_uids.size()
 		var card_name: String = _get_pending_card_name()
-		status_label.text             = "Select %d more rune(s) to play %s" % [remaining, card_name]
+		status_label.text = "Select %d more rune(s) to play %s" % [remaining, card_name]
+		status_label.text += "\nScore: P0=%d | P1=%d" % [state.scores[0], state.scores[1]]
 		cancel_payment_button.visible = true
 		pass_priority_button.visible = false
+		confirm_damage_button.visible = false
 		return
 
 	if state.awaiting_showdown:
@@ -508,45 +511,56 @@ func _update_status_label() -> void:
 		var atk := ctx.attackers.size()
 		var def := ctx.defenders.size()
 		var showdown := state.active_showdown
-		var whose: String = "P%d" % (state.active_player_index if not showdown.active_player_passed \
-			else 1 - state.active_player_index)
-		status_label.text             = "Showdown! %d vs %d — %s: Pass or use ability." % [atk, def, whose]
-		pass_priority_button.visible  = true
+		var whose: String = "P%d" % (
+			state.active_player_index if not showdown.active_player_passed
+			else 1 - state.active_player_index
+		)
+		status_label.text = "Showdown! %d vs %d — %s: Pass or use ability." % [atk, def, whose]
+		status_label.text += "\nScore: P0=%d | P1=%d" % [state.scores[0], state.scores[1]]
+		pass_priority_button.visible = true
 		cancel_payment_button.visible = false
 		confirm_damage_button.visible = false
 		return
 
 	if state.awaiting_damage_assignment:
 		var ctx: CombatContext = state.active_combat_context
-		# loser_is_attacker: attacker had less might, distributes their own damage to defenders
-		# else: defender had less might, distributes their own damage to attackers
 		var loser_is_attacker: bool = ctx.total_defender_might > ctx.total_attacker_might
 		var pool: int = ctx.total_attacker_might if loser_is_attacker else ctx.total_defender_might
-		# target_units = the winner's units receiving the loser's damage
 		var target_units: Array = ctx.defenders if loser_is_attacker else ctx.attackers
-		var loser_player_id: int = ctx.attackers[0].player_id if loser_is_attacker \
+		var loser_player_id: int = (
+			ctx.attackers[0].player_id if loser_is_attacker
 			else ctx.defenders[0].player_id
+		)
+
 		for unit in target_units:
 			if not _pending_assignments.has(unit.uid):
 				_pending_assignments[unit.uid] = 0
+
 		var total_assigned: int = 0
 		for uid in _pending_assignments:
 			total_assigned += _pending_assignments[uid]
+
 		var remaining: int = pool - total_assigned
 		var parts: Array = []
+
 		for unit in target_units:
-			parts.append("%s: %d" % [unit.card_instance.data.card_name, _pending_assignments.get(unit.uid, 0)])
-		status_label.text             = "P%d assign %d dmg (left: %d) — L-click +1, R-click -1\n%s" % [
+			parts.append("%s: %d" % [
+				unit.card_instance.data.card_name,
+				_pending_assignments.get(unit.uid, 0)
+			])
+
+		status_label.text = "P%d assign %d dmg (left: %d) — L-click +1, R-click -1\n%s" % [
 			loser_player_id, pool, remaining, "  |  ".join(parts)
 		]
-		pass_priority_button.visible  = false
+		status_label.text += "\nScore: P0=%d | P1=%d" % [state.scores[0], state.scores[1]]
+		pass_priority_button.visible = false
 		cancel_payment_button.visible = false
 		confirm_damage_button.visible = true
 		return
 
-	status_label.text             = ""
+	status_label.text = "Score: P0=%d | P1=%d" % [state.scores[0], state.scores[1]]
 	cancel_payment_button.visible = false
-	pass_priority_button.visible  = false
+	pass_priority_button.visible = false
 	confirm_damage_button.visible = false
 
 func _get_pending_card_name() -> String:

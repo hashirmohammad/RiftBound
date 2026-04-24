@@ -116,3 +116,82 @@ static func rig_card_to_top_of_deck(player: PlayerState, card_id: String) -> voi
 	var card: CardInstance = player.deck[found_index]
 	player.deck.remove_at(found_index)
 	player.deck.append(card) # top of deck if draw uses pop_back()
+
+static func _get_arena_controller(state: GameState, arena_index: int) -> int:
+	var p0 = state.players[0].battlefield_slots[arena_index].size() > 0
+	var p1 = state.players[1].battlefield_slots[arena_index].size() > 0
+
+	if p0 and not p1:
+		return 0
+	if p1 and not p0:
+		return 1
+	return -1
+
+static func _update_arena_control(state: GameState) -> void:
+	state.arena_control[0] = _get_arena_controller(state, 0)
+	state.arena_control[1] = _get_arena_controller(state, 1)
+
+static func _count_controlled(state: GameState, player_id: int) -> int:
+	var count := 0
+	for c in state.arena_control:
+		if c == player_id:
+			count += 1
+	return count
+	
+static func _score_end_turn(state: GameState, player_id: int) -> void:
+	_update_arena_control(state)
+
+	var controlled := _count_controlled(state, player_id)
+
+	if controlled == 0:
+		state.add_event("P%d controls no arenas and gains no points." % player_id)
+		return
+
+	# BOTH arenas → +2 and can win, even from 6 or 7
+	if controlled == 2:
+		state.scores[player_id] += 2
+		state.add_event("P%d controls both arenas (+2). Total: %d" % [
+			player_id, state.scores[player_id]
+		])
+		_check_win(state, player_id)
+		return
+
+	# ONE arena
+	var current = state.scores[player_id]
+
+	if current < 7:
+		state.scores[player_id] += 1
+		state.add_event("P%d controls 1 arena (+1). Total: %d" % [
+			player_id, state.scores[player_id]
+		])
+		_check_win(state, player_id)
+		return
+
+	# At 7 → cannot win from 1 arena on your own end turn
+	state.add_event("P%d controls 1 arena, but cannot claim the final point on their own turn." % player_id)
+
+static func _check_opponent_win(state: GameState, ending_player_id: int) -> void:
+	_update_arena_control(state)
+
+	var opponent := 1 - ending_player_id
+
+	# Only check opponent — NOT the player who just ended turn
+	if state.scores[opponent] != 7:
+		return
+
+	var controlled := _count_controlled(state, opponent)
+
+	# Opponent must control at least one arena
+	if controlled >= 1:
+		state.scores[opponent] += 1
+		state.add_event("P%d gains the final point at the end of P%d's turn!" % [
+			opponent, ending_player_id
+		])
+		_check_win(state, opponent)
+
+static func _check_win(state: GameState, player_id: int) -> void:
+	if state.scores[player_id] >= 8:
+		state.scores[player_id] = 8
+		state.winner_id = player_id
+		state.game_over = true
+		state.add_event("P%d WINS THE GAME!" % player_id)
