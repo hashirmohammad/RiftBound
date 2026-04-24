@@ -77,6 +77,12 @@ text = ""
 horizontal_alignment = 1
 theme_override_font_sizes/font_size = 14
 
+[node name="FirewallButton" type="Button" parent="VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(440, 40)
+text = "Fix Firewall (run once per PC)"
+theme_override_font_sizes/font_size = 14
+
 [node name="BackButton" type="Button" parent="VBox"]
 layout_mode = 2
 custom_minimum_size = Vector2(440, 54)

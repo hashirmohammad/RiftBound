@@ -1,12 +1,13 @@
 extends Control
 
-@onready var host_button    = $VBox/HostButton
-@onready var host_list      = $VBox/HostList
-@onready var no_hosts_label = $VBox/HostList/NoHostsLabel
-@onready var ip_input       = $VBox/JoinRow/IPInput
-@onready var join_button    = $VBox/JoinRow/JoinButton
-@onready var status_label   = $VBox/StatusLabel
-@onready var back_button    = $VBox/BackButton
+@onready var host_button     = $VBox/HostButton
+@onready var host_list       = $VBox/HostList
+@onready var no_hosts_label  = $VBox/HostList/NoHostsLabel
+@onready var ip_input        = $VBox/JoinRow/IPInput
+@onready var join_button     = $VBox/JoinRow/JoinButton
+@onready var status_label    = $VBox/StatusLabel
+@onready var firewall_button = $VBox/FirewallButton
+@onready var back_button     = $VBox/BackButton
 
 var _discovered: Array[String] = []
 var _connect_timer: SceneTreeTimer = null
@@ -15,6 +16,7 @@ func _ready() -> void:
 	NetworkManager.setup_firewall_rules()
 	host_button.pressed.connect(_on_host_pressed)
 	join_button.pressed.connect(_on_join_pressed)
+	firewall_button.pressed.connect(_on_firewall_pressed)
 	back_button.pressed.connect(_on_back_pressed)
 	NetworkManager.game_ready.connect(_on_game_ready)
 	NetworkManager.connection_failed.connect(_on_connection_failed)
@@ -75,6 +77,10 @@ func _on_connection_failed() -> void:
 	host_button.disabled = false
 	join_button.disabled = false
 	NetworkManager.start_listening()
+
+func _on_firewall_pressed() -> void:
+	NetworkManager.setup_firewall_rules(true)
+	status_label.text = "Firewall prompt sent — click Yes if asked."
 
 func _on_back_pressed() -> void:
 	NetworkManager._close_peer()

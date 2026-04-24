@@ -20,11 +20,11 @@ var _broadcast_timer: float         = 0.0
 
 # ─── Firewall setup (Windows only, runs once) ────────────────────────────────
 
-func setup_firewall_rules() -> void:
+func setup_firewall_rules(force: bool = false) -> void:
 	if OS.get_name() != "Windows":
 		return
 	var flag := "user://fw_done"
-	if FileAccess.file_exists(flag):
+	if not force and FileAccess.file_exists(flag):
 		return
 
 	var script_local := "user://riftbound_fw.ps1"
