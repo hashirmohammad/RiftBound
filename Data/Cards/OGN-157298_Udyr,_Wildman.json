@@ -7,7 +7,7 @@
   "domain": "Body",
   "type": "Champion Unit",
   "keywords": [
-    "Udyr",
+	"Udyr",
     "Freljord"
   ],
   "rules_text": "Spend my buff: Choose one you've not chosen this turn —* Deal 2 to a unit at a battlefield.* Stun a unit at a battlefield.* Ready me.* Give me [Ganking] this turn.",

@@ -43,9 +43,20 @@ static func add_effect_to_unit(state: GameState, target: UnitState, effect: Effe
 		state.add_event(log_text)
 
 
-static func stun_unit(state: GameState, source_uid: int, target: UnitState, expiry := EffectInstance.ExpiryTiming.END_OF_TURN) -> void:
-	target.effects.add(EffectFactory.make_stun(state, source_uid, expiry))
-	state.add_event("%s was stunned." % target.card_instance.data.card_name)
+static func stun_unit(
+		state: GameState,
+		source_uid: int,
+		target: UnitState
+) -> void:
+	target.effects.add(
+		EffectFactory.make_stun(
+			state,
+			source_uid,
+			EffectInstance.ExpiryTiming.END_OF_TURN
+		)
+	)
+
+	state.add_event("%s is stunned." % target.card_instance.data.card_name)
 
 
 static func buff_unit(state: GameState, source_uid: int, target: UnitState, value: int, expiry := EffectInstance.ExpiryTiming.END_OF_TURN) -> void:
@@ -299,3 +310,50 @@ static func spend_one_buff(state: GameState, unit: UnitState) -> bool:
 
 	state.add_event("%s has no buff to spend." % unit.card_instance.data.card_name)
 	return false
+
+static func find_first_buffed_friendly_unit(state: GameState, player_id: int) -> UnitState:
+	for unit in state.unit_registry.get_units_for_player(player_id):
+		if unit.effects.sum(EffectInstance.EffectType.BUFF) > 0:
+			return unit
+	return null
+
+static func has_awake_rune(player: PlayerState, count: int) -> bool:
+	var awake := 0
+	for rune in player.rune_pool:
+		if not rune.is_exhausted():
+			awake += 1
+	return awake >= count
+
+
+static func spend_awake_runes(player: PlayerState, count: int) -> bool:
+	var spent := 0
+
+	for rune in player.rune_pool:
+		if not rune.is_exhausted():
+			rune.exhaust()
+			spent += 1
+
+			if spent >= count:
+				return true
+
+	return false
+
+
+static func buff_unit_if_unbuffed(
+	state: GameState,
+	source_uid: int,
+	target: UnitState,
+	value: int = 1,
+	expiry := EffectInstance.ExpiryTiming.PERMANENT
+) -> void:
+	if target.effects.has_any(EffectInstance.EffectType.BUFF):
+		state.add_event("%s already has a buff." % target.card_instance.data.card_name)
+		return
+
+	var buff := EffectFactory.make_buff(state, source_uid, value, expiry)
+	target.effects.add(buff)
+
+	state.add_event("%s got a +%d buff." % [
+		target.card_instance.data.card_name,
+		value
+	])

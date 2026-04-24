@@ -102,11 +102,29 @@ func _open_showdown(state: GameState, attacker_player: PlayerState, defender_pla
 	state.active_combat_context = context
 	state.active_showdown = showdown
 	state.awaiting_showdown = true
-
+	_force_udyr_action_test(state, context)
 	state.add_event("Showdown opened at lane %d — %d attacker(s) vs %d defender(s)." % [
 		battlefield_index, attackers.size(), defenders.size()
 	])
+	
+func _force_udyr_action_test(state: GameState, context: CombatContext) -> void:
+	var all_units: Array[UnitState] = []
+	all_units.append_array(context.attackers)
+	all_units.append_array(context.defenders)
 
+	for unit in all_units:
+		if unit.card_instance.data.card_id != "OGN-157/298":
+			continue
+
+		print("DEBUG found Udyr in CommitToBattlefieldAction showdown")
+
+		for e in unit.effects.get_all():
+			print("DEBUG Udyr effect type=", e.effect_type, " timing=", e.timing_window)
+
+			if e.timing_window == "action":
+				print("DEBUG forcing Udyr ACTION ability from CommitToBattlefieldAction")
+				e.ability_fn.call(unit, context, state)
+				
 func get_error_message() -> String:
 	return _error_message
 

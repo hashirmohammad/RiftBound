@@ -27,7 +27,11 @@ static func make_buff(state: GameState, source_uid: int, value: int, expiry := E
 	e.expiry = expiry
 	return e
 
-static func make_stun(state: GameState, source_uid: int, expiry := EffectInstance.ExpiryTiming.END_OF_TURN) -> EffectInstance:
+static func make_stun(
+		state: GameState,
+		source_uid: int,
+		expiry := EffectInstance.ExpiryTiming.END_OF_TURN
+) -> EffectInstance:
 	var e := EffectInstance.new()
 	e.uid = state.next_uid()
 	e.effect_type = EffectInstance.EffectType.STUN
