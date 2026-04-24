@@ -8,6 +8,9 @@ var _effects: Array[EffectInstance] = []
 func add(effect: EffectInstance) -> void:
 	_effects.append(effect)
 
+func remove(effect: EffectInstance) -> void:
+	_effects.erase(effect)
+
 func remove_by_uid(effect_uid: int) -> void:
 	_effects = _effects.filter(func(e): return e.uid != effect_uid)
 

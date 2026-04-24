@@ -65,6 +65,11 @@ var pending_choice_card_id: String = ""
 var pending_choice_source_uid: int = -1
 var pending_choice_player_id: int = -1
 
+var pending_choice_step: String = ""
+var pending_choice_mode: String = ""
+
+var battlefield_flags: Dictionary = {}
+
 var pending_play_metadata: Dictionary = {}
 
 var _next_uid: int = 1

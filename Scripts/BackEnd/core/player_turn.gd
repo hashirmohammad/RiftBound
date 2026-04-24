@@ -61,7 +61,11 @@ func _enter_phase():
 			_awaken_phase(player)
 
 		Phase.BEGINNING:
-			pass
+			BattlefieldAbilityRegistry.trigger_all_picked(
+			state,
+			BattlefieldEvents.ON_BEGINNING_PHASE,
+			player.id
+		)
 
 		Phase.CHANNEL:
 			var runes_to_channel := 2
