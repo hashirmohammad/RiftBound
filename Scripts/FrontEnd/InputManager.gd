@@ -360,12 +360,14 @@ func _start_drag(card: RiftCard) -> void:
 	drag_offset = -local_click
 	dragged_card = card
 
+	RiftCard._drag_active = true  # prevent other cards from entering hover while this card is dragged
 	card.set_card_state(RiftCard.CardState.DRAGGING)
 	card.z_index = 100
 
 func _return_to_hand() -> void:
 	var card = dragged_card
 	dragged_card = null
+	RiftCard._drag_active = false
 	_clear_slot_highlights()
 	drag_offset = Vector2.ZERO
 	card._base_scale = card.scale
@@ -380,6 +382,7 @@ func _clear_drag() -> void:
 			dragged_card.queue_free()
 
 	dragged_card = null
+	RiftCard._drag_active = false
 	_clear_slot_highlights()
 	drag_offset = Vector2.ZERO
 
