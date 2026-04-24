@@ -25,14 +25,6 @@ static func get_vision_event(card_id: String) -> String:
 	_ensure_loaded()
 	return _vision_events.get(card_id, "")
 
-static func get_on_play_fn(card_id: String) -> Callable:
-	_ensure_loaded()
-	return _on_play.get(card_id, Callable())
-
-static func get_extra_unit_effects_fn(card_id: String) -> Callable:
-	_ensure_loaded()
-	return _extra_unit_effects.get(card_id, Callable())
-
 # ── Init ──────────────────────────────────────────────────────────────────────
 
 static func _ensure_loaded() -> void:
