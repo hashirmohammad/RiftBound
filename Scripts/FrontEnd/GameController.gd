@@ -1,6 +1,6 @@
 extends Node
 
-const GameEngine                  = preload("res://Scripts//BackEnd/core/game_engine.gd")
+const GameEngine                  = preload("res://Scripts/BackEnd/core/game_engine.gd")
 const PlayCardAction              = preload("res://Scripts/BackEnd/actions/play_card_action.gd")
 const EndTurnAction               = preload("res://Scripts/BackEnd/actions/end_turn_action.gd")
 const MoveToBattlefieldAction     = preload("res://Scripts/BackEnd/actions/move_to_battlefield_action.gd")

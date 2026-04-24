@@ -106,6 +106,96 @@ bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_aa8k8"]
 bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wsu2k"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_k12tt"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_h1bgf"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_b3802"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fevyy"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hibaj"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pdsj5"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ee4r6"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gt3je"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3pmx8"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_u50mg"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cbgmd"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1w6v2"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ueoa1"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6vcvc"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7k868"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hpc6h"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kltya"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_e08e2"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_neg2b"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_r33sp"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hdf80"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jwpg7"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_k2e45"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_536cc"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_aqgau"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8cuat"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_o1aky"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kwxat"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_aa8k8"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
 [node name="Main" type="Node2D" unique_id=1554237704]
 script = ExtResource("1_hptm8")
 
