@@ -615,8 +615,3 @@ func highlight_spell_destinations() -> void:
 	for slot in board_slots:
 		if slot != null:
 			slot.highlight(true, true)
-
-	var board_slots: Array = board_reference._player_slot_nodes if destination_player_id == 0 else board_reference._p1_slot_nodes
-	for slot in board_slots:
-		if slot != null:
-			slot.highlight(true, true)

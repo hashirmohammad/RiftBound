@@ -2,109 +2,19 @@
 
 [ext_resource type="PackedScene" uid="uid://i2v3j52mwfha" path="res://Scenes/Board.tscn" id="1_344ge"]
 [ext_resource type="Script" uid="uid://qq14kdatojop" path="res://Scripts/FrontEnd/main.gd" id="1_hptm8"]
-[ext_resource type="PackedScene" path="res://Scenes/Arena.tscn" id="2_h1bgf"]
+[ext_resource type="PackedScene" uid="uid://d30bkc8l8s6ad" path="res://Scenes/Arena.tscn" id="2_h1bgf"]
 [ext_resource type="PackedScene" uid="uid://bdtm88erd1wam" path="res://Scenes/CardSlot.tscn" id="2_jjvhh"]
-[ext_resource type="PackedScene" path="res://Scenes/Battlefield.tscn" id="4_6iyac"]
+[ext_resource type="PackedScene" uid="uid://nb0qalao5ivo" path="res://Scenes/Battlefield.tscn" id="4_6iyac"]
 [ext_resource type="PackedScene" uid="uid://bcd6w6o1ruqom" path="res://Scenes/Hand.tscn" id="4_d1ilt"]
-[ext_resource type="PackedScene" path="res://Scenes/Champion.tscn" id="4_fdnlq"]
-[ext_resource type="PackedScene" path="res://Scenes/Runes.tscn" id="4_hptm8"]
-[ext_resource type="PackedScene" path="res://Scenes/Point.tscn" id="4_k12tt"]
-[ext_resource type="PackedScene" path="res://Scenes/Legend.tscn" id="5_6iyac"]
+[ext_resource type="PackedScene" uid="uid://buvl4rweh6dr6" path="res://Scenes/Champion.tscn" id="4_fdnlq"]
+[ext_resource type="PackedScene" uid="uid://w81buurym63b" path="res://Scenes/Runes.tscn" id="4_hptm8"]
+[ext_resource type="PackedScene" uid="uid://bi6khoh054nvq" path="res://Scenes/Point.tscn" id="4_k12tt"]
+[ext_resource type="PackedScene" uid="uid://4jxghshc0u46" path="res://Scenes/Legend.tscn" id="5_6iyac"]
 [ext_resource type="Script" uid="uid://dbj7q7e1mye34" path="res://Scripts/FrontEnd/InputManager.gd" id="6_344ge"]
 [ext_resource type="Script" uid="uid://b4t67171v1thf" path="res://Scripts/FrontEnd/GameController.gd" id="9_ynf5e"]
 [ext_resource type="PackedScene" uid="uid://bjwex4dl6gep7" path="res://Scenes/RuneDeck.tscn" id="11_h1bgf"]
-[ext_resource type="PackedScene" path="res://Scenes/MainDeck.tscn" id="11_wsu2k"]
-[ext_resource type="PackedScene" path="res://Scenes/Trash.tscn" id="12_k12tt"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wsu2k"]
-bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_k12tt"]
-bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_h1bgf"]
-bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_b3802"]
-bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fevyy"]
-bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hibaj"]
-bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pdsj5"]
-bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ee4r6"]
-bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gt3je"]
-bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3pmx8"]
-bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_u50mg"]
-bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cbgmd"]
-bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1w6v2"]
-bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ueoa1"]
-bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6vcvc"]
-bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7k868"]
-bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hpc6h"]
-bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kltya"]
-bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_e08e2"]
-bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_neg2b"]
-bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_r33sp"]
-bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hdf80"]
-bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jwpg7"]
-bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_k2e45"]
-bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_536cc"]
-bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_aqgau"]
-bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8cuat"]
-bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_o1aky"]
-bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kwxat"]
-bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_aa8k8"]
-bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+[ext_resource type="PackedScene" uid="uid://23ypgw1gnlhb" path="res://Scenes/MainDeck.tscn" id="11_wsu2k"]
+[ext_resource type="PackedScene" uid="uid://cscpai8v2fbek" path="res://Scenes/Trash.tscn" id="12_k12tt"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wsu2k"]
 bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)

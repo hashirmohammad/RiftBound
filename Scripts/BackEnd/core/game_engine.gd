@@ -157,35 +157,6 @@ static func _assign_random_champion_and_rest_to_deck(
 static func rig_card_to_top_of_deck(player: PlayerState, card_id: String) -> void:
 	var found_index := -1
 
-static func _assign_random_champion_and_rest_to_deck(
-		state: GameState,
-		player: PlayerState,
-		champion_datas: Array[CardData]) -> void:
-
-	if champion_datas.is_empty():
-		state.add_event("P%d has no champion unit cards." % player.id)
-		return
-
-	var picked_index := randi() % champion_datas.size()
-
-	for i in range(champion_datas.size()):
-		var ci := CardInstance.new(state.next_uid(), champion_datas[i])
-
-		if i == picked_index:
-			player.champion = ci
-			ci.zone = CardInstance.Zone.BOARD
-			ci.awaken()
-			state.add_event("P%d champion selected: %s." % [
-				player.id,
-				ci.data.card_name
-			])
-		else:
-			ci.zone = CardInstance.Zone.DECK
-			player.deck.append(ci)
-
-static func rig_card_to_top_of_deck(player: PlayerState, card_id: String) -> void:
-	var found_index := -1
-
 	for i in range(player.deck.size()):
 		if player.deck[i].data.card_id == card_id:
 			found_index = i
