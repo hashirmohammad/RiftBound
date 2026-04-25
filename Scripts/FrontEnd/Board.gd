@@ -396,7 +396,8 @@ func get_slot_index_under_mouse() -> int:
 	if game_controller == null:
 		return -1
 	var active_id: int = game_controller.state.get_active_player().id
-	var slots          = _player_slot_nodes if active_id == 0 else _p1_slot_nodes
+	var local_id: int  = NetworkManager.local_player_id
+	var slots          = _player_slot_nodes if active_id == local_id else _p1_slot_nodes
 	var mouse_pos      = get_global_mouse_position()
 
 	for i in range(slots.size()):
@@ -411,13 +412,14 @@ func get_slot_index_under_mouse() -> int:
 	return -1
 
 func get_battlefield_half_under_mouse() -> Dictionary:
-	var mouse_pos = get_global_mouse_position()
+	var mouse_pos  = get_global_mouse_position()
+	var local_id: int = NetworkManager.local_player_id
 
 	var entries = [
-		{"player": 1, "lane": 0, "slot": _p1_bf_slot_left},
-		{"player": 1, "lane": 1, "slot": _p1_bf_slot_right},
-		{"player": 0, "lane": 0, "slot": _p0_bf_slot_left},
-		{"player": 0, "lane": 1, "slot": _p0_bf_slot_right},
+		{"player": 1 - local_id, "lane": 0, "slot": _p1_bf_slot_left},
+		{"player": 1 - local_id, "lane": 1, "slot": _p1_bf_slot_right},
+		{"player": local_id,     "lane": 0, "slot": _p0_bf_slot_left},
+		{"player": local_id,     "lane": 1, "slot": _p0_bf_slot_right},
 	]
 
 	for entry in entries:

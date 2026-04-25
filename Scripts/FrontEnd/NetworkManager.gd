@@ -114,7 +114,8 @@ func stop_discovery() -> void:
 		_udp_listener = null
 	_broadcast_timer = 0.0
 
-func _get_broadcast_address() -> String:
+func _get_broadcast_addresses() -> Array[String]:
+	var result: Array[String] = []
 	for addr in IP.get_local_addresses():
 		if ":" in addr:
 			continue
@@ -123,22 +124,26 @@ func _get_broadcast_address() -> String:
 			continue
 		if parts[0] == "127" or (parts[0] == "169" and parts[1] == "254"):
 			continue
-		return "%s.%s.%s.255" % [parts[0], parts[1], parts[2]]
-	return "255.255.255.255"
+		result.append("%s.%s.%s.255" % [parts[0], parts[1], parts[2]])
+	if result.is_empty():
+		result.append("255.255.255.255")
+	return result
 
 func _process(delta: float) -> void:
 	if _udp_broadcaster != null:
 		_broadcast_timer += delta
 		if _broadcast_timer >= BROADCAST_INTERVAL:
 			_broadcast_timer = 0.0
-			_udp_broadcaster.set_dest_address(_get_broadcast_address(), DISCOVERY_PORT)
-			_udp_broadcaster.put_packet("riftbound".to_utf8_buffer())
+			var packet := "riftbound".to_utf8_buffer()
+			for addr in _get_broadcast_addresses():
+				_udp_broadcaster.set_dest_address(addr, DISCOVERY_PORT)
+				_udp_broadcaster.put_packet(packet)
 
 	if _udp_listener != null:
 		while _udp_listener.get_available_packet_count() > 0:
-			_udp_listener.get_packet()
-			var ip := _udp_listener.get_packet_ip()
-			if ip != "" and ip != "0.0.0.0":
+			var packet := _udp_listener.get_packet()
+			var ip     := _udp_listener.get_packet_ip()
+			if ip != "" and ip != "0.0.0.0" and packet.get_string_from_utf8() == "riftbound":
 				host_discovered.emit(ip)
 
 # ─── Peer callbacks ───────────────────────────────────────────────────────────

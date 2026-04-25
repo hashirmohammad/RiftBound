@@ -50,40 +50,39 @@ func _ready() -> void:
 # ─── UI Refresh ───────────────────────────────────────────────────────────────
 
 func refresh_all_ui() -> void:
-	var p0 = state.players[0]
-	var p1 = state.players[1]
-
-	render_static_state(p0, p1)
+	render_static_state(state.players[_local_id()], state.players[1 - _local_id()])
 	refresh_hand_ui()
 	render_board()
 	refresh_deck_ui()
 	_update_status_label()
 
 func refresh_hand_ui() -> void:
-	hand_manager.render_hand(state.players[0].hand)
-	hand_manager_p1.render_hand(state.players[1].hand)
+	hand_manager.render_hand(state.players[_local_id()].hand)
+	hand_manager_p1.render_hand(state.players[1 - _local_id()].hand)
 
 func refresh_deck_ui() -> void:
 	if deck_ui.has_method("set_count"):
-		deck_ui.set_count(state.players[0].deck.size())
+		deck_ui.set_count(state.players[_local_id()].deck.size())
 
 func refresh_payment_ui() -> void:
-	render_rune_panels(state.players[0], state.players[1])
+	render_rune_panels(state.players[_local_id()], state.players[1 - _local_id()])
 	_update_status_label()
 
 # ─── Board Rendering ──────────────────────────────────────────────────────────
 
 func render_board() -> void:
-	_render_player_slots(state.players[0], board._player_slot_nodes)
-	_render_player_slots(state.players[1], board._p1_slot_nodes)
+	var local  = state.players[_local_id()]
+	var remote = state.players[1 - _local_id()]
+	_render_player_slots(local,  board._player_slot_nodes)
+	_render_player_slots(remote, board._p1_slot_nodes)
 
-	_render_battlefield_lane(state.players[1].battlefield_slots[0], board._p1_bf_slot_left)
-	_render_battlefield_lane(state.players[1].battlefield_slots[1], board._p1_bf_slot_right)
-	_render_battlefield_lane(state.players[0].battlefield_slots[0], board._p0_bf_slot_left)
-	_render_battlefield_lane(state.players[0].battlefield_slots[1], board._p0_bf_slot_right)
+	_render_battlefield_lane(remote.battlefield_slots[0], board._p1_bf_slot_left)
+	_render_battlefield_lane(remote.battlefield_slots[1], board._p1_bf_slot_right)
+	_render_battlefield_lane(local.battlefield_slots[0],  board._p0_bf_slot_left)
+	_render_battlefield_lane(local.battlefield_slots[1],  board._p0_bf_slot_right)
 
 func render_slot(player: PlayerState, slot_index: int) -> void:
-	var slots = board._player_slot_nodes if player.id == 0 else board._p1_slot_nodes
+	var slots = board._player_slot_nodes if player.id == _local_id() else board._p1_slot_nodes
 	if slot_index >= slots.size() or slots[slot_index] == null:
 		return
 	var slot = slots[slot_index]
@@ -92,7 +91,7 @@ func render_slot(player: PlayerState, slot_index: int) -> void:
 		_place_card(slot, ci, Vector2(0.35, 0.35))
 
 func render_arena_slot(player: PlayerState) -> void:
-	if player.id == 1:
+	if player.id != _local_id():
 		_render_battlefield_lane(player.battlefield_slots[0], board._p1_bf_slot_left)
 		_render_battlefield_lane(player.battlefield_slots[1], board._p1_bf_slot_right)
 	else:
@@ -512,6 +511,7 @@ func _receive_action(data: Dictionary) -> void:
 	if action == null:
 		return
 	GameEngine.apply_action(state, action)
+	refresh_all_ui()
 	await wait_until_main()
 	refresh_all_ui()
 
@@ -730,10 +730,19 @@ func _on_choice_b_pressed() -> void:
 func try_select_unit_target(target_uid: int) -> bool:
 	if not state.awaiting_unit_target:
 		return false
-
 	CardAbilityRegistry.resolve_pending_unit_target(target_uid, state)
+	if NetworkManager.is_network_mode:
+		_receive_unit_target.rpc(target_uid)
 	refresh_all_ui()
 	return true
+
+@rpc("any_peer")
+func _receive_unit_target(target_uid: int) -> void:
+	CardAbilityRegistry.resolve_pending_unit_target(target_uid, state)
+	refresh_all_ui()
+
+func _local_id() -> int:
+	return NetworkManager.local_player_id
 
 func _find_hand_card(card_uid: int) -> CardInstance:
 	var p := state.get_active_player()

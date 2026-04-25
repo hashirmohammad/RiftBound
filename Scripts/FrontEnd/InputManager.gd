@@ -252,15 +252,16 @@ func _clear_drag() -> void:
 
 func _active_hand():
 	var id = game_controller.state.get_active_player().id
-	return $"../P0/P0_Hand" if id == 0 else $"../P1/P1_Hand"
+	return $"../P0/P0_Hand" if id == NetworkManager.local_player_id else $"../P1/P1_Hand"
 
 # ─── Slot highlights ──────────────────────────────────────────────────────────
 
 func _highlight_slots() -> void:
 	_clear_slot_highlights()
 	var player     = game_controller.state.get_active_player()
-	var base_slots = board_reference._player_slot_nodes if player.id == 0 else board_reference._p1_slot_nodes
-	var bf_slots   = [board_reference._p0_bf_slot_left, board_reference._p0_bf_slot_right] if player.id == 0 \
+	var local_id   = NetworkManager.local_player_id
+	var base_slots = board_reference._player_slot_nodes if player.id == local_id else board_reference._p1_slot_nodes
+	var bf_slots   = [board_reference._p0_bf_slot_left, board_reference._p0_bf_slot_right] if player.id == local_id \
 				   else [board_reference._p1_bf_slot_left, board_reference._p1_bf_slot_right]
 	var zone       = _get_card_zone(dragged_card.card_uid)
 
@@ -276,7 +277,7 @@ func _highlight_slots() -> void:
 
 func _clear_slot_highlights() -> void:
 	var player     = game_controller.state.get_active_player()
-	var base_slots = board_reference._player_slot_nodes if player.id == 0 else board_reference._p1_slot_nodes
+	var base_slots = board_reference._player_slot_nodes if player.id == NetworkManager.local_player_id else board_reference._p1_slot_nodes
 	for slot in base_slots:
 		slot.highlight(false)
 	for bf_slot in [board_reference._p0_bf_slot_left, board_reference._p0_bf_slot_right,
