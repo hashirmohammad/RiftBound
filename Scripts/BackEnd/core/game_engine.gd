@@ -94,9 +94,14 @@ static func start_turn(state: GameState) -> void:
 	if state.turn_system == null:
 		state.add_event("ERROR: turn_system not initialized.")
 		return
-	state.turn_system.start_turn(state)
+	_score_start_turn(state, state.active_player_index)
 
+	if state.game_over:
+		return
+
+	state.turn_system.start_turn(state)
 static func end_turn(state: GameState) -> void:
+
 	state.active_player_index = 1 - state.active_player_index
 	state.turn_number += 1
 	start_turn(state)
@@ -116,3 +121,56 @@ static func rig_card_to_top_of_deck(player: PlayerState, card_id: String) -> voi
 	var card: CardInstance = player.deck[found_index]
 	player.deck.remove_at(found_index)
 	player.deck.append(card) # top of deck if draw uses pop_back()
+
+static func _get_arena_controller(state: GameState, arena_index: int) -> int:
+	var p0 = state.players[0].battlefield_slots[arena_index].size() > 0
+	var p1 = state.players[1].battlefield_slots[arena_index].size() > 0
+
+	if p0 and not p1:
+		return 0
+	if p1 and not p0:
+		return 1
+	return -1
+
+static func _update_arena_control(state: GameState) -> void:
+	state.arena_control[0] = _get_arena_controller(state, 0)
+	state.arena_control[1] = _get_arena_controller(state, 1)
+
+static func _count_controlled(state: GameState, player_id: int) -> int:
+	var count := 0
+	for c in state.arena_control:
+		if c == player_id:
+			count += 1
+	return count
+	
+static func _score_start_turn(state: GameState, player_id: int) -> void:
+	_update_arena_control(state)
+
+	var controlled := _count_controlled(state, player_id)
+
+	if controlled == 0:
+		state.add_event("P%d controls no arenas and gains no points." % player_id)
+		return
+
+	if controlled == 2:
+		state.scores[player_id] += 2
+		state.add_event("P%d starts turn controlling both arenas (+2). Total: %d" % [
+			player_id, state.scores[player_id]
+		])
+		_check_win(state, player_id)
+		return
+
+	if controlled == 1:
+		state.scores[player_id] += 1
+		state.add_event("P%d starts turn controlling 1 arena (+1). Total: %d" % [
+			player_id, state.scores[player_id]
+		])
+		_check_win(state, player_id)
+
+
+static func _check_win(state: GameState, player_id: int) -> void:
+	if state.scores[player_id] >= 8:
+		state.scores[player_id] = 8
+		state.winner_id = player_id
+		state.game_over = true
+		state.add_event("P%d WINS THE GAME!" % player_id)

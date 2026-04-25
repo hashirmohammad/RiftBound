@@ -15,7 +15,17 @@ var event_log: Array = []
 
 # Turn/phase controller (manages phase order + phase logic)
 var turn_system
+# point System
+var scores := [0, 0]
+var winner_id: int = -1
+var game_over: bool = false
 
+# Arena control: index 0 = Arena 1, index 1 = Arena 2
+# -1 = none, 0 = P0, 1 = P1
+var arena_control := [-1, -1]
+
+# For final-point rule (opponent turn win)
+var final_point_ready := [false, false]
 # ── Combat systems ────────────────────────────────────────────────────────────
 var unit_registry: UnitRegistry
 var timing_manager: TimingManager
