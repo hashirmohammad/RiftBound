@@ -576,6 +576,35 @@ func _update_status_label() -> void:
 		confirm_damage_button.visible = false
 		return
 	
+	if state.awaiting_spell_destination:
+		status_label.text = "Choose destination battlefield."
+		cancel_payment_button.visible = false
+		pass_priority_button.visible = false
+		confirm_damage_button.visible = false
+		return
+	
+	if state.awaiting_spell_targets:
+		var chosen: int = state.pending_spell_target_uids.size()
+		var needed: int = state.pending_spell_required_targets
+
+		match state.pending_spell_card_id:
+			"OGN-058/298": # Discipline
+				status_label.text = "Choose a unit for Discipline (%d/%d)." % [chosen, needed]
+			"OGN-046/298": # En Garde
+				status_label.text = "Choose a friendly unit for En Garde (%d/%d)." % [chosen, needed]
+			"OGN-128/298": # Challenge
+				if chosen == 0:
+					status_label.text = "Choose a friendly unit for Challenge (1/2)."
+				else:
+					status_label.text = "Choose an enemy unit for Challenge (2/2)."
+			_:
+				status_label.text = "Choose spell target(s) (%d/%d)." % [chosen, needed]
+
+		cancel_payment_button.visible = false
+		pass_priority_button.visible = false
+		confirm_damage_button.visible = false
+		return
+	
 	if state.awaiting_rune_payment:
 		var remaining: int    = state.pending_card_cost - state.selected_rune_uids.size()
 		var card_name: String = _get_pending_card_name()
