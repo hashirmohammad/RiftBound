@@ -94,20 +94,13 @@ static func start_turn(state: GameState) -> void:
 	if state.turn_system == null:
 		state.add_event("ERROR: turn_system not initialized.")
 		return
+	_score_start_turn(state, state.active_player_index)
+
+	if state.game_over:
+		return
+
 	state.turn_system.start_turn(state)
-
 static func end_turn(state: GameState) -> void:
-	var ending_player := state.active_player_index
-
-	_score_end_turn(state, ending_player)
-
-	if state.game_over:
-		return
-
-	_check_opponent_win(state, ending_player)
-
-	if state.game_over:
-		return
 
 	state.active_player_index = 1 - state.active_player_index
 	state.turn_number += 1
@@ -150,7 +143,7 @@ static func _count_controlled(state: GameState, player_id: int) -> int:
 			count += 1
 	return count
 	
-static func _score_end_turn(state: GameState, player_id: int) -> void:
+static func _score_start_turn(state: GameState, player_id: int) -> void:
 	_update_arena_control(state)
 
 	var controlled := _count_controlled(state, player_id)
@@ -159,47 +152,21 @@ static func _score_end_turn(state: GameState, player_id: int) -> void:
 		state.add_event("P%d controls no arenas and gains no points." % player_id)
 		return
 
-	# BOTH arenas → +2 and can win, even from 6 or 7
 	if controlled == 2:
 		state.scores[player_id] += 2
-		state.add_event("P%d controls both arenas (+2). Total: %d" % [
+		state.add_event("P%d starts turn controlling both arenas (+2). Total: %d" % [
 			player_id, state.scores[player_id]
 		])
 		_check_win(state, player_id)
 		return
 
-	# ONE arena
-	var current = state.scores[player_id]
-
-	if current < 7:
+	if controlled == 1:
 		state.scores[player_id] += 1
-		state.add_event("P%d controls 1 arena (+1). Total: %d" % [
+		state.add_event("P%d starts turn controlling 1 arena (+1). Total: %d" % [
 			player_id, state.scores[player_id]
 		])
 		_check_win(state, player_id)
-		return
 
-	# At 7 → cannot win from 1 arena on your own end turn
-	state.add_event("P%d controls 1 arena, but cannot claim the final point on their own turn." % player_id)
-
-static func _check_opponent_win(state: GameState, ending_player_id: int) -> void:
-	_update_arena_control(state)
-
-	var opponent := 1 - ending_player_id
-
-	# Only check opponent — NOT the player who just ended turn
-	if state.scores[opponent] != 7:
-		return
-
-	var controlled := _count_controlled(state, opponent)
-
-	# Opponent must control at least one arena
-	if controlled >= 1:
-		state.scores[opponent] += 1
-		state.add_event("P%d gains the final point at the end of P%d's turn!" % [
-			opponent, ending_player_id
-		])
-		_check_win(state, opponent)
 
 static func _check_win(state: GameState, player_id: int) -> void:
 	if state.scores[player_id] >= 8:
