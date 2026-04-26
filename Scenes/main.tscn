@@ -2,19 +2,20 @@
 
 [ext_resource type="PackedScene" uid="uid://i2v3j52mwfha" path="res://Scenes/Board.tscn" id="1_344ge"]
 [ext_resource type="Script" uid="uid://qq14kdatojop" path="res://Scripts/FrontEnd/main.gd" id="1_hptm8"]
-[ext_resource type="PackedScene" path="res://Scenes/Arena.tscn" id="2_h1bgf"]
+[ext_resource type="PackedScene" uid="uid://d30bkc8l8s6ad" path="res://Scenes/Arena.tscn" id="2_h1bgf"]
 [ext_resource type="PackedScene" uid="uid://bdtm88erd1wam" path="res://Scenes/CardSlot.tscn" id="2_jjvhh"]
-[ext_resource type="PackedScene" path="res://Scenes/Battlefield.tscn" id="4_6iyac"]
+[ext_resource type="PackedScene" uid="uid://nb0qalao5ivo" path="res://Scenes/Battlefield.tscn" id="4_6iyac"]
 [ext_resource type="PackedScene" uid="uid://bcd6w6o1ruqom" path="res://Scenes/Hand.tscn" id="4_d1ilt"]
-[ext_resource type="PackedScene" path="res://Scenes/Champion.tscn" id="4_fdnlq"]
-[ext_resource type="PackedScene" path="res://Scenes/Runes.tscn" id="4_hptm8"]
-[ext_resource type="PackedScene" path="res://Scenes/Point.tscn" id="4_k12tt"]
-[ext_resource type="PackedScene" path="res://Scenes/Legend.tscn" id="5_6iyac"]
+[ext_resource type="PackedScene" uid="uid://buvl4rweh6dr6" path="res://Scenes/Champion.tscn" id="4_fdnlq"]
+[ext_resource type="PackedScene" uid="uid://w81buurym63b" path="res://Scenes/Runes.tscn" id="4_hptm8"]
+[ext_resource type="PackedScene" uid="uid://bi6khoh054nvq" path="res://Scenes/Point.tscn" id="4_k12tt"]
+[ext_resource type="PackedScene" uid="uid://4jxghshc0u46" path="res://Scenes/Legend.tscn" id="5_6iyac"]
 [ext_resource type="Script" uid="uid://dbj7q7e1mye34" path="res://Scripts/FrontEnd/InputManager.gd" id="6_344ge"]
 [ext_resource type="Script" uid="uid://b4t67171v1thf" path="res://Scripts/FrontEnd/GameController.gd" id="9_ynf5e"]
 [ext_resource type="PackedScene" uid="uid://bjwex4dl6gep7" path="res://Scenes/RuneDeck.tscn" id="11_h1bgf"]
-[ext_resource type="PackedScene" path="res://Scenes/MainDeck.tscn" id="11_wsu2k"]
-[ext_resource type="PackedScene" path="res://Scenes/Trash.tscn" id="12_k12tt"]
+[ext_resource type="PackedScene" uid="uid://23ypgw1gnlhb" path="res://Scenes/MainDeck.tscn" id="11_wsu2k"]
+[ext_resource type="PackedScene" uid="uid://cscpai8v2fbek" path="res://Scenes/Trash.tscn" id="12_k12tt"]
+[ext_resource type="Script" uid="uid://6nllcfqgxq74" path="res://Scripts/FrontEnd/Winscreen.gd" id="16_k12tt"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wsu2k"]
 bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
@@ -317,3 +318,7 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_8cuat")
 theme_override_styles/hover = SubResource("StyleBoxFlat_o1aky")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_kwxat")
 theme_override_styles/focus = SubResource("StyleBoxFlat_aa8k8")
+
+[node name="WinScreen" type="CanvasLayer" parent="." unique_id=666179721]
+visible = false
+script = ExtResource("16_k12tt")

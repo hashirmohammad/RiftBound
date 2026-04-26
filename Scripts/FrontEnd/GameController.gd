@@ -25,6 +25,7 @@ var selected_board_uids: Array[int] = []
 @onready var confirm_damage_button = $"../ConfirmDamageButton"
 @onready var choice_a_button      = $"../ChoiceAButton"
 @onready var choice_b_button      = $"../ChoiceBButton"
+@onready var win_screen           = $"../WinScreen"
 
 var pending_play_choice: Dictionary = {}
 # Attacker's pending damage assignments during the assignment phase: uid -> damage
@@ -46,9 +47,7 @@ func _ready() -> void:
 	choice_b_button.visible = false
 
 # ─── UI Refresh ───────────────────────────────────────────────────────────────
-func _process(_delta: float) -> void:
-	_update_status_label()
-	
+
 func refresh_all_ui() -> void:
 	var p0 = state.players[0]
 	var p1 = state.players[1]
@@ -58,6 +57,13 @@ func refresh_all_ui() -> void:
 	render_board()
 	refresh_deck_ui()
 	_update_status_label()
+	# ── Points visualization ──────────────────────────────────────────────────
+	# Scores live in state.scores[], NOT PlayerState.points
+	board.refresh_points(state.scores[0], state.scores[1])
+
+	# ── Game over ─────────────────────────────────────────────────────────────
+	if state.game_over and win_screen and not win_screen.visible:
+		win_screen.show_winner(state.winner_id, state.scores)
 
 func refresh_hand_ui() -> void:
 	hand_manager.render_hand(state.players[0].hand)
@@ -413,7 +419,6 @@ func adjust_damage_assignment(unit_uid: int, delta: int) -> void:
 		return
 	var ctx := state.active_combat_context
 	var loser_is_attacker: bool = ctx.total_defender_might > ctx.total_attacker_might
-	# Pool = loser's own might (what they are distributing)
 	var pool: int = ctx.total_attacker_might if loser_is_attacker else ctx.total_defender_might
 	var current: int = _pending_assignments.get(unit_uid, 0)
 	var total_assigned: int = 0
@@ -431,7 +436,6 @@ func try_confirm_damage() -> void:
 		return
 	var ctx := state.active_combat_context
 	var loser_is_attacker: bool = ctx.total_defender_might > ctx.total_attacker_might
-	# Loser is the one submitting: attacker if they lost, defender if they lost
 	var player_id: int = ctx.attackers[0].player_id if loser_is_attacker \
 		else ctx.defenders[0].player_id
 	var action := ConfirmDamageAction.new(player_id, _pending_assignments)
@@ -492,20 +496,17 @@ func wait_until_main() -> void:
 func _update_status_label() -> void:
 	if state.awaiting_unit_target:
 		status_label.text = "Choose a friendly unit for Pit Rookie."
-		status_label.text += "\nScore: P0=%d | P1=%d" % [state.scores[0], state.scores[1]]
 		cancel_payment_button.visible = false
 		pass_priority_button.visible = false
 		confirm_damage_button.visible = false
 		return
-	
+
 	if state.awaiting_rune_payment:
 		var remaining: int    = state.pending_card_cost - state.selected_rune_uids.size()
 		var card_name: String = _get_pending_card_name()
-		status_label.text = "Select %d more rune(s) to play %s" % [remaining, card_name]
-		status_label.text += "\nScore: P0=%d | P1=%d" % [state.scores[0], state.scores[1]]
+		status_label.text             = "Select %d more rune(s) to play %s" % [remaining, card_name]
 		cancel_payment_button.visible = true
 		pass_priority_button.visible = false
-		confirm_damage_button.visible = false
 		return
 
 	if state.awaiting_showdown:
@@ -513,13 +514,10 @@ func _update_status_label() -> void:
 		var atk := ctx.attackers.size()
 		var def := ctx.defenders.size()
 		var showdown := state.active_showdown
-		var whose: String = "P%d" % (
-			state.active_player_index if not showdown.active_player_passed
-			else 1 - state.active_player_index
-		)
-		status_label.text = "Showdown! %d vs %d — %s: Pass or use ability." % [atk, def, whose]
-		status_label.text += "\nScore: P0=%d | P1=%d" % [state.scores[0], state.scores[1]]
-		pass_priority_button.visible = true
+		var whose: String = "P%d" % (state.active_player_index if not showdown.active_player_passed \
+			else 1 - state.active_player_index)
+		status_label.text             = "Showdown! %d vs %d — %s: Pass or use ability." % [atk, def, whose]
+		pass_priority_button.visible  = true
 		cancel_payment_button.visible = false
 		confirm_damage_button.visible = false
 		return
@@ -529,40 +527,29 @@ func _update_status_label() -> void:
 		var loser_is_attacker: bool = ctx.total_defender_might > ctx.total_attacker_might
 		var pool: int = ctx.total_attacker_might if loser_is_attacker else ctx.total_defender_might
 		var target_units: Array = ctx.defenders if loser_is_attacker else ctx.attackers
-		var loser_player_id: int = (
-			ctx.attackers[0].player_id if loser_is_attacker
+		var loser_player_id: int = ctx.attackers[0].player_id if loser_is_attacker \
 			else ctx.defenders[0].player_id
-		)
-
 		for unit in target_units:
 			if not _pending_assignments.has(unit.uid):
 				_pending_assignments[unit.uid] = 0
-
 		var total_assigned: int = 0
 		for uid in _pending_assignments:
 			total_assigned += _pending_assignments[uid]
-
 		var remaining: int = pool - total_assigned
 		var parts: Array = []
-
 		for unit in target_units:
-			parts.append("%s: %d" % [
-				unit.card_instance.data.card_name,
-				_pending_assignments.get(unit.uid, 0)
-			])
-
-		status_label.text = "P%d assign %d dmg (left: %d) — L-click +1, R-click -1\n%s" % [
+			parts.append("%s: %d" % [unit.card_instance.data.card_name, _pending_assignments.get(unit.uid, 0)])
+		status_label.text             = "P%d assign %d dmg (left: %d) — L-click +1, R-click -1\n%s" % [
 			loser_player_id, pool, remaining, "  |  ".join(parts)
 		]
-		status_label.text += "\nScore: P0=%d | P1=%d" % [state.scores[0], state.scores[1]]
-		pass_priority_button.visible = false
+		pass_priority_button.visible  = false
 		cancel_payment_button.visible = false
 		confirm_damage_button.visible = true
 		return
 
-	status_label.text = "Score: P0=%d | P1=%d" % [state.scores[0], state.scores[1]]
+	status_label.text             = ""
 	cancel_payment_button.visible = false
-	pass_priority_button.visible = false
+	pass_priority_button.visible  = false
 	confirm_damage_button.visible = false
 
 func _get_pending_card_name() -> String:
