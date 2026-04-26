@@ -94,12 +94,14 @@ static func start_turn(state: GameState) -> void:
 	if state.turn_system == null:
 		state.add_event("ERROR: turn_system not initialized.")
 		return
+	var player_id := state.active_player_index
+	
+	_score_start_turn(state, player_id)  
 	state.turn_system.start_turn(state)
 
 static func end_turn(state: GameState) -> void:
 	var ending_player := state.active_player_index
 
-	_score_end_turn(state, ending_player)
 
 	if state.game_over:
 		return
@@ -150,7 +152,7 @@ static func _count_controlled(state: GameState, player_id: int) -> int:
 			count += 1
 	return count
 	
-static func _score_end_turn(state: GameState, player_id: int) -> void:
+static func _score_start_turn(state: GameState, player_id: int) -> void:
 	_update_arena_control(state)
 
 	var controlled := _count_controlled(state, player_id)
