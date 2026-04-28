@@ -123,7 +123,27 @@ static func _populate() -> void:
 
 		if ok:
 			state.add_event("Charm resolved on %s." % target.card_instance.data.card_name)
-	
+			var forced_enemy := _find_opposing_unit_at_same_battlefield(
+				state,
+				player_id,
+				destination_index
+			)
+
+			if forced_enemy != null:
+				var ctx := state.combat_manager.declare_attack(
+					forced_enemy.uid,
+					target.uid,
+					state
+				)
+
+				if ctx != null:
+					var showdown := state.combat_manager.begin_showdown(ctx)
+					state.enter_showdown(ctx, showdown)
+					state.add_event("Charm caused combat between %s and %s." % [
+						forced_enemy.card_instance.data.card_name,
+						target.card_instance.data.card_name
+					])
+					
 	# OGN-045/298 — Defy
 	_resolvers["OGN-045/298"] = func(card: CardInstance, state: GameState, payload := {}) -> void:
 		var countered: bool = false
@@ -263,3 +283,53 @@ static func _populate() -> void:
 
 		EffectResolver.units_strike_each_other(state, moved_unit, other_unit)
 		state.add_event("Dragon's Rage resolved.")
+
+static func has_any_legal_target(card_id: String, state: GameState, player_id: int) -> bool:
+	for unit in state.unit_registry.get_all():
+		if can_select_target(card_id, state, player_id, [], unit.uid):
+			return true
+
+	return false
+
+static func has_full_legal_target_sequence(card_id: String, state: GameState, player_id: int) -> bool:
+	match card_id:
+		"OGN-128/298": # Challenge
+			var has_friendly := false
+			var has_enemy := false
+
+			for unit in state.unit_registry.get_all():
+				if unit.player_id == player_id:
+					has_friendly = true
+				else:
+					has_enemy = true
+
+			return has_friendly and has_enemy
+
+		"OGN-258/298": # Dragon's Rage
+			var enemy_count := 0
+			for unit in state.unit_registry.get_all():
+				if unit.player_id != player_id:
+					enemy_count += 1
+			return enemy_count >= 2
+
+		_:
+			return has_any_legal_target(card_id, state, player_id)
+			
+static func _find_opposing_unit_at_same_battlefield(
+		state: GameState,
+		caster_player_id: int,
+		battlefield_index: int
+	) -> UnitState:
+
+	var caster: PlayerState = state.players[caster_player_id]
+
+	if battlefield_index < 0 or battlefield_index >= caster.battlefield_slots.size():
+		return null
+
+	for card in caster.battlefield_slots[battlefield_index]:
+		var unit := state.unit_registry.get_unit(card.uid)
+		if unit != null:
+			return unit
+
+	return null
+	

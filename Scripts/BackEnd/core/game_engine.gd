@@ -28,7 +28,7 @@ static func start_game() -> GameState:
 	#var p0_deck_name: String = CardDatabase._random_deck_name()
 	#var p1_deck_name: String = CardDatabase._random_deck_name()
 	var p0_deck_name: String = "Lee Sin"
-	var p1_deck_name: String = "Kai'Sa"
+	var p1_deck_name: String = "Lee Sin"
 	state.deck_names[0] = p0_deck_name
 	state.deck_names[1] = p1_deck_name
 	state.add_event("P0 deck: %s | P1 deck: %s" % [p0_deck_name, p1_deck_name])
@@ -77,27 +77,31 @@ static func start_game() -> GameState:
 	p0.rune_deck.shuffle()
 	p1.rune_deck.shuffle()
 	
-	#rig_card_to_top_of_deck(p0, "OGN-052/298") # Stalwart Poro
-	#rig_card_to_top_of_deck(p0, "OGN-054/298") # Sunlit Guardian
-	#rig_card_to_top_of_deck(p0, "OGN-065/298") # Wizened Elder
-	#rig_card_to_top_of_deck(p0, "OGN-075/298") # Tasty Faefolk
-	#rig_card_to_top_of_deck(p0, "OGN-136/298") # Pit Rookie
-	#rig_card_to_top_of_deck(p0, "OGN-136/298") # Pit Rookie
-	#rig_card_to_top_of_deck(p0, "OGN-136/298") # Pit Rookie
-	#rig_card_to_top_of_deck(p0, "OGN-136/298") # Pit Rookie
+	rig_card_to_top_of_deck(p0, "OGN-052/298") # Stalwart Poro done
+	#rig_card_to_top_of_deck(p0, "OGN-054/298") # Sunlit Guardian done
+	rig_card_to_top_of_deck(p1, "OGN-054/298") # Sunlit Guardian done
+	
+	#rig_card_to_top_of_deck(p0, "OGN-065/298") # Wizened Elder done
+	#rig_card_to_top_of_deck(p0, "OGN-075/298") # Tasty Faefolk done
+	rig_card_to_top_of_deck(p1, "OGN-052/298") # Stalwart Poro done
+	rig_card_to_top_of_deck(p1, "OGN-052/298") # Stalwart Poro done
+	rig_card_to_top_of_deck(p1, "OGN-052/298") # Stalwart Poro done
+	rig_card_to_top_of_deck(p1, "OGN-052/298") # Stalwart Poro done
+	
+	#rig_card_to_top_of_deck(p0, "OGN-136/298") # Pit Rookie done
 	#rig_card_to_top_of_deck(p0, "OGN-044/298") # Clockwork Keeper
 	#rig_card_to_top_of_deck(p0, "OGN-047/298") # Find Your Center
-	#rig_card_to_top_of_deck(p0, "OGN-058/298") # Discipline
-	#rig_card_to_top_of_deck(p0, "OGN-046/298") # En Garde
-	#rig_card_to_top_of_deck(p0, "OGN-128/298") # Challenge
-	#rig_card_to_top_of_deck(p0, "OGN-043/298") # Charm
-	#rig_card_to_top_of_deck(p0, "OGN-258/298") # Dragon's Rage
-	#rig_card_to_top_of_deck(p0, "OGN-161/298") # Deadbloom Predator
+	rig_card_to_top_of_deck(p0, "OGN-058/298") # Discipline done
+	#rig_card_to_top_of_deck(p0, "OGN-046/298") # En Garde done
+	rig_card_to_top_of_deck(p0, "OGN-128/298") # Challenge done
+	rig_card_to_top_of_deck(p0, "OGN-043/298") # Charm done
+	#rig_card_to_top_of_deck(p0, "OGN-258/298") # Dragon's Rage done
+	#rig_card_to_top_of_deck(p0, "OGN-161/298") # Deadbloom Predator done
 	#rig_card_to_top_of_deck(p0, "OGN-151/298") # Lee Sin, Centered
-	#rig_card_to_top_of_deck(p0, "OGN-155/298") # Qiyana, Victorious
+	#rig_card_to_top_of_deck(p0, "OGN-155/298") # Qiyana, Victorious done
 	#rig_card_to_top_of_deck(p0, "OGN-045/298") # Defy
 	#rig_card_to_top_of_deck(p0, "OGN-077/298") # Zhonya's Hourglass
-	#rig_card_to_top_of_deck(p0, "OGN-157/298") # Udyr, Wildman
+	rig_card_to_top_of_deck(p0, "OGN-157/298") # Udyr, Wildman
 
 	for i in range(OPENING_HAND_SIZE):
 		state.turn_system._draw_card(p0)

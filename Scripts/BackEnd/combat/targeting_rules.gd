@@ -74,7 +74,7 @@ static func validate_target(attacker: UnitState, target: UnitState, registry: Un
 	if attacker.effects.has_any(EffectInstance.EffectType.GANKING):
 		return true
 
-	var tanks: Array[UnitState] = registry.get_tank_units_for_player(target.player_id)
+	var tanks: Array[UnitState] = registry.get_tank_units(target.player_id)
 
 	if tanks.is_empty():
 		return true

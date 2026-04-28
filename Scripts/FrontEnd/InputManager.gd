@@ -123,7 +123,7 @@ func _try_start_drag() -> void:
 	elif zone == "ARENA":
 		var inst = _get_card_instance(card_found.card_uid)
 		var unit: UnitState = state.unit_registry.get_unit(card_found.card_uid)
-		var active_id: int = state.get_active_player().id
+		var active_id: int = state.get_priority_player_id()
 
 		if unit == null or unit.player_id != active_id:
 			game_controller.status_label.text = "You do not control this unit."
@@ -240,7 +240,7 @@ func _try_release() -> void:
 		if space.intersect_point(params).size() > 0:
 			var bf_data = board_reference.get_battlefield_half_under_mouse()
 			if not bf_data.is_empty():
-				var active_id: int = game_controller.state.get_active_player().id
+				var active_id: int = game_controller.get_actor_player().id
 				var card: CardInstance = _get_card_instance(dragged_card.card_uid)
 
 				if card != null and card.data.card_id == "OGN-161/298" and int(bf_data["player"]) != active_id:
@@ -280,7 +280,7 @@ func _try_release() -> void:
 		if space.intersect_point(params).size() > 0:
 			var bf_data = board_reference.get_battlefield_half_under_mouse()
 			if not bf_data.is_empty():
-				var active_id: int = game_controller.state.get_active_player().id
+				var active_id: int = game_controller.get_actor_player().id
 				if int(bf_data["player"]) == active_id:
 					var lane := int(bf_data["lane"])
 					var uids := _get_commit_uids()
@@ -387,7 +387,7 @@ func _clear_drag() -> void:
 	drag_offset = Vector2.ZERO
 
 func _active_hand():
-	var id = game_controller.state.get_active_player().id
+	var id = game_controller.state.get_priority_player_id()
 	return $"../P0/P0_Hand" if id == 0 else $"../P1/P1_Hand"
 
 # ─── Slot highlights ──────────────────────────────────────────────────────────
@@ -395,19 +395,22 @@ func _active_hand():
 func _highlight_slots() -> void:
 	_clear_slot_highlights()
 
-	var player = game_controller.state.get_active_player()
-	var base_slots = board_reference._player_slot_nodes if player.id == 0 else board_reference._p1_slot_nodes
-	var bf_slots = [board_reference._p0_bf_slot_left, board_reference._p0_bf_slot_right] if player.id == 0 else [board_reference._p1_bf_slot_left, board_reference._p1_bf_slot_right]
+	var actor = game_controller.get_actor_player()
+	var actor_id: int = actor.id
+
+	var base_slots = board_reference._player_slot_nodes if actor_id == 0 else board_reference._p1_slot_nodes
+	var bf_slots = [board_reference._p0_bf_slot_left, board_reference._p0_bf_slot_right] if actor_id == 0 else [board_reference._p1_bf_slot_left, board_reference._p1_bf_slot_right]
+
 	var zone = _get_card_zone(dragged_card.card_uid)
 
 	if zone == "HAND" or zone == "ARENA":
 		for slot in base_slots:
-			slot.highlight(true, true)
+			if slot != null:
+				slot.highlight(true, true)
 
 		var card: CardInstance = _get_card_instance(dragged_card.card_uid)
 		if card != null and card.data.card_id == "OGN-161/298":
-			var active_id: int = game_controller.state.get_active_player().id
-			var enemy_id := 1 - active_id
+			var enemy_id := 1 - actor_id
 			var enemy_player: PlayerState = game_controller.state.players[enemy_id]
 			var enemy_bf_slots := [
 				board_reference._p1_bf_slot_left,
@@ -484,7 +487,7 @@ func _get_card_under_cursor() -> RiftCard:
 	return null
 
 func _get_card_zone(card_uid: int) -> String:
-	var active = game_controller.state.get_active_player()
+	var active = game_controller.state.get_priority_player()
 
 	for c in active.hand:
 		if c.uid == card_uid:
@@ -504,7 +507,7 @@ func _get_card_zone(card_uid: int) -> String:
 	return "NONE"
 
 func _get_card_instance(card_uid: int):
-	var active = game_controller.state.get_active_player()
+	var active = game_controller.state.get_priority_player()
 
 	for c in active.hand:
 		if c.uid == card_uid:

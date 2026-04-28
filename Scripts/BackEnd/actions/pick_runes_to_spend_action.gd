@@ -14,29 +14,25 @@ func _init(_player_id: int = -1, _rune_uid: int = -1, _slot_index: int = -1):
 	slot_index = _slot_index
 
 func validate(state: GameState) -> bool:
-	if player_id != state.get_active_player().id:
-		_error_message = "Invalid RUNE_PICKED: not this player's turn."
-		return false
-
-	if state.phase != "MAIN":
-		_error_message = "Invalid RUNE_PICKED: not in MAIN phase."
-		return false
-
-	var p : PlayerState = state.players[state.pending_payment_player_id]
-	var rune := _find_rune_in_pool(p)
-	
 	if not state.awaiting_rune_payment:
 		_error_message = "Invalid RUNE_PICKED: no card is waiting for payment."
+		return false
+
+	if state.pending_payment_player_id < 0 or state.pending_payment_player_id >= state.players.size():
+		_error_message = "Invalid RUNE_PICKED: invalid paying player."
 		return false
 
 	if player_id != state.pending_payment_player_id:
 		_error_message = "Invalid RUNE_PICKED: wrong paying player."
 		return false
-	
+
+	var p: PlayerState = state.players[state.pending_payment_player_id]
+	var rune := _find_rune_in_pool(p)
+
 	if rune == null:
 		_error_message = "Invalid RUNE_PICKED: rune uid not found in pool."
 		return false
-	
+
 	if rune.is_exhausted():
 		_error_message = "P%d cannot pick rune: rune is already exhausted." % p.id
 		return false
@@ -97,12 +93,7 @@ func _find_pending_card_index(player: PlayerState, target_uid: int) -> int:
 	return -1
 
 func _clear_pending_payment(state: GameState) -> void:
-	state.awaiting_rune_payment = false
-	state.pending_payment_player_id = -1
-	state.pending_card_uid = -1
-	state.pending_slot_index = -1
-	state.pending_card_cost = 0
-	state.selected_rune_uids.clear()
+	state.exit_rune_payment()
 
 func get_error_message() -> String:
 	return _error_message

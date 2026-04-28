@@ -52,14 +52,14 @@ static func _populate() -> void:
 	# OGN-075/298 — Tasty Faefolk
 	# [Deathknell] — Channel 2 runes exhausted and draw 1. (When I die, get the effect.)
 	_registry["OGN-075/298"] = {
-	"on_death": func(unit: UnitState, state: GameState) -> void:
+	EffectEvents.ON_DEATH: func(unit: UnitState, state: GameState) -> void:
 		EffectResolver.resolve_tasty_faefolk_deathknell(unit, state)
 }
 	
 	# OGN-096/298 — Watchful Sentry
 	# [Deathknell] — Draw 1. (When I die, get the effect.)
 	_registry["OGN-096/298"] = {
-		"on_death": func(unit: UnitState, state: GameState) -> void:
+		EffectEvents.ON_DEATH: func(unit: UnitState, state: GameState) -> void:
 			_draw_cards(unit.player_id, 1, state)
 			state.add_event("Watchful Sentry deathknell: P%d drew 1." % unit.player_id)
 	}
@@ -67,7 +67,7 @@ static func _populate() -> void:
 	# OGN-110/298 — Ekko, Recurrent
 	# [Deathknell] — Recycle me to ready your runes. (When I die, get the effect.)
 	_registry["OGN-110/298"] = {
-		"on_death": func(unit: UnitState, state: GameState) -> void:
+		EffectEvents.ON_DEATH: func(unit: UnitState, state: GameState) -> void:
 			# TODO: recycle card + ready all runes (requires recycle + rune awaken logic)
 			state.add_event(
 				"Ekko deathknell: P%d (recycle + ready runes: TODO)." % unit.player_id
@@ -77,9 +77,18 @@ static func _populate() -> void:
 	# OGN-136/298 — Pit Rookie
 	# When you play me, buff another friendly unit. (If it doesn't have a buff, it gets a +1 Might buff.)
 	_on_play["OGN-136/298"] = func(unit: UnitState, state: GameState, payload := {}) -> void:
-		state.awaiting_unit_target = true
-		state.pending_target_source_uid = unit.uid
-		state.pending_target_card_id = unit.card_instance.data.card_id
+		var has_valid_target := false
+
+		for other in state.unit_registry.get_units_for_player(unit.player_id):
+			if other.uid != unit.uid:
+				has_valid_target = true
+				break
+
+		if not has_valid_target:
+			state.add_event("Pit Rookie: no other friendly unit to buff.")
+			return
+
+		state.enter_unit_target(unit.uid, unit.card_instance.data.card_id)
 		state.add_event("Pit Rookie: choose another friendly unit to buff.")
 	
 	# OGN-157/298 — Udyr, Wildman
@@ -89,12 +98,7 @@ static func _populate() -> void:
 				game_state.add_event("Udyr cannot use ability: no buff to spend.")
 				return
 
-			game_state.awaiting_choice = true
-			game_state.pending_choice_card_id = "OGN-157/298"
-			game_state.pending_choice_source_uid = source.uid
-			game_state.pending_choice_player_id = source.player_id
-			game_state.pending_choice_step = "udyr_category"
-			game_state.pending_choice_mode = ""
+			game_state.enter_choice("OGN-157/298",source.uid,source.player_id,"","",{ "type": "udyr", "step": "category" })
 			game_state.add_event("Udyr: choose a mode category.")
 			print("DEBUG Udyr ability used")
 			print("DEBUG awaiting_choice=", game_state.awaiting_choice)
@@ -106,7 +110,7 @@ static func _populate() -> void:
 	# OGN-178/298 — Undercover Agent
 	# [Deathknell] — Discard 2, then draw 2. (When I die, get the effect.)
 	_registry["OGN-178/298"] = {
-		"on_death": func(unit: UnitState, state: GameState) -> void:
+		EffectEvents.ON_DEATH: func(unit: UnitState, state: GameState) -> void:
 			# TODO: discard 2 (requires player choice / discard logic)
 			_draw_cards(unit.player_id, 2, state)
 			state.add_event(
@@ -188,9 +192,7 @@ static func resolve_pending_unit_target(target_uid: int, state: GameState) -> vo
 	_clear_pending_target_state(state)
 
 static func _clear_pending_target_state(state: GameState) -> void:
-	state.awaiting_unit_target = false
-	state.pending_target_source_uid = -1
-	state.pending_target_card_id = ""
+	state.exit_unit_target()
 
 static func _is_unit_at_battlefield(unit: UnitState, state: GameState) -> bool:
 	var loc := EffectResolver.find_unit_location(state, unit.uid)

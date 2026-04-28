@@ -15,20 +15,60 @@ func _init(_player_id: int = -1, _card_uid: int = -1, _slot_index: int = -1):
 	slot_index = _slot_index
 
 func validate(state: GameState) -> bool:
-	if player_id != state.get_active_player().id:
-		_error_message = "Invalid PLAY_CARD: not this player's turn."
+	var allowed_player_id: int
+
+	if state.awaiting_showdown and state.active_showdown != null:
+		allowed_player_id = state.get_priority_player_id()
+	else:
+		allowed_player_id = state.get_active_player().id
+
+	if player_id != allowed_player_id:
+		_error_message = "Invalid PLAY_CARD: P%d cannot act. Priority is P%d." % [
+			player_id,
+			allowed_player_id
+		]
 		return false
 
-	var p := state.get_active_player()
+	var p : PlayerState = state.players[player_id]
 	var card := _find_card_in_hand(p)
+	
+	if bool(state.pending_play_metadata.get("play_to_enemy_battlefield", false)):
+		if card.data.card_id != "OGN-161/298":
+			_error_message = "Only Deadbloom Predator can be played to an enemy battlefield."
+			return false
+
+		var enemy_player_id: int = int(state.pending_play_metadata.get("enemy_player_id", -1))
+		var battlefield_index: int = int(state.pending_play_metadata.get("battlefield_index", -1))
+
+		if enemy_player_id < 0 or enemy_player_id >= state.players.size():
+			_error_message = "Deadbloom failed: invalid enemy player."
+			return false
+
+		if enemy_player_id == player_id:
+			_error_message = "Deadbloom failed: must choose enemy battlefield."
+			return false
+
+		if battlefield_index < 0 or battlefield_index >= state.players[enemy_player_id].battlefield_slots.size():
+			_error_message = "Deadbloom failed: invalid battlefield."
+			return false
+
+		if state.players[enemy_player_id].battlefield_slots[battlefield_index].is_empty():
+			_error_message = "Deadbloom failed: enemy battlefield must be occupied."
+			return false
+	
+	if card == null:
+		_error_message = "Invalid PLAY_CARD: card uid not found in hand."
+		return false
+	
+	if card.data.type == CardData.CardType.SPELL:
+		if SpellRegistry.requires_targets(card.data.card_id):
+			if not SpellRegistry.has_full_legal_target_sequence(card.data.card_id, state, player_id):
+				_error_message = "%s cannot be played: no legal targets." % card.data.card_name
+				return false
 	
 	# 🔥 Allow spells outside MAIN phase
 	if card.data.type != CardData.CardType.SPELL and state.phase != "MAIN":
 		_error_message = "Invalid PLAY_CARD: not in MAIN phase."
-		return false
-	
-	if card == null:
-		_error_message = "Invalid PLAY_CARD: card uid not found in hand."
 		return false
 
 	var total_cost: int = _get_total_play_cost(card, state)
@@ -47,7 +87,7 @@ func validate(state: GameState) -> bool:
 	return true
 
 func execute(state: GameState) -> void:
-	var p := state.get_active_player()
+	var p : PlayerState = state.players[player_id]
 	var card := _find_card_in_hand(p)
 
 	if card == null:
@@ -63,12 +103,7 @@ func execute(state: GameState) -> void:
 			PlayCardAction.finalize_play(state, p, card, slot_index)
 		return
 
-	state.awaiting_rune_payment = true
-	state.pending_payment_player_id = p.id
-	state.pending_card_uid = card.uid
-	state.pending_slot_index = slot_index
-	state.pending_card_cost = total_cost
-	state.selected_rune_uids.clear()
+	state.enter_rune_payment(card_uid, slot_index, total_cost, player_id)
 
 	state.add_event("P%d started paying %d runes for %s." % [
 		p.id, total_cost, card.data.card_name
@@ -220,12 +255,12 @@ static func finalize_spell_play(state: GameState, p: PlayerState, card: CardInst
 
 	# Targeted spells: do NOT remove from hand yet
 	if SpellRegistry.requires_targets(card_id):
-		state.awaiting_spell_targets = true
-		state.pending_spell_player_id = p.id
-		state.pending_spell_card_uid = card.uid
-		state.pending_spell_card_id = card_id
-		state.pending_spell_required_targets = SpellRegistry.required_target_count(card_id)
-		state.pending_spell_target_uids.clear()
+		if not SpellRegistry.has_full_legal_target_sequence(card.data.card_id, state, p.id):
+			state.add_event("%s failed: no legal targets." % card.data.card_name)
+			state.pending_play_metadata.clear()
+			return
+
+		state.enter_spell_targets(p.id, card.uid, card_id, SpellRegistry.required_target_count(card_id))
 
 		state.add_event("P%d is selecting targets for %s." % [
 			p.id, card.data.card_name
