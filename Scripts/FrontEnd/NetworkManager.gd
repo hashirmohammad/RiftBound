@@ -60,11 +60,12 @@ func start_host() -> void:
 	var peer := ENetMultiplayerPeer.new()
 	var err  := peer.create_server(PORT, MAX_PEERS)
 	if err != OK:
-		push_warning("NetworkManager: server creation failed (%d)" % err)
+		print("[NET] ERROR: server creation failed (err=%d)" % err)
 		return
 	multiplayer.multiplayer_peer = peer
 	multiplayer.peer_connected.connect(_on_peer_connected)
 	multiplayer.peer_disconnected.connect(_on_peer_disconnected)
+	print("[NET] Hosting on %s:%d" % [get_local_ip(), PORT])
 
 func join_host(ip: String) -> void:
 	_close_peer()
@@ -73,13 +74,14 @@ func join_host(ip: String) -> void:
 	var peer := ENetMultiplayerPeer.new()
 	var err  := peer.create_client(ip, PORT)
 	if err != OK:
-		push_warning("NetworkManager: client connect failed (%d)" % err)
+		print("[NET] ERROR: client creation failed (err=%d)" % err)
 		connection_failed.emit()
 		return
 	multiplayer.multiplayer_peer = peer
 	multiplayer.connected_to_server.connect(_on_connected_to_server)
 	multiplayer.connection_failed.connect(_on_connection_failed)
 	multiplayer.peer_disconnected.connect(_on_peer_disconnected)
+	print("[NET] Attempting to connect to %s:%d" % [ip, PORT])
 
 func _close_peer() -> void:
 	stop_discovery()
@@ -103,8 +105,10 @@ func start_listening() -> void:
 	_udp_listener = PacketPeerUDP.new()
 	var err := _udp_listener.bind(DISCOVERY_PORT)
 	if err != OK:
-		push_warning("NetworkManager: discovery listen bind failed (%d)" % err)
+		print("[NET] ERROR: discovery listen bind failed (err=%d) — port %d may be in use" % [err, DISCOVERY_PORT])
 		_udp_listener = null
+	else:
+		print("[NET] Listening for hosts on port %d" % DISCOVERY_PORT)
 
 func stop_discovery() -> void:
 	if _udp_broadcaster != null:
@@ -157,20 +161,25 @@ func _process(delta: float) -> void:
 			var packet := _udp_listener.get_packet()
 			var ip     := _udp_listener.get_packet_ip()
 			if ip != "" and ip != "0.0.0.0" and packet.get_string_from_utf8() == "riftbound":
+				print("[NET] Host discovered: %s" % ip)
 				host_discovered.emit(ip)
 
 # ─── Peer callbacks ───────────────────────────────────────────────────────────
 
 func _on_peer_connected(_id: int) -> void:
+	print("[NET] Peer connected (id=%d) — sending game ready" % _id)
 	_notify_game_ready.rpc(game_seed)
 
 func _on_connected_to_server() -> void:
+	print("[NET] Connected to host!")
 	connected_to_host.emit()
 
 func _on_connection_failed() -> void:
+	print("[NET] Connection FAILED — host unreachable or port blocked")
 	connection_failed.emit()
 
 func _on_peer_disconnected(_id: int) -> void:
+	print("[NET] Peer disconnected (id=%d)" % _id)
 	peer_disconnected.emit()
 
 @rpc("authority", "call_local")
