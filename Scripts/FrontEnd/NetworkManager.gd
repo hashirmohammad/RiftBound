@@ -13,6 +13,7 @@ signal game_ready(local_id: int)
 signal connection_failed
 signal peer_disconnected
 signal host_discovered(ip: String)
+signal connected_to_host
 
 var _udp_broadcaster: PacketPeerUDP = null
 var _udp_listener:    PacketPeerUDP = null
@@ -114,6 +115,18 @@ func stop_discovery() -> void:
 		_udp_listener = null
 	_broadcast_timer = 0.0
 
+func get_local_ip() -> String:
+	for addr in IP.get_local_addresses():
+		if ":" in addr:
+			continue
+		var parts := addr.split(".")
+		if parts.size() != 4:
+			continue
+		if parts[0] == "127" or (parts[0] == "169" and parts[1] == "254"):
+			continue
+		return addr
+	return "unknown"
+
 func _get_broadcast_addresses() -> Array[String]:
 	var result: Array[String] = []
 	for addr in IP.get_local_addresses():
@@ -152,7 +165,7 @@ func _on_peer_connected(_id: int) -> void:
 	_notify_game_ready.rpc(game_seed)
 
 func _on_connected_to_server() -> void:
-	pass
+	connected_to_host.emit()
 
 func _on_connection_failed() -> void:
 	connection_failed.emit()

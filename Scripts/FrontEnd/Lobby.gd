@@ -8,12 +8,14 @@ extends Control
 @onready var status_label    = $VBox/StatusLabel
 @onready var firewall_button = $VBox/FirewallButton
 @onready var back_button     = $VBox/BackButton
+@onready var ip_label        = $IPLabel
 
 var _discovered: Array[String] = []
 var _connect_timer: SceneTreeTimer = null
 
 func _ready() -> void:
 	NetworkManager.setup_firewall_rules()
+	ip_label.text = "Your IP: %s" % NetworkManager.get_local_ip()
 	host_button.pressed.connect(_on_host_pressed)
 	join_button.pressed.connect(_on_join_pressed)
 	firewall_button.pressed.connect(_on_firewall_pressed)
@@ -21,6 +23,7 @@ func _ready() -> void:
 	NetworkManager.game_ready.connect(_on_game_ready)
 	NetworkManager.connection_failed.connect(_on_connection_failed)
 	NetworkManager.host_discovered.connect(_on_host_discovered)
+	NetworkManager.connected_to_host.connect(_on_connected_to_host)
 	NetworkManager.start_listening()
 
 func _on_host_discovered(ip: String) -> void:
@@ -70,6 +73,9 @@ func _on_connect_timeout() -> void:
 func _on_game_ready(_local_id: int) -> void:
 	_connect_timer = null
 	get_tree().change_scene_to_file("res://Scenes/main.tscn")
+
+func _on_connected_to_host() -> void:
+	status_label.text = "Connected! Starting game..."
 
 func _on_connection_failed() -> void:
 	_connect_timer = null
