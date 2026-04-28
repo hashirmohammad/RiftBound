@@ -166,6 +166,8 @@ func _card_needs_play_choice(card: CardInstance) -> bool:
 			return true
 		"OGN-044/298": # Clockwork Keeper
 			return true
+		"OGN-151/298": # Lee Sin, Centered
+			return true
 		_:
 			return false
 
@@ -200,6 +202,22 @@ func _show_choice_for_card(card: CardInstance, slot_index: int) -> void:
 				"Pay extra Calm and draw 1",
 				{
 					"type": "extra_calm",
+					"card_uid": card.uid,
+					"slot_index": slot_index
+				},
+				disable_b
+			)
+		
+		"OGN-151/298": # Lee Sin, Centered
+			var accelerate_total_cost: int = card.data.cost + 1
+			var disable_b: bool = player.awaken_rune_count() < accelerate_total_cost
+
+			_show_play_choice_ui(
+				"Choose how to play %s" % card.data.card_name,
+				"Play Normally",
+				"Accelerate (+1 Calm)",
+				{
+					"type": "accelerate",
 					"card_uid": card.uid,
 					"slot_index": slot_index
 				},

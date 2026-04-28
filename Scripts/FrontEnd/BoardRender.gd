@@ -93,7 +93,7 @@ func render_static_state(player: PlayerState, opponent: PlayerState) -> void:
 			board.opponent_main_deck,
 			board.opponent_rune_deck
 		]:
-			_clear_panel_images(panel)
+			_clear_panel_visuals(panel)
 			_add_panel_texture(panel, deck_tex)
 
 	_render_static_card_panel(board.player_champion_legend, player.legend)
@@ -192,7 +192,7 @@ func _render_static_card_panel(panel: Panel, card_instance: CardInstance) -> voi
 	if panel == null:
 		return
 
-	_clear_panel_images(panel)
+	_clear_panel_visuals(panel)
 
 	if card_instance == null or card_instance.data == null:
 		return
@@ -309,12 +309,12 @@ func _render_runes(panel: Panel, runes: Array, player_id: int) -> void:
 		card.set_card_state(RiftCard.CardState.ON_BOARD)
 
 
-func _clear_panel_images(panel: Panel) -> void:
+func _clear_panel_visuals(panel: Panel) -> void:
 	if panel == null:
 		return
 
 	for child in panel.get_children():
-		if child is TextureRect:
+		if child is TextureRect or child is RiftCard:
 			child.queue_free()
 
 

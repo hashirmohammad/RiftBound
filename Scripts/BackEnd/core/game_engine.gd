@@ -78,30 +78,22 @@ static func start_game() -> GameState:
 	p1.rune_deck.shuffle()
 	
 	rig_card_to_top_of_deck(p0, "OGN-052/298") # Stalwart Poro done
-	#rig_card_to_top_of_deck(p0, "OGN-054/298") # Sunlit Guardian done
-	rig_card_to_top_of_deck(p1, "OGN-054/298") # Sunlit Guardian done
-	
+	rig_card_to_top_of_deck(p0, "OGN-054/298") # Sunlit Guardian done
 	#rig_card_to_top_of_deck(p0, "OGN-065/298") # Wizened Elder done
-	#rig_card_to_top_of_deck(p0, "OGN-075/298") # Tasty Faefolk done
-	rig_card_to_top_of_deck(p1, "OGN-052/298") # Stalwart Poro done
-	rig_card_to_top_of_deck(p1, "OGN-052/298") # Stalwart Poro done
-	rig_card_to_top_of_deck(p1, "OGN-052/298") # Stalwart Poro done
-	rig_card_to_top_of_deck(p1, "OGN-052/298") # Stalwart Poro done
-	
-	#rig_card_to_top_of_deck(p0, "OGN-136/298") # Pit Rookie done
-	#rig_card_to_top_of_deck(p0, "OGN-044/298") # Clockwork Keeper
-	#rig_card_to_top_of_deck(p0, "OGN-047/298") # Find Your Center
-	rig_card_to_top_of_deck(p0, "OGN-058/298") # Discipline done
+	#rig_card_to_top_of_deck(p0, "OGN-075/298") # Tasty Faefolk done	
+	rig_card_to_top_of_deck(p0, "OGN-136/298") # Pit Rookie done
+	#rig_card_to_top_of_deck(p0, "OGN-044/298") # Clockwork Keeper done
+	#rig_card_to_top_of_deck(p0, "OGN-047/298") # Find Your Center done
+	#rig_card_to_top_of_deck(p0, "OGN-058/298") # Discipline done
 	#rig_card_to_top_of_deck(p0, "OGN-046/298") # En Garde done
-	rig_card_to_top_of_deck(p0, "OGN-128/298") # Challenge done
-	rig_card_to_top_of_deck(p0, "OGN-043/298") # Charm done
+	#rig_card_to_top_of_deck(p0, "OGN-128/298") # Challenge done
+	#rig_card_to_top_of_deck(p0, "OGN-043/298") # Charm done	
 	#rig_card_to_top_of_deck(p0, "OGN-258/298") # Dragon's Rage done
 	#rig_card_to_top_of_deck(p0, "OGN-161/298") # Deadbloom Predator done
-	#rig_card_to_top_of_deck(p0, "OGN-151/298") # Lee Sin, Centered
+	#rig_card_to_top_of_deck(p0, "OGN-151/298") # Lee Sin, Centered done
 	#rig_card_to_top_of_deck(p0, "OGN-155/298") # Qiyana, Victorious done
-	#rig_card_to_top_of_deck(p0, "OGN-045/298") # Defy
-	#rig_card_to_top_of_deck(p0, "OGN-077/298") # Zhonya's Hourglass
-	rig_card_to_top_of_deck(p0, "OGN-157/298") # Udyr, Wildman
+	#rig_card_to_top_of_deck(p0, "OGN-077/298") # Zhonya's Hourglass done
+	#rig_card_to_top_of_deck(p0, "OGN-157/298") # Udyr, Wildman done
 
 	for i in range(OPENING_HAND_SIZE):
 		state.turn_system._draw_card(p0)
@@ -185,8 +177,27 @@ static func _get_arena_controller(state: GameState, arena_index: int) -> int:
 	return -1
 
 static func _update_arena_control(state: GameState) -> void:
-	state.arena_control[0] = _get_arena_controller(state, 0)
-	state.arena_control[1] = _get_arena_controller(state, 1)
+	var old_control: Array = state.arena_control.duplicate()
+
+	for i in range(state.arena_control.size()):
+		state.arena_control[i] = _get_arena_controller(state, i)
+
+	for i in range(state.arena_control.size()):
+		var new_owner: int = int(state.arena_control[i])
+		var old_owner: int = int(old_control[i])
+
+		if new_owner == -1:
+			continue
+
+		if old_owner != new_owner:
+			var bf: BattlefieldInstance = _get_arena_battlefield(state, i)
+
+			BattlefieldAbilityRegistry.trigger(
+				state,
+				bf,
+				BattlefieldEvents.ON_CONQUER,
+				new_owner
+			)
 
 static func _count_controlled(state: GameState, player_id: int) -> int:
 	var count := 0
@@ -204,6 +215,19 @@ static func _score_start_turn(state: GameState, player_id: int) -> void:
 		state.add_event("P%d controls no arenas and gains no points." % player_id)
 		return
 
+	for arena_index in range(state.arena_control.size()):
+		if state.arena_control[arena_index] != player_id:
+			continue
+
+		var bf: BattlefieldInstance = _get_arena_battlefield(state, arena_index)
+
+		BattlefieldAbilityRegistry.trigger(
+			state,
+			bf,
+			BattlefieldEvents.ON_HOLD,
+			player_id
+		)
+
 	if controlled == 2:
 		state.scores[player_id] += 2
 		state.add_event("P%d starts turn controlling both arenas (+2). Total: %d" % [
@@ -219,10 +243,14 @@ static func _score_start_turn(state: GameState, player_id: int) -> void:
 		])
 		_check_win(state, player_id)
 
-
 static func _check_win(state: GameState, player_id: int) -> void:
 	if state.scores[player_id] >= 8:
 		state.scores[player_id] = 8
 		state.winner_id = player_id
 		state.game_over = true
 		state.add_event("P%d WINS THE GAME!" % player_id)
+
+static func _get_arena_battlefield(state: GameState, arena_index: int) -> BattlefieldInstance:
+	if arena_index == 0:
+		return state.players[0].picked_battlefield
+	return state.players[1].picked_battlefield

@@ -38,38 +38,38 @@ func update(state: GameState, pending_assignments = null) -> void:
 		choice_a_button.visible = true
 		choice_b_button.visible = true
 		_update_choice_buttons(state)
-		status_label.text = "Choose an effect." + _event_log_text(state)
+		status_label.text = "Choose an effect." + _game_info_text(state)
 		return
 
 	if state.awaiting_unit_target:
-		status_label.text = _unit_target_text(state) + _event_log_text(state)
+		status_label.text = _unit_target_text(state) + _game_info_text(state)
 		return
 
 	if state.awaiting_spell_destination:
-		status_label.text = "Choose destination battlefield." + _event_log_text(state)
+		status_label.text = "Choose destination battlefield." + _game_info_text(state)
 		return
 
 	if state.awaiting_spell_targets:
-		status_label.text = _spell_target_text(state) + _event_log_text(state)
+		status_label.text = _spell_target_text(state) + _game_info_text(state)
 		return
 
 	if state.awaiting_rune_payment:
 		var remaining: int = state.pending_card_cost - state.selected_rune_uids.size()
-		status_label.text = "Select %d more rune(s)." % remaining + _event_log_text(state)
+		status_label.text = "Select %d more rune(s)." % remaining + _game_info_text(state)
 		cancel_payment_button.visible = true
 		return
 
 	if state.awaiting_showdown:
-		status_label.text = "Showdown! Pass or use an ability." + _event_log_text(state)
+		status_label.text = "Showdown! Pass or use an ability." + _game_info_text(state)
 		pass_priority_button.visible = true
 		return
 
 	if state.awaiting_damage_assignment:
-		status_label.text = _damage_assignment_text(state, pending_assignments) + _event_log_text(state)
+		status_label.text = _damage_assignment_text(state, pending_assignments) + _game_info_text(state)
 		confirm_damage_button.visible = true
 		return
 
-	status_label.text = "" + _event_log_text(state)
+	status_label.text = "" + _game_info_text(state)
 
 
 func _hide_all_buttons() -> void:
@@ -215,3 +215,27 @@ func _event_log_text(state: GameState, max_lines := 5) -> String:
 		return ""
 
 	return "\n\nLog:\n" + "\n".join(lines)
+
+func _game_info_text(state: GameState) -> String:
+	var active_id: int = state.active_player_index
+	var priority_id: int = state.get_priority_player_id()
+
+	var p0: PlayerState = state.players[0]
+	var p1: PlayerState = state.players[1]
+
+	var text := "\n\n--- Game Info ---"
+	text += "\nTurn: %d" % state.turn_number
+	text += "\nPhase: %s" % state.phase
+	text += "\nCurrent Player: P%d" % active_id
+
+	if state.awaiting_showdown:
+		text += "\nPriority: P%d" % priority_id
+
+	text += "\nPoints: P0 %d / %d | P1 %d / %d" % [
+		int(state.scores[0]),
+		state.POINTS_TO_WIN,
+		int(state.scores[1]),
+		state.POINTS_TO_WIN
+	]
+
+	return text

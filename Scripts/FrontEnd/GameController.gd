@@ -11,6 +11,8 @@ const ChoiceController            = preload("res://Scripts/FrontEnd/ChoiceContro
 const UnitTargetController        = preload("res://Scripts/FrontEnd/UnitTargetController.gd")
 const CombatUIController          = preload("res://Scripts/FrontEnd/CombatUIController.gd")
 const TurnUIController            = preload("res://Scripts/FrontEnd/TurnUIController.gd")
+const LegendUIController          = preload("res://Scripts/FrontEnd/LegendUIController.gd")
+const MoveChampionToBaseAction    = preload("res://Scripts/BackEnd/actions/move_champion_to_base_action.gd")
 
 var state: GameState
 var board_renderer: BoardRenderer
@@ -21,6 +23,7 @@ var choice_controller: ChoiceController
 var unit_target_controller: UnitTargetController
 var combat_ui_controller: CombatUIController
 var turn_ui_controller: TurnUIController
+var legend_ui_controller: LegendUIController
 
 @onready var status_label          = $"../StatusLabel"
 @onready var hand_manager          = $"../P0/P0_Hand"
@@ -90,6 +93,13 @@ func _ready() -> void:
 	
 	turn_ui_controller = TurnUIController.new()
 	turn_ui_controller.setup(
+		self,
+		state,
+		status_label
+	)
+	
+	legend_ui_controller = LegendUIController.new()
+	legend_ui_controller.setup(
 		self,
 		state,
 		status_label
@@ -264,6 +274,27 @@ func try_play_card_to_enemy_battlefield(card_uid: int, enemy_player_id: int, bat
 	if not success:
 		status_label.text = action.get_error_message()
 		state.pending_play_metadata.clear()
+		return false
+
+	refresh_all_ui()
+	return true
+
+func start_legend_mode(player_id: int = -1) -> void:
+	legend_ui_controller.start_legend_mode(player_id)
+
+func cancel_legend_mode() -> void:
+	legend_ui_controller.cancel_legend_mode()
+
+func try_use_legend_ability(target_uid: int) -> bool:
+	return legend_ui_controller.try_use_legend_ability(target_uid)
+
+func try_move_champion_to_base() -> bool:
+	var player := state.get_active_player()
+	var action := MoveChampionToBaseAction.new(player.id)
+
+	var success := GameEngine.apply_action(state, action)
+	if not success:
+		status_label.text = action.get_error_message()
 		return false
 
 	refresh_all_ui()

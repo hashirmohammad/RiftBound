@@ -155,7 +155,7 @@ func resolve_combat(context: CombatContext) -> void:
 		"attacker_assignments": context.attacker_assignments,
 		"defender_assignments": context.defender_assignments,
 	})
-
+	_resolve_battlefield_result(context)
 	var dead: Array[UnitState] = CombatResolver.collect_dead(context)
 	_process_deaths(dead, context)
 	_check_conquer_triggers(context)
@@ -331,3 +331,69 @@ func _find_friendly_zhonyas(player_id: int, context: CombatContext) -> CardInsta
 				return card
 
 	return null
+
+func _trigger_battlefield_result(
+		state: GameState,
+		battlefield: BattlefieldInstance,
+		winner_id: int,
+		result: String
+	) -> void:
+
+	match result:
+		"hold":
+			BattlefieldAbilityRegistry.trigger(
+				state,
+				battlefield,
+				BattlefieldEvents.ON_HOLD,
+				winner_id
+			)
+
+		"conquer":
+			BattlefieldAbilityRegistry.trigger(
+				state,
+				battlefield,
+				BattlefieldEvents.ON_CONQUER,
+				winner_id
+			)
+			
+func _resolve_battlefield_result(context: CombatContext) -> void:
+	var attacker_might := context.total_attacker_might
+	var defender_might := context.total_defender_might
+
+	var attacker_id := context.attackers[0].player_id
+	var defender_id := context.defenders[0].player_id
+
+	var battlefield: BattlefieldInstance = context.game_state.players[attacker_id].picked_battlefield
+
+	if attacker_might > defender_might:
+		# attacker wins → conquer
+		_trigger_battlefield_result(
+			context.game_state,
+			battlefield,
+			attacker_id,
+			"conquer"
+		)
+
+	elif attacker_might < defender_might:
+		# defender holds
+		_trigger_battlefield_result(
+			context.game_state,
+			battlefield,
+			defender_id,
+			"hold"
+		)
+
+	else:
+		# tie → both hold (depends on your rule, but safe default)
+		_trigger_battlefield_result(
+			context.game_state,
+			battlefield,
+			attacker_id,
+			"hold"
+		)
+		_trigger_battlefield_result(
+			context.game_state,
+			battlefield,
+			defender_id,
+			"hold"
+		)

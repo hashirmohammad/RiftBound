@@ -57,7 +57,16 @@ func resolve_pending_spell() -> void:
 	var player_id: int = state.pending_spell_player_id
 	var payload := _build_payload(player_id)
 
-	SpellRegistry.resolve(card, state, payload)
+	var resolver := SpellRegistry.get_resolver(card.data.card_id)
+
+	if state.awaiting_showdown and state.timing_manager != null:
+		state.timing_manager.queue_spell(card, resolver, payload)
+		state.add_event("P%d put %s on the spell stack." % [
+			player_id,
+			card.data.card_name
+		])
+	else:
+		SpellRegistry.resolve(card, state, payload)
 	_send_spell_to_trash(card, player_id)
 	state.add_event("P%d used %s." % [player_id, card.data.card_name])
 

@@ -94,6 +94,9 @@ static func resolve_tasty_faefolk_deathknell(unit: UnitState, state: GameState) 
 
 
 static func _handle_unit_death(state: GameState, unit: UnitState) -> void:
+	if _try_zhonyas_replacement(state, unit):
+		return
+
 	for effect in unit.effects.get_triggered(EffectEvents.ON_DEATH):
 		if effect.trigger_fn.is_valid():
 			effect.trigger_fn.call(unit, state)
@@ -102,7 +105,6 @@ static func _handle_unit_death(state: GameState, unit: UnitState) -> void:
 	state.remove_unit_from_board(unit.uid)
 	unit.card_instance.zone = CardInstance.Zone.TRASH
 	state.add_event("%s died and was moved to trash." % unit.card_instance.data.card_name)
-
 
 static func summon_unit_to_board(state: GameState, player_id: int, card_data: CardData, slot_index: int) -> UnitState:
 	var player: PlayerState = state.players[player_id]
@@ -313,7 +315,7 @@ static func spend_one_buff(state: GameState, unit: UnitState) -> bool:
 
 static func find_first_buffed_friendly_unit(state: GameState, player_id: int) -> UnitState:
 	for unit in state.unit_registry.get_units_for_player(player_id):
-		if unit.effects.sum(EffectInstance.EffectType.BUFF) > 0:
+		if unit.effects.sum_of(EffectInstance.EffectType.BUFF) > 0:
 			return unit
 	return null
 
@@ -357,3 +359,53 @@ static func buff_unit_if_unbuffed(
 		target.card_instance.data.card_name,
 		value
 	])
+
+static func _try_zhonyas_replacement(state: GameState, dying_unit: UnitState) -> bool:
+	var zhonyas: CardInstance = _find_friendly_zhonyas(state, dying_unit.player_id)
+
+	if zhonyas == null:
+		return false
+
+	# Kill Zhonya's instead.
+	_remove_card_from_play_to_trash(state, zhonyas)
+
+	# Save dying unit.
+	dying_unit.damage_taken = 0
+	dying_unit.pending_damage = 0
+	recall_unit_exhausted(state, dying_unit)
+
+	state.add_event("Zhonya's Hourglass died instead of %s." % dying_unit.card_instance.data.card_name)
+	return true
+
+
+static func _find_friendly_zhonyas(state: GameState, player_id: int) -> CardInstance:
+	var player: PlayerState = state.players[player_id]
+
+	for slot in player.board_slots:
+		for card in slot:
+			if card.data.card_id == "OGN-077/298":
+				return card
+
+	for lane in player.battlefield_slots:
+		for card in lane:
+			if card.data.card_id == "OGN-077/298":
+				return card
+
+	return null
+
+
+static func _remove_card_from_play_to_trash(state: GameState, card: CardInstance) -> void:
+	for player in state.players:
+		for slot in player.board_slots:
+			if slot.has(card):
+				slot.erase(card)
+				card.zone = CardInstance.Zone.TRASH
+				player.trash.append(card)
+				return
+
+		for lane in player.battlefield_slots:
+			if lane.has(card):
+				lane.erase(card)
+				card.zone = CardInstance.Zone.TRASH
+				player.trash.append(card)
+				return

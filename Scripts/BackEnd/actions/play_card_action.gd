@@ -306,11 +306,9 @@ func _get_modified_base_cost(card: CardInstance, state: GameState) -> int:
 	match card.data.card_id:
 		"OGN-047/298": # Find Your Center
 			var opponent_id: int = 1 - player_id
-			var opponent: PlayerState = state.players[opponent_id]
+			var opponent_score: int = int(state.scores[opponent_id])
 
-			# Replace with your real victory-score field if named differently
-			var victory_score: int = state.POINTS_TO_WIN
-			if victory_score - opponent.points <= 3:
+			if state.POINTS_TO_WIN - opponent_score <= 3:
 				cost -= 2
 
 	return maxi(cost, 0)

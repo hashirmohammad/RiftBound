@@ -61,7 +61,8 @@ static func _register_blind_monk() -> void:
 		"requires_target": true,
 
 		"can_use": func(state: GameState, player_id: int, target_uid: int) -> bool:
-			if player_id != state.active_player_id:
+			var actor: PlayerState = state.get_priority_player() if state.awaiting_showdown else state.get_active_player()
+			if player_id != actor.id:
 				return false
 
 			var p: PlayerState = state.players[player_id]
