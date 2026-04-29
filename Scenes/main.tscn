@@ -2,19 +2,110 @@
 
 [ext_resource type="PackedScene" uid="uid://i2v3j52mwfha" path="res://Scenes/Board.tscn" id="1_344ge"]
 [ext_resource type="Script" uid="uid://qq14kdatojop" path="res://Scripts/FrontEnd/main.gd" id="1_hptm8"]
-[ext_resource type="PackedScene" uid="uid://d30bkc8l8s6ad" path="res://Scenes/Arena.tscn" id="2_h1bgf"]
+[ext_resource type="PackedScene" path="res://Scenes/Arena.tscn" id="2_h1bgf"]
 [ext_resource type="PackedScene" uid="uid://bdtm88erd1wam" path="res://Scenes/CardSlot.tscn" id="2_jjvhh"]
-[ext_resource type="PackedScene" uid="uid://nb0qalao5ivo" path="res://Scenes/Battlefield.tscn" id="4_6iyac"]
+[ext_resource type="PackedScene" path="res://Scenes/Battlefield.tscn" id="4_6iyac"]
 [ext_resource type="PackedScene" uid="uid://bcd6w6o1ruqom" path="res://Scenes/Hand.tscn" id="4_d1ilt"]
-[ext_resource type="PackedScene" uid="uid://buvl4rweh6dr6" path="res://Scenes/Champion.tscn" id="4_fdnlq"]
-[ext_resource type="PackedScene" uid="uid://w81buurym63b" path="res://Scenes/Runes.tscn" id="4_hptm8"]
-[ext_resource type="PackedScene" uid="uid://bi6khoh054nvq" path="res://Scenes/Point.tscn" id="4_k12tt"]
-[ext_resource type="PackedScene" uid="uid://4jxghshc0u46" path="res://Scenes/Legend.tscn" id="5_6iyac"]
+[ext_resource type="PackedScene" path="res://Scenes/Champion.tscn" id="4_fdnlq"]
+[ext_resource type="PackedScene" path="res://Scenes/Runes.tscn" id="4_hptm8"]
+[ext_resource type="PackedScene" path="res://Scenes/Point.tscn" id="4_k12tt"]
+[ext_resource type="PackedScene" path="res://Scenes/Legend.tscn" id="5_6iyac"]
 [ext_resource type="Script" uid="uid://dbj7q7e1mye34" path="res://Scripts/FrontEnd/InputManager.gd" id="6_344ge"]
 [ext_resource type="Script" uid="uid://b4t67171v1thf" path="res://Scripts/FrontEnd/GameController.gd" id="9_ynf5e"]
 [ext_resource type="PackedScene" uid="uid://bjwex4dl6gep7" path="res://Scenes/RuneDeck.tscn" id="11_h1bgf"]
-[ext_resource type="PackedScene" uid="uid://23ypgw1gnlhb" path="res://Scenes/MainDeck.tscn" id="11_wsu2k"]
-[ext_resource type="PackedScene" uid="uid://cscpai8v2fbek" path="res://Scenes/Trash.tscn" id="12_k12tt"]
+[ext_resource type="PackedScene" path="res://Scenes/MainDeck.tscn" id="11_wsu2k"]
+[ext_resource type="PackedScene" path="res://Scenes/Trash.tscn" id="12_k12tt"]
+[ext_resource type="Script" uid="uid://6nllcfqgxq74" path="res://Scripts/FrontEnd/Winscreen.gd" id="16_k12tt"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_k12tt"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_h1bgf"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_b3802"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fevyy"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hibaj"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pdsj5"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ee4r6"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gt3je"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3pmx8"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_u50mg"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cbgmd"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1w6v2"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ueoa1"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6vcvc"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7k868"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hpc6h"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kltya"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_e08e2"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_neg2b"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_r33sp"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hdf80"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jwpg7"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_k2e45"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_536cc"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_aqgau"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8cuat"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_o1aky"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kwxat"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_aa8k8"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kqrg6"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
 
 [node name="Main" type="Node2D" unique_id=1554237704]
 script = ExtResource("1_hptm8")
@@ -26,69 +117,71 @@ z_index = -1
 script = ExtResource("6_344ge")
 
 [node name="P0_Arena" parent="." unique_id=372592103 instance=ExtResource("2_h1bgf")]
-position = Vector2(440, 540)
+modulate = Color(1, 1, 1, 0)
+position = Vector2(383, 536)
 
 [node name="P1_Arena" parent="." unique_id=2089672518 instance=ExtResource("2_h1bgf")]
-position = Vector2(1322, 540)
+modulate = Color(1, 1, 1, 0)
+position = Vector2(1051, 536)
 
 [node name="P0" type="Node2D" parent="." unique_id=246826101]
 
 [node name="P0_Points" type="Node2D" parent="P0" unique_id=84179518]
 
 [node name="P0_Point1" parent="P0/P0_Points" unique_id=858870301 instance=ExtResource("4_k12tt")]
-position = Vector2(27, 880.875)
+position = Vector2(27, 872.875)
 
 [node name="P0_Point2" parent="P0/P0_Points" unique_id=811101513 instance=ExtResource("4_k12tt")]
-position = Vector2(27, 842.625)
+position = Vector2(27, 834.625)
 
 [node name="P0_Point3" parent="P0/P0_Points" unique_id=327160036 instance=ExtResource("4_k12tt")]
-position = Vector2(27, 804.375)
+position = Vector2(27, 796.375)
 
 [node name="P0_Point4" parent="P0/P0_Points" unique_id=1361892046 instance=ExtResource("4_k12tt")]
-position = Vector2(27, 766.125)
+position = Vector2(27, 758.125)
 
 [node name="P0_Point5" parent="P0/P0_Points" unique_id=1176661728 instance=ExtResource("4_k12tt")]
-position = Vector2(27, 727.875)
+position = Vector2(27, 719.875)
 
 [node name="P0_Point6" parent="P0/P0_Points" unique_id=1253753202 instance=ExtResource("4_k12tt")]
-position = Vector2(27, 689.625)
+position = Vector2(27, 681.625)
 
 [node name="P0_Point7" parent="P0/P0_Points" unique_id=1191016440 instance=ExtResource("4_k12tt")]
-position = Vector2(27, 651.375)
+position = Vector2(27, 643.375)
 
 [node name="P0_Point8" parent="P0/P0_Points" unique_id=822467084 instance=ExtResource("4_k12tt")]
-position = Vector2(27, 613.125)
+position = Vector2(27, 605.125)
 
 [node name="P0_Base" parent="P0" unique_id=402928220 instance=ExtResource("2_jjvhh")]
-position = Vector2(850, 746)
+position = Vector2(850, 738)
 
 [node name="P0_Battlefield1" parent="P0" unique_id=737844258 instance=ExtResource("4_6iyac")]
-position = Vector2(383, 648)
+position = Vector2(383, 640)
 
 [node name="P0_Battlefield2" parent="P0" unique_id=200000001 instance=ExtResource("4_6iyac")]
-position = Vector2(1051, 648)
+position = Vector2(1051, 640)
 
 [node name="P0_Legend" parent="P0" unique_id=1188493574 instance=ExtResource("5_6iyac")]
-position = Vector2(1518, 648)
+position = Vector2(1518, 640)
 
 [node name="P0_Champion" parent="P0" unique_id=387825937 instance=ExtResource("4_fdnlq")]
-position = Vector2(1784, 648)
+position = Vector2(1784, 640)
 
 [node name="P0_MainDeck" parent="P0" unique_id=189259472 instance=ExtResource("11_wsu2k")]
-position = Vector2(1784, 746)
+position = Vector2(1784, 738)
 
 [node name="P0_RuneDeck" parent="P0" unique_id=2020144502 instance=ExtResource("11_h1bgf")]
-position = Vector2(151.5, 845)
+position = Vector2(151.5, 837)
 scale = Vector2(0.8000001, 0.8000001)
 
 [node name="P0_Runes" parent="P0" unique_id=1761847097 instance=ExtResource("4_hptm8")]
-position = Vector2(952.5, 845)
+position = Vector2(952.5, 837)
 
 [node name="P0_Trash" parent="P0" unique_id=685272223 instance=ExtResource("12_k12tt")]
-position = Vector2(1784, 845)
+position = Vector2(1784, 837)
 
 [node name="P0_Hand" parent="P0" unique_id=1713076396 instance=ExtResource("4_d1ilt")]
-position = Vector2(960, 990)
+position = Vector2(960, 982)
 
 [node name="P1" type="Node2D" parent="." unique_id=548828831]
 
@@ -150,10 +243,15 @@ position = Vector2(1784, 235)
 position = Vector2(960, 90)
 
 [node name="EndTurnButton" type="Button" parent="." unique_id=283290533]
-offset_left = 1647.0
-offset_top = 490.0
-offset_right = 1920.0
-offset_bottom = 540.0
+offset_left = 1654.0
+offset_top = 488.0
+offset_right = 1918.0
+offset_bottom = 536.0
+theme_override_styles/normal = SubResource("StyleBoxFlat_k12tt")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_h1bgf")
+theme_override_styles/hover = SubResource("StyleBoxFlat_b3802")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_fevyy")
+theme_override_styles/focus = SubResource("StyleBoxFlat_hibaj")
 text = "End Turn"
 
 [node name="GameController" type="Node" parent="." unique_id=540227294]
@@ -164,34 +262,64 @@ offset_right = 40.0
 offset_bottom = 23.0
 
 [node name="CancelPaymentButton" type="Button" parent="." unique_id=355363713]
-offset_left = 1760.0
-offset_top = 540.0
-offset_right = 1920.0
-offset_bottom = 590.0
+offset_left = 1654.0
+offset_top = 536.0
+offset_right = 1918.0
+offset_bottom = 584.0
+theme_override_styles/normal = SubResource("StyleBoxFlat_pdsj5")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_ee4r6")
+theme_override_styles/hover = SubResource("StyleBoxFlat_gt3je")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_3pmx8")
+theme_override_styles/focus = SubResource("StyleBoxFlat_u50mg")
 text = "Cancel"
 
 [node name="PassPriorityButton" type="Button" parent="." unique_id=355363714]
-offset_left = 1653.0
-offset_top = 540.0
-offset_right = 1920.0
-offset_bottom = 590.0
+offset_left = 1654.0
+offset_top = 536.0
+offset_right = 1918.0
+offset_bottom = 584.0
+theme_override_styles/normal = SubResource("StyleBoxFlat_cbgmd")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_1w6v2")
+theme_override_styles/hover = SubResource("StyleBoxFlat_ueoa1")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_6vcvc")
+theme_override_styles/focus = SubResource("StyleBoxFlat_7k868")
 text = "Pass Priority"
 
 [node name="ConfirmDamageButton" type="Button" parent="." unique_id=355363715]
-offset_left = 1653.0
-offset_top = 540.0
-offset_right = 1923.0
-offset_bottom = 590.0
+offset_left = 1654.0
+offset_top = 536.0
+offset_right = 1918.0
+offset_bottom = 584.0
+theme_override_styles/normal = SubResource("StyleBoxFlat_hpc6h")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_kltya")
+theme_override_styles/hover = SubResource("StyleBoxFlat_e08e2")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_neg2b")
+theme_override_styles/focus = SubResource("StyleBoxFlat_r33sp")
 text = "Confirm Damage"
 
 [node name="ChoiceAButton" type="Button" parent="." unique_id=590261534]
-offset_left = 1387.0
-offset_top = 492.0
-offset_right = 1650.0
-offset_bottom = 537.0
+offset_left = 1390.0
+offset_top = 488.0
+offset_right = 1654.0
+offset_bottom = 536.0
+theme_override_styles/normal = SubResource("StyleBoxFlat_hdf80")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_jwpg7")
+theme_override_styles/hover = SubResource("StyleBoxFlat_k2e45")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_536cc")
+theme_override_styles/focus = SubResource("StyleBoxFlat_aqgau")
 
 [node name="ChoiceBButton" type="Button" parent="." unique_id=1542843524]
-offset_left = 1384.0
-offset_top = 540.0
-offset_right = 1650.0
-offset_bottom = 590.0
+offset_left = 1390.0
+offset_top = 536.0
+offset_right = 1654.0
+offset_bottom = 584.0
+theme_override_styles/normal = SubResource("StyleBoxFlat_8cuat")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_o1aky")
+theme_override_styles/hover = SubResource("StyleBoxFlat_kwxat")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_aa8k8")
+theme_override_styles/focus = SubResource("StyleBoxFlat_kqrg6")
+
+[node name="WinScreen" type="CanvasLayer" parent="." unique_id=666179721]
+layer = 10
+visible = false
+script = ExtResource("16_k12tt")

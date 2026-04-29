@@ -24,6 +24,8 @@ var current_window: TimingWindow = TimingWindow.NONE
 # LIFO reaction stack — entries: { effect: EffectInstance, source: UnitState, context: CombatContext }
 var _reaction_stack: Array[Dictionary] = []
 
+# Stack of pending spells (LIFO like reactions)
+var _spell_stack: Array[Dictionary] = []
 # ── Showdown ──────────────────────────────────────────────────────────────────
 
 func open_showdown(context: CombatContext) -> ShowdownContext:
@@ -37,9 +39,22 @@ func open_showdown(context: CombatContext) -> ShowdownContext:
 func close_showdown(showdown: ShowdownContext) -> void:
 	assert(current_window == TimingWindow.SHOWDOWN, "close_showdown called outside of showdown")
 	_resolve_reaction_stack(showdown.combat_context)
+	_resolve_spell_stack(showdown.combat_context)
 	current_window = TimingWindow.NONE
 	window_closed.emit(TimingWindow.SHOWDOWN)
 
+func _resolve_spell_stack(context: CombatContext) -> void:
+	while not _spell_stack.is_empty():
+		var entry: Dictionary = _spell_stack.pop_back()
+
+		var resolver: Callable = entry["resolver"]
+		var card: CardInstance = entry["card"]
+		var payload: Dictionary = entry["payload"]
+
+		if resolver.is_valid():
+			resolver.call(card, context.game_state, payload)
+
+	context.game_state.add_event("Spell stack resolved.")
 # ── Action window ─────────────────────────────────────────────────────────────
 
 # Executes an ACTION ability immediately within the current showdown window.
@@ -91,3 +106,29 @@ func _resolve_reaction_stack(context: CombatContext) -> void:
 		if e.ability_fn.is_valid():
 			e.ability_fn.call(entry["source"], entry["context"], context.game_state)
 	_reaction_stack.clear()
+
+func counter_top_spell_with_limit(max_cost: int) -> bool:
+	if _spell_stack.is_empty():
+		return false
+
+	for i in range(_spell_stack.size() - 1, -1, -1):
+		var entry: Dictionary = _spell_stack[i]
+
+		var card: CardInstance = entry.get("card", null)
+		if card == null or card.data == null:
+			continue
+
+		if card.data.cost <= max_cost:
+			_spell_stack.remove_at(i)
+			return true
+
+	return false
+
+func queue_spell(card: CardInstance, resolver: Callable, payload: Dictionary) -> void:
+	assert(current_window == TimingWindow.SHOWDOWN, "Spell used outside showdown")
+
+	_spell_stack.push_back({
+		"card": card,
+		"resolver": resolver,
+		"payload": payload
+	})

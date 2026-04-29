@@ -19,6 +19,11 @@ const HAND_H       = 180
 const DIVIDER_H    = 4
 const ARENA_H      = 100
 
+# Gold fill for scored points
+const COLOR_POINT_SCORED   = Color(0.83, 0.68, 0.21, 0.95)
+# Dim fill for unscored points
+const COLOR_POINT_UNSCORED = Color(0.08, 0.14, 0.26, 1.0)
+
 const CARD_SLOT_SCENE = preload("res://Scenes/CardSlot.tscn")
 
 var player_battlefield_panel:   Panel = null
@@ -54,6 +59,10 @@ var _p0_bf_slot_left:  CardSlot = null
 var _p0_bf_slot_right: CardSlot = null
 var _p1_bf_slot_left:  CardSlot = null
 var _p1_bf_slot_right: CardSlot = null
+
+# Stored refs to point circle panels — index 0 = point 1, index 7 = point 8
+var _p0_point_panels: Array[Panel] = []  # bottom player
+var _p1_point_panels: Array[Panel] = []  # top player
 
 var _ph:        float = 0.0
 var _bh:        float = 0.0
@@ -155,6 +164,46 @@ func _hide_arena_visuals() -> void:
 				child.visible = false
 		if node is CanvasItem:
 			node.modulate = Color(1, 1, 1, 0)
+
+# ─── Points Visualization ─────────────────────────────────────────────────────
+
+## Call this from game_controller after any state change that may affect points.
+## p0_points and p1_points are the raw integer point counts from PlayerState.
+func refresh_points(p0_points: int, p1_points: int) -> void:
+	_apply_points_to_circles(_p0_point_panels, p0_points, false)
+	_apply_points_to_circles(_p1_point_panels, p1_points, true)
+
+## panels array: index 0 = circle labelled "1", index 7 = circle labelled "8".
+## For the bottom player (flip=false) point 1 is at the bottom, so we fill upward.
+## For the top player    (flip=true)  point 1 is at the top,    so we fill downward.
+func _apply_points_to_circles(panels: Array[Panel], points: int, top_player: bool) -> void:
+	for i in range(panels.size()):
+		var panel: Panel = panels[i]
+		if panel == null:
+			continue
+
+		# circle_number is 1-based (matches the label text "1".."8")
+		var circle_number: int = i + 1
+
+		var is_scored: bool = circle_number <= points
+
+		var style: StyleBoxFlat = make_style(true)
+
+		if is_scored:
+			style.bg_color     = COLOR_POINT_SCORED
+			style.border_color = COLOR_BORDER
+			# Brighten label so it reads on the gold fill
+			var label: Label = panel.get_child(0) as Label
+			if label:
+				label.add_theme_color_override("font_color", Color(0.1, 0.08, 0.02, 1.0))
+		else:
+			style.bg_color     = COLOR_POINT_UNSCORED
+			style.border_color = COLOR_BORDER
+			var label: Label = panel.get_child(0) as Label
+			if label:
+				label.add_theme_color_override("font_color", COLOR_BORDER)
+
+		panel.add_theme_stylebox_override("panel", style)
 
 # ─── Scene Node Repositioning ─────────────────────────────────────────────────
 
@@ -395,7 +444,7 @@ func _create_battlefield_slot(panel: Panel, slot_name: String) -> CardSlot:
 func get_slot_index_under_mouse() -> int:
 	if game_controller == null:
 		return -1
-	var active_id: int = game_controller.state.get_active_player().id
+	var active_id: int = game_controller.get_actor_player().id
 	var local_id: int  = NetworkManager.local_player_id
 	var slots          = _player_slot_nodes if active_id == local_id else _p1_slot_nodes
 	var mouse_pos      = get_global_mouse_position()
@@ -404,8 +453,10 @@ func get_slot_index_under_mouse() -> int:
 		var slot = slots[i]
 		if slot == null:
 			continue
+
 		var local_mouse: Vector2 = slot.to_local(mouse_pos)
-		var half: Vector2        = slot._get_collision_size() / 2.0
+		var half: Vector2 = slot._get_collision_size() / 2.0
+
 		if abs(local_mouse.x) <= half.x and abs(local_mouse.y) <= half.y:
 			return i
 
@@ -517,6 +568,12 @@ func build_player(y: float, flip: bool) -> void:
 	_draw_border_box(Vector2(0, hy), Vector2(SCREEN_W, HAND_H))
 
 	var rh = bh / 8.0
+
+	# ── Point circles ─────────────────────────────────────────────────────────
+	# Collect into the correct array as we create them so refresh_points() has
+	# direct refs without any tree search. Index 0 = point label "1", index 7 = "8".
+	var point_panel_array: Array[Panel] = []
+
 	for i in range(1, 9):
 		var cy = by + ((i - 1) if flip else (8 - i)) * rh + (rh - MANA_SIZE) / 2.0
 		var c  = add_panel("Mana%d" % i, Vector2(MANA_X, cy), Vector2(MANA_SIZE, MANA_SIZE), make_style(true), str(i), 13)
@@ -525,6 +582,17 @@ func build_player(y: float, flip: bool) -> void:
 		ml.size                 = Vector2(MANA_SIZE, MANA_SIZE)
 		ml.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		ml.vertical_alignment   = VERTICAL_ALIGNMENT_CENTER
+
+		# Store at index i-1 so index 0 == point 1
+		point_panel_array.append(c)
+
+	# Assign to the correct player's array.
+	# flip=true  → this is the top (opponent / P1) player
+	# flip=false → this is the bottom (local / P0) player
+	if flip:
+		_p1_point_panels = point_panel_array
+	else:
+		_p0_point_panels = point_panel_array
 
 	var tw  = SCREEN_W - MANA_COL_W - GAP
 	var cw  = floor(tw * 0.14)
@@ -586,3 +654,25 @@ func _draw_border_box(pos: Vector2, size: Vector2) -> void:
 	add_rect(Vector2(pos.x,                      pos.y + size.y - BORDER_W), Vector2(size.x,  BORDER_W), COLOR_BORDER)
 	add_rect(Vector2(pos.x,                      pos.y),                     Vector2(BORDER_W, size.y),  COLOR_BORDER)
 	add_rect(Vector2(pos.x + size.x - BORDER_W,  pos.y),                     Vector2(BORDER_W, size.y),  COLOR_BORDER)
+
+func get_board_slot_data_under_mouse() -> Dictionary:
+	var mouse_pos  = get_global_mouse_position()
+	var actor_id: int  = game_controller.get_actor_player().id
+	var local_id: int  = NetworkManager.local_player_id
+	var slots          = _player_slot_nodes if actor_id == local_id else _p1_slot_nodes
+
+	for i in range(slots.size()):
+		var slot = slots[i]
+		if slot == null:
+			continue
+
+		var local_mouse: Vector2 = slot.to_local(mouse_pos)
+		var half: Vector2 = slot._get_collision_size() / 2.0
+
+		if abs(local_mouse.x) <= half.x and abs(local_mouse.y) <= half.y:
+			return {
+				"player": actor_id,
+				"slot": i
+			}
+
+	return {}

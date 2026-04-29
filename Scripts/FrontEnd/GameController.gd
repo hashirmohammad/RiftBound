@@ -1,19 +1,34 @@
 extends Node
 
-const GameEngine                  = preload("res://Scripts//BackEnd/core/game_engine.gd")
+const GameEngine                  = preload("res://Scripts/BackEnd/core/game_engine.gd")
 const PlayCardAction              = preload("res://Scripts/BackEnd/actions/play_card_action.gd")
 const EndTurnAction               = preload("res://Scripts/BackEnd/actions/end_turn_action.gd")
+const BoardRenderer               = preload("res://Scripts/FrontEnd/BoardRender.gd")
+const PickRuneAction              = preload("res://Scripts/BackEnd/actions/pick_runes_to_spend_action.gd")
+const StatusPresenter             = preload("res://Scripts/FrontEnd/StatusPresenter.gd")
+const SpellTargetController       = preload("res://Scripts/FrontEnd/SpellTargetController.gd")
+const ChoiceController            = preload("res://Scripts/FrontEnd/ChoiceController.gd")
+const UnitTargetController        = preload("res://Scripts/FrontEnd/UnitTargetController.gd")
+const CombatUIController          = preload("res://Scripts/FrontEnd/CombatUIController.gd")
+const TurnUIController            = preload("res://Scripts/FrontEnd/TurnUIController.gd")
+const LegendUIController          = preload("res://Scripts/FrontEnd/LegendUIController.gd")
 const MoveToBattlefieldAction     = preload("res://Scripts/BackEnd/actions/move_to_battlefield_action.gd")
 const ReturnFromBattlefieldAction = preload("res://Scripts/BackEnd/actions/return_from_battlefield_action.gd")
 const CommitToBattlefieldAction   = preload("res://Scripts/BackEnd/actions/commit_to_battlefield_action.gd")
 const PassPriorityAction          = preload("res://Scripts/BackEnd/actions/pass_priority_action.gd")
 const ConfirmDamageAction         = preload("res://Scripts/BackEnd/actions/confirm_damage_action.gd")
-const CARD_SCENE                  = preload("res://Scenes/Card.tscn")
+const MoveChampionToBaseAction    = preload("res://Scripts/BackEnd/actions/move_champion_to_base_action.gd")
 
 var state: GameState
-
-# UIDs of board cards currently selected for group commit; written by InputManager
+var board_renderer: BoardRenderer
+var status_presenter: StatusPresenter
 var selected_board_uids: Array[int] = []
+var spell_target_controller: SpellTargetController
+var choice_controller: ChoiceController
+var unit_target_controller: UnitTargetController
+var combat_ui_controller: CombatUIController
+var turn_ui_controller: TurnUIController
+var legend_ui_controller: LegendUIController
 
 @onready var status_label          = $"../StatusLabel"
 @onready var hand_manager          = $"../P0/P0_Hand"
@@ -23,296 +38,116 @@ var selected_board_uids: Array[int] = []
 @onready var cancel_payment_button = $"../CancelPaymentButton"
 @onready var pass_priority_button  = $"../PassPriorityButton"
 @onready var confirm_damage_button = $"../ConfirmDamageButton"
-@onready var choice_a_button      = $"../ChoiceAButton"
-@onready var choice_b_button      = $"../ChoiceBButton"
+@onready var choice_a_button       = $"../ChoiceAButton"
+@onready var choice_b_button       = $"../ChoiceBButton"
+@onready var win_screen            = $"../WinScreen"
 
-var pending_play_choice: Dictionary = {}
-# Attacker's pending damage assignments during the assignment phase: uid -> damage
-var _pending_assignments: Dictionary = {}
 
 func _ready() -> void:
 	if NetworkManager.is_network_mode:
 		seed(NetworkManager.game_seed)
 	state = GameEngine.start_game()
-	await wait_until_main()
+	await get_tree().process_frame
+
+	board_renderer = BoardRenderer.new()
+	board_renderer.setup(
+		self,
+		board,
+		state,
+		hand_manager,
+		hand_manager_p1,
+		deck_ui
+	)
+
+	status_presenter = StatusPresenter.new()
+	status_presenter.setup(
+		status_label,
+		cancel_payment_button,
+		pass_priority_button,
+		confirm_damage_button,
+		choice_a_button,
+		choice_b_button
+	)
+
+	spell_target_controller = SpellTargetController.new()
+	spell_target_controller.setup(self, state, status_label)
+
+	choice_controller = ChoiceController.new()
+	choice_controller.setup(self, state, status_label, choice_a_button, choice_b_button)
+
+	unit_target_controller = UnitTargetController.new()
+	unit_target_controller.setup(self, state, status_label)
+
+	combat_ui_controller = CombatUIController.new()
+	combat_ui_controller.setup(self, state, status_label)
+
+	turn_ui_controller = TurnUIController.new()
+	turn_ui_controller.setup(self, state, status_label)
+
+	legend_ui_controller = LegendUIController.new()
+	legend_ui_controller.setup(self, state, status_label)
+
+	win_screen.rematch_requested.connect(_on_rematch_requested)
+	win_screen.quit_requested.connect(_on_quit_requested)
+
+	_connect_buttons()
 	refresh_all_ui()
+
+func _connect_buttons() -> void:
 	cancel_payment_button.pressed.connect(_on_cancel_payment_pressed)
-	cancel_payment_button.visible  = false
 	pass_priority_button.pressed.connect(_on_pass_priority_pressed)
-	pass_priority_button.visible   = false
 	confirm_damage_button.pressed.connect(_on_confirm_damage_pressed)
-	confirm_damage_button.visible  = false
 	choice_a_button.pressed.connect(_on_choice_a_pressed)
 	choice_b_button.pressed.connect(_on_choice_b_pressed)
-	choice_a_button.visible = false
-	choice_b_button.visible = false
+
+	cancel_payment_button.visible = false
+	pass_priority_button.visible  = false
+	confirm_damage_button.visible = false
+	choice_a_button.visible       = false
+	choice_b_button.visible       = false
 
 # ─── UI Refresh ───────────────────────────────────────────────────────────────
 
 func refresh_all_ui() -> void:
-	render_static_state(state.players[_local_id()], state.players[1 - _local_id()])
-	refresh_hand_ui()
-	render_board()
-	refresh_deck_ui()
+	board_renderer.refresh_all_ui()
 	_update_status_label()
+	board.refresh_points(state.scores[0], state.scores[1])
+
+	if state.game_over and win_screen and not win_screen.visible:
+		win_screen.show_winner(state.winner_id, state.scores)
 
 func refresh_hand_ui() -> void:
-	hand_manager.render_hand(state.players[_local_id()].hand)
-	hand_manager_p1.render_hand(state.players[1 - _local_id()].hand)
+	board_renderer.refresh_hand_ui()
 
 func refresh_deck_ui() -> void:
-	if deck_ui.has_method("set_count"):
-		deck_ui.set_count(state.players[_local_id()].deck.size())
+	board_renderer.refresh_deck_ui()
 
 func refresh_payment_ui() -> void:
-	render_rune_panels(state.players[_local_id()], state.players[1 - _local_id()])
+	board_renderer.refresh_payment_ui()
 	_update_status_label()
 
-# ─── Board Rendering ──────────────────────────────────────────────────────────
-
 func render_board() -> void:
-	var local  = state.players[_local_id()]
-	var remote = state.players[1 - _local_id()]
-	_render_player_slots(local,  board._player_slot_nodes)
-	_render_player_slots(remote, board._p1_slot_nodes)
-
-	_render_battlefield_lane(remote.battlefield_slots[0], board._p1_bf_slot_left)
-	_render_battlefield_lane(remote.battlefield_slots[1], board._p1_bf_slot_right)
-	_render_battlefield_lane(local.battlefield_slots[0],  board._p0_bf_slot_left)
-	_render_battlefield_lane(local.battlefield_slots[1],  board._p0_bf_slot_right)
+	board_renderer.render_board()
 
 func render_slot(player: PlayerState, slot_index: int) -> void:
-	var slots = board._player_slot_nodes if player.id == _local_id() else board._p1_slot_nodes
-	if slot_index >= slots.size() or slots[slot_index] == null:
-		return
-	var slot = slots[slot_index]
-	slot.clear_cards()
-	for ci in player.board_slots[slot_index]:
-		_place_card(slot, ci, Vector2(0.35, 0.35))
+	board_renderer.render_slot(player, slot_index)
 
 func render_arena_slot(player: PlayerState) -> void:
-	if player.id != _local_id():
-		_render_battlefield_lane(player.battlefield_slots[0], board._p1_bf_slot_left)
-		_render_battlefield_lane(player.battlefield_slots[1], board._p1_bf_slot_right)
-	else:
-		_render_battlefield_lane(player.battlefield_slots[0], board._p0_bf_slot_left)
-		_render_battlefield_lane(player.battlefield_slots[1], board._p0_bf_slot_right)
-
-func _render_player_slots(player: PlayerState, slots: Array) -> void:
-	if player == null:
-		return
-	for slot in slots:
-		if slot != null: slot.clear_cards()
-	for i in range(player.board_slots.size()):
-		if i >= slots.size() or slots[i] == null: continue
-		for ci in player.board_slots[i]:
-			_place_card(slots[i], ci, Vector2(0.35, 0.35))
-
-func _render_battlefield_lane(cards: Array, slot: CardSlot) -> void:
-	if slot == null: return
-	slot.clear_cards()
-	for ci in cards:
-		_place_card(slot, ci, Vector2(0.35, 0.35))
-
-func _place_card(slot: CardSlot, card_instance: CardInstance, scale: Vector2) -> void:
-	var card: RiftCard = CARD_SCENE.instantiate()
-	card.scale         = scale
-	card.z_index       = 5
-	slot.add_card(card)
-	card.setup_from_card_instance(card_instance)
-	card.set_card_state(RiftCard.CardState.ON_BOARD)
-	card.rotation_degrees = 90.0 if card_instance.is_exhausted() else 0.0
-	# Rotation is assigned after set_card_state, so refresh here to capture the
-	# correct resting rotation for hit-testing and hover exit.
-	card.refresh_slot_state()
-	if selected_board_uids.has(card_instance.uid):
-		card.modulate = Color(0.55, 1.0, 0.55, 1.0)
-	if state.awaiting_unit_target:
-		var source_uid: int = state.pending_target_source_uid
-		var source_unit: UnitState = state.unit_registry.get_unit(source_uid)
-		var current_unit: UnitState = state.unit_registry.get_unit(card_instance.uid)
-
-		if source_unit != null and current_unit != null:
-			if current_unit.player_id == source_unit.player_id and current_unit.uid != source_unit.uid:
-				card.modulate = Color(0.6, 1.0, 0.6, 1.0)
-
-# ─── Static State Rendering ───────────────────────────────────────────────────
+	board_renderer.render_arena_slot(player)
 
 func render_static_state(player: PlayerState, opponent: PlayerState) -> void:
-	var deck_tex: Texture2D = load("res://Assets/Deck.jpg")
-
-	if deck_tex != null:
-		for panel in [board.player_main_deck, board.player_rune_deck, board.opponent_main_deck, board.opponent_rune_deck]:
-			_clear_panel_images(panel)
-			_add_panel_texture(panel, deck_tex)
-
-	_render_legend_panel(board.player_champion_legend, player.legend)
-	_render_legend_panel(board.opponent_champion_legend, opponent.legend)
-
-	_render_battlefields(board.player_battlefield_panel, player.battlefields, player.picked_battlefield)
-	_render_battlefields(board.opponent_battlefield_panel, opponent.battlefields, opponent.picked_battlefield)
-
-	_render_arena_pick(board.arena_p0_panel, player.picked_battlefield, "Arena 1")
-	_render_arena_pick(board.arena_p1_panel, opponent.picked_battlefield, "Arena 2")
-
-	render_rune_panels(player, opponent)
+	board_renderer.render_static_state(player, opponent)
 
 func render_rune_panels(p0: PlayerState, p1: PlayerState) -> void:
-	_render_runes(board.player_runes_panel, p0.rune_pool, p0.id)
-	_render_runes(board.opponent_runes_panel, p1.rune_pool, p1.id)
+	board_renderer.render_rune_panels(p0, p1)
 
-func _render_legend_panel(panel: Panel, legend_instance: CardInstance) -> void:
-	if panel == null or legend_instance == null or legend_instance.data == null:
-		return
+# ─── Status Label ─────────────────────────────────────────────────────────────
 
-	_clear_panel_images(panel)
-	if legend_instance.data.image_url == "":
-		if legend_instance.data.texture != null:
-			_add_panel_texture(panel, legend_instance.data.texture)
-		return
-
-	var card: RiftCard = CARD_SCENE.instantiate()
-	panel.add_child(card)
-	card.position = panel.size / 2.0
-	card.scale    = Vector2(0.35, 0.35)
-	card.setup_from_card_instance(legend_instance)
-	card.set_card_state(RiftCard.CardState.ON_BOARD)
-
-func _render_battlefields(panel: Panel, battlefield_instances: Array, pick: BattlefieldInstance) -> void:
-	if panel == null:
-		return
-
-	for child in panel.get_children():
-		if child is RiftCard:
-			child.queue_free()
-
-	if pick != null or battlefield_instances.is_empty():
-		return
-
-	var count: int        = battlefield_instances.size()
-	var spacing: float    = 170.0
-	var start_x: float    = (panel.size.x / 2.0) - (float(count - 1) * spacing / 2.0)
-
-	for i in range(count):
-		var inst: BattlefieldInstance = battlefield_instances[i]
-		if inst == null:
-			continue
-		var card: RiftCard = CARD_SCENE.instantiate()
-		panel.add_child(card)
-		card.position = Vector2(start_x + i * spacing, panel.size.y / 2.0)
-		card.scale    = Vector2(0.8, 0.8)
-		card.z_index  = 5
-		card.setup_from_battlefield_instance(inst)
-		card.set_card_state(RiftCard.CardState.ON_BOARD)
-
-func _render_arena_pick(panel: Panel, pick: BattlefieldInstance, player_label: String) -> void:
-	if panel == null or pick == null:
-		return
-
-	for child in panel.get_children():
-		if child is RiftCard:
-			child.queue_free()
-
-	var label = panel.get_child(0) as Label
-	if label:
-		label.text = player_label
-
-	var card: RiftCard = CARD_SCENE.instantiate()
-	panel.add_child(card)
-	card.position = panel.size / 2.0
-	card.scale = Vector2(0.65, 0.65)
-
-	card.z_index  = 5
-	card.setup_from_battlefield_instance(pick)
-	card.set_card_state(RiftCard.CardState.ON_BOARD)
-
-func _render_runes(panel: Panel, runes: Array, player_id: int) -> void:
-	if panel == null:
-		return
-
-	for child in panel.get_children():
-		if child is RiftCard:
-			child.queue_free()
-
-	if runes.is_empty():
-		return
-
-	var count: int     = runes.size()
-	var spacing: float = 120.0
-	var start_x: float = (panel.size.x / 2.0) - (float(count - 1) * spacing / 2.0)
-
-	var active_player_id: int       = state.get_active_player().id
-	var is_current_player: bool     = (player_id == active_player_id)
-
-	for i in range(count):
-		var rune_inst: RuneInstance = runes[i]
-		if rune_inst == null or rune_inst.rune == null:
-			continue
-
-		var card: RiftCard = CARD_SCENE.instantiate()
-		panel.add_child(card)
-		card.position  = Vector2(start_x + i * spacing, panel.size.y / 2.0)
-		card.scale     = Vector2(0.35, 0.35)
-		card.z_index   = 5
-		card.card_uid  = rune_inst.uid
-		card.card_data = rune_inst.rune
-		card.update_visuals()
-
-		var is_exhausted: bool = rune_inst.is_exhausted()
-		var is_selected: bool  = is_current_player and state.selected_rune_uids.has(rune_inst.uid)
-		var can_select: bool   = is_current_player and state.awaiting_rune_payment and not is_exhausted and not is_selected
-
-		card.rotation_degrees = 90.0 if is_exhausted else 0.0
-
-		if is_exhausted:    card.modulate = Color(0.7, 0.7, 0.7, 1.0)
-		elif is_selected:   card.modulate = Color(0.6, 1.0, 0.6, 1.0)
-		elif can_select:    card.modulate = Color(1.15, 1.15, 0.75, 1.0)
-		else:               card.modulate = Color.WHITE
-
-		card.set_card_state(RiftCard.CardState.ON_BOARD)
-
-func _hide_play_choice_ui() -> void:
-	choice_a_button.visible = false
-	choice_b_button.visible = false
-	choice_a_button.disabled = false
-	choice_b_button.disabled = false
-	pending_play_choice.clear()
-
-func _show_play_choice_ui(_label_text: String, a_text: String, b_text: String, context: Dictionary, disable_b := false) -> void:
-	choice_a_button.text = a_text
-	choice_b_button.text = b_text
-	choice_a_button.visible = true
-	choice_b_button.visible = true
-	choice_b_button.disabled = disable_b
-
-	pending_play_choice = context.duplicate(true)
-
-func _clear_panel_images(panel: Panel) -> void:
-	if panel == null:
-		return
-	for child in panel.get_children():
-		if child is TextureRect:
-			child.queue_free()
-
-func _add_panel_texture(panel: Panel, tex: Texture2D, modulate_color := Color.WHITE) -> void:
-	if panel == null or tex == null:
-		return
-
-	var rect           = TextureRect.new()
-	rect.texture       = tex
-	rect.anchor_left   = 0.0
-	rect.anchor_top    = 0.0
-	rect.anchor_right  = 1.0
-	rect.anchor_bottom = 1.0
-	rect.offset_left   = 4.0
-	rect.offset_top    = 4.0
-	rect.offset_right  = -4.0
-	rect.offset_bottom = -4.0
-	rect.expand_mode   = TextureRect.EXPAND_IGNORE_SIZE
-	rect.stretch_mode  = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	rect.mouse_filter  = Control.MOUSE_FILTER_IGNORE
-	rect.modulate      = modulate_color
-	panel.add_child(rect)
+func _update_status_label() -> void:
+	if state.awaiting_damage_assignment and combat_ui_controller != null:
+		status_presenter.update(state, combat_ui_controller.get_pending_assignments())
+	else:
+		status_presenter.update(state)
 
 # ─── Actions ──────────────────────────────────────────────────────────────────
 
@@ -325,54 +160,31 @@ func _apply_action(action: GameAction) -> bool:
 func apply_backend_action(action: GameAction) -> void:
 	var success := _apply_action(action)
 	if not success:
-		print("Action failed: ", action.get_error_message())
+		status_label.text = action.get_error_message()
 	refresh_all_ui()
 
 func apply_backend_action_and_wait(action: GameAction) -> void:
 	var success := _apply_action(action)
 	if not success:
-		print("Action failed: ", action.get_error_message())
+		status_label.text = action.get_error_message()
 		refresh_all_ui()
 		return
 	await wait_until_main()
 	refresh_all_ui()
 
 func try_play_card(card_uid: int, slot_index: int) -> String:
-	var card := _find_hand_card(card_uid)
-	if card == null:
-		status_label.text = "Card not found in hand."
-		return "failed"
+	return choice_controller.try_play_card(card_uid, slot_index)
 
-	if _card_needs_play_choice(card):
-		_show_choice_for_card(card, slot_index)
-		return "choice"
+func _on_choice_a_pressed() -> void:
+	choice_controller.resolve_pending_choice("A")
 
-	var played: bool = try_play_card_to_slot(card_uid, slot_index)
-	return "played" if played else "failed"
+func _on_choice_b_pressed() -> void:
+	choice_controller.resolve_pending_choice("B")
 
 func try_play_card_to_slot(card_uid: int, slot_index: int) -> bool:
-	var player = state.get_active_player()
-	var action = PlayCardAction.new(player.id, card_uid, slot_index)
-
+	var player := get_actor_player()
+	var action := PlayCardAction.new(player.id, card_uid, slot_index)
 	var success: bool = _apply_action(action)
-	if not success:
-		status_label.text = action.get_error_message()
-		return false
-
-	if state.awaiting_rune_payment:
-		refresh_payment_ui()
-	else:
-		refresh_hand_ui()
-		render_slot(player, slot_index)
-		_update_status_label()
-
-	return true
-
-func try_pick_runes_to_spend(rune_uid: int) -> bool:
-	var player  = state.get_active_player()
-	var action  = PickRuneAction.new(player.id, rune_uid)
-	var success: bool = _apply_action(action)
-
 	if not success:
 		status_label.text = action.get_error_message()
 		return false
@@ -384,111 +196,11 @@ func try_pick_runes_to_spend(rune_uid: int) -> bool:
 
 	return true
 
-func try_commit_to_battlefield(card_uids: Array[int], battlefield_index: int) -> bool:
-	var player  = state.get_active_player()
-	var action  = CommitToBattlefieldAction.new(player.id, card_uids, battlefield_index)
-	var success = _apply_action(action)
-
-	if not success:
-		status_label.text = action.get_error_message()
-		return false
-
-	refresh_all_ui()
-	return true
-
-func try_pass_priority() -> void:
-	if not state.awaiting_showdown:
-		return
-	if not _is_local_active():
-		return
-
-	var showdown := state.active_showdown
-	var player_id: int
-	if not showdown.active_player_passed:
-		player_id = state.active_player_index
-	else:
-		player_id = 1 - state.active_player_index
-
-	var action := PassPriorityAction.new(player_id)
-	apply_backend_action(action)
-
-func adjust_damage_assignment(unit_uid: int, delta: int) -> void:
-	if not state.awaiting_damage_assignment:
-		return
-	var ctx := state.active_combat_context
-	var loser_is_attacker: bool = ctx.total_defender_might > ctx.total_attacker_might
-	# Pool = loser's own might (what they are distributing)
-	var pool: int = ctx.total_attacker_might if loser_is_attacker else ctx.total_defender_might
-	var current: int = _pending_assignments.get(unit_uid, 0)
-	var total_assigned: int = 0
-	for uid in _pending_assignments:
-		total_assigned += _pending_assignments[uid]
-	var remaining: int = pool - total_assigned
-	if delta > 0:
-		_pending_assignments[unit_uid] = current + mini(delta, remaining)
-	else:
-		_pending_assignments[unit_uid] = maxi(0, current + delta)
-	_update_status_label()
-
-func try_confirm_damage() -> void:
-	if not state.awaiting_damage_assignment:
-		return
-	if not _is_local_assigner():
-		return
-	var ctx := state.active_combat_context
-	var loser_is_attacker: bool = ctx.total_defender_might > ctx.total_attacker_might
-	# Loser is the one submitting: attacker if they lost, defender if they lost
-	var player_id: int = ctx.attackers[0].player_id if loser_is_attacker \
-		else ctx.defenders[0].player_id
-	var action := ConfirmDamageAction.new(player_id, _pending_assignments)
-	var success := _apply_action(action)
-	if not success:
-		status_label.text = action.get_error_message()
-		return
-	_pending_assignments.clear()
-	refresh_all_ui()
-
-func try_move_to_battlefield(card_uid: int, battlefield_index: int) -> bool:
-	var player  = state.get_active_player()
-	var action  = MoveToBattlefieldAction.new(player.id, card_uid, battlefield_index)
-	var success = _apply_action(action)
-
-	if not success:
-		print("MoveToBattlefield failed: ", action.get_error_message())
-		return false
-
-	render_arena_slot(player)
-	render_board()
-	return true
-
-func try_return_from_battlefield(card_uid: int, battlefield_index: int, slot_index: int = 0) -> bool:
-	var player  = state.get_active_player()
-	var action  = ReturnFromBattlefieldAction.new(player.id, card_uid, battlefield_index, slot_index)
-	var success: bool = _apply_action(action)
-
-	if not success:
-		print("ReturnFromBattlefield failed: ", action.get_error_message())
-		return false
-
-	render_arena_slot(player)
-	render_slot(player, slot_index)
-	return true
-
-func try_end_turn() -> void:
-	if not _is_local_active():
-		return
-	if state.awaiting_rune_payment:
-		status_label.text = "Finish or cancel rune payment first."
-		return
-
-	var player = state.get_active_player()
-	var action = EndTurnAction.new(player.id)
-	await apply_backend_action_and_wait(action)
-
 func request_play_card(card_uid: int, slot_index: int, metadata := {}) -> void:
 	state.pending_play_metadata = metadata.duplicate(true)
 
-	var action := PlayCardAction.new(state.get_active_player().id, card_uid, slot_index)
+	var actor := get_actor_player()
+	var action := PlayCardAction.new(actor.id, card_uid, slot_index)
 	if action.validate(state):
 		action.execute(state)
 		if NetworkManager.is_network_mode:
@@ -497,9 +209,111 @@ func request_play_card(card_uid: int, slot_index: int, metadata := {}) -> void:
 			_receive_action.rpc(data)
 	else:
 		state.add_event(action.get_error_message())
+		status_label.text = action.get_error_message()
 		state.pending_play_metadata.clear()
 
 	refresh_all_ui()
+
+func try_select_spell_target(target_uid: int) -> bool:
+	return spell_target_controller.try_select_spell_target(target_uid)
+
+func resolve_pending_spell() -> void:
+	spell_target_controller.resolve_pending_spell()
+
+func try_select_spell_destination(destination_zone: String, destination_player_id: int, destination_index: int) -> void:
+	spell_target_controller.try_select_spell_destination(
+		destination_zone,
+		destination_player_id,
+		destination_index
+	)
+
+func try_select_unit_target(target_uid: int) -> bool:
+	var ok := unit_target_controller.try_select_unit_target(target_uid)
+	if ok and NetworkManager.is_network_mode:
+		_receive_unit_target.rpc(target_uid)
+	return ok
+
+func _on_pass_priority_pressed() -> void:
+	combat_ui_controller.try_pass_priority()
+
+func _on_confirm_damage_pressed() -> void:
+	combat_ui_controller.confirm_damage()
+
+func try_pass_priority() -> void:
+	combat_ui_controller.try_pass_priority()
+
+func try_commit_to_battlefield(card_uids: Array[int], battlefield_index: int) -> bool:
+	return combat_ui_controller.try_commit_to_battlefield(card_uids, battlefield_index)
+
+func try_move_to_battlefield(card_uid: int, battlefield_index: int) -> bool:
+	return combat_ui_controller.try_move_to_battlefield(card_uid, battlefield_index)
+
+func try_return_from_battlefield(card_uid: int, battlefield_index: int, slot_index: int = 0) -> bool:
+	return combat_ui_controller.try_return_from_battlefield(card_uid, battlefield_index, slot_index)
+
+func try_return_from_any_battlefield(card_uid: int, source_player_id: int, battlefield_index: int, slot_index: int = 0) -> bool:
+	return combat_ui_controller.try_return_from_any_battlefield(card_uid, source_player_id, battlefield_index, slot_index)
+
+func _on_cancel_payment_pressed() -> void:
+	turn_ui_controller.cancel_payment()
+
+func try_pick_runes_to_spend(rune_uid: int) -> bool:
+	return turn_ui_controller.try_pick_runes_to_spend(rune_uid)
+
+func try_end_turn() -> void:
+	turn_ui_controller.try_end_turn()
+
+func adjust_damage_assignment(unit_uid: int, delta: int) -> void:
+	combat_ui_controller.adjust_damage_assignment(unit_uid, delta)
+
+func try_play_card_to_enemy_battlefield(card_uid: int, enemy_player_id: int, battlefield_index: int) -> bool:
+	var player := get_actor_player()
+
+	state.pending_play_metadata = {
+		"play_to_enemy_battlefield": true,
+		"enemy_player_id": enemy_player_id,
+		"battlefield_index": battlefield_index
+	}
+
+	var action := PlayCardAction.new(player.id, card_uid, 0)
+	var success := GameEngine.apply_action(state, action)
+
+	if not success:
+		status_label.text = action.get_error_message()
+		state.pending_play_metadata.clear()
+		return false
+
+	if NetworkManager.is_network_mode:
+		var data := _serialize_action(action)
+		data["meta"] = state.pending_play_metadata.duplicate(true)
+		_receive_action.rpc(data)
+
+	refresh_all_ui()
+	return true
+
+func start_legend_mode(player_id: int = -1) -> void:
+	legend_ui_controller.start_legend_mode(player_id)
+
+func cancel_legend_mode() -> void:
+	legend_ui_controller.cancel_legend_mode()
+
+func try_use_legend_ability(target_uid: int) -> bool:
+	return legend_ui_controller.try_use_legend_ability(target_uid)
+
+func try_move_champion_to_base() -> bool:
+	var player := state.get_active_player()
+	var action := MoveChampionToBaseAction.new(player.id)
+	var success := _apply_action(action)
+	if not success:
+		status_label.text = action.get_error_message()
+		return false
+	refresh_all_ui()
+	return true
+
+func get_actor_player() -> PlayerState:
+	if state.awaiting_showdown and state.active_showdown != null:
+		return state.get_priority_player()
+	return state.get_active_player()
 
 # ─── Network ──────────────────────────────────────────────────────────────────
 
@@ -517,9 +331,6 @@ func _receive_action(data: Dictionary) -> void:
 
 @rpc("any_peer")
 func _receive_cancel_payment() -> void:
-	_cancel_payment_locally()
-
-func _cancel_payment_locally() -> void:
 	var player := state.get_active_player()
 	for rune_uid in state.selected_rune_uids:
 		for rune in player.rune_pool:
@@ -531,6 +342,10 @@ func _cancel_payment_locally() -> void:
 	state.pending_card_cost     = 0
 	state.selected_rune_uids.clear()
 	refresh_all_ui()
+
+@rpc("any_peer")
+func _receive_unit_target(target_uid: int) -> void:
+	unit_target_controller.try_select_unit_target(target_uid)
 
 func _serialize_action(action: GameAction) -> Dictionary:
 	if action is EndTurnAction:
@@ -551,6 +366,8 @@ func _serialize_action(action: GameAction) -> Dictionary:
 		return {"t": "pass", "pid": action.player_id}
 	if action is ConfirmDamageAction:
 		return {"t": "dmg", "pid": action.player_id, "asgn": action.assignments.duplicate()}
+	if action is MoveChampionToBaseAction:
+		return {"t": "champ", "pid": action.player_id}
 	push_warning("GameController: unknown action type for serialization")
 	return {}
 
@@ -574,10 +391,11 @@ func _deserialize_action(data: Dictionary) -> GameAction:
 		"pass":
 			return PassPriorityAction.new(pid)
 		"dmg":
-			# RPC may stringify int keys — convert them back
 			var asgn: Dictionary = {}
 			for k in data["asgn"]: asgn[int(k)] = int(data["asgn"][k])
 			return ConfirmDamageAction.new(pid, asgn)
+		"champ":
+			return MoveChampionToBaseAction.new(pid)
 	push_warning("GameController: unknown action type '%s'" % data.get("t", "?"))
 	return null
 
@@ -596,6 +414,9 @@ func _is_local_assigner() -> bool:
 	var assigner_id: int = ctx.attackers[0].player_id if loser_is_attacker else ctx.defenders[0].player_id
 	return assigner_id == NetworkManager.local_player_id
 
+func _local_id() -> int:
+	return NetworkManager.local_player_id
+
 # ─── Helpers ──────────────────────────────────────────────────────────────────
 
 func wait_until_main() -> void:
@@ -607,191 +428,19 @@ func wait_until_main() -> void:
 	if state.phase != "MAIN":
 		push_warning("wait_until_main() timed out. Current phase: %s" % state.phase)
 
-func _update_status_label() -> void:
-	if state.awaiting_unit_target:
-		status_label.text = "Choose a friendly unit for Pit Rookie."
-		cancel_payment_button.visible = false
-		pass_priority_button.visible = false
-		confirm_damage_button.visible = false
-		return
+# ─── Rematch / Quit ──────────────────────────────────────────────────────────
 
-	if state.awaiting_rune_payment:
-		var remaining: int    = state.pending_card_cost - state.selected_rune_uids.size()
-		var card_name: String = _get_pending_card_name()
-		status_label.text             = "Select %d more rune(s) to play %s" % [remaining, card_name]
-		cancel_payment_button.visible = true
-		pass_priority_button.visible = false
-		return
-
-	if state.awaiting_showdown:
-		var ctx: CombatContext = state.active_combat_context
-		var atk := ctx.attackers.size()
-		var def := ctx.defenders.size()
-		var showdown := state.active_showdown
-		var whose: String = "P%d" % (state.active_player_index if not showdown.active_player_passed \
-			else 1 - state.active_player_index)
-		status_label.text             = "Showdown! %d vs %d — %s: Pass or use ability." % [atk, def, whose]
-		pass_priority_button.visible  = true
-		cancel_payment_button.visible = false
-		confirm_damage_button.visible = false
-		return
-
-	if state.awaiting_damage_assignment:
-		var ctx: CombatContext = state.active_combat_context
-		# loser_is_attacker: attacker had less might, distributes their own damage to defenders
-		# else: defender had less might, distributes their own damage to attackers
-		var loser_is_attacker: bool = ctx.total_defender_might > ctx.total_attacker_might
-		var pool: int = ctx.total_attacker_might if loser_is_attacker else ctx.total_defender_might
-		# target_units = the winner's units receiving the loser's damage
-		var target_units: Array = ctx.defenders if loser_is_attacker else ctx.attackers
-		var loser_player_id: int = ctx.attackers[0].player_id if loser_is_attacker \
-			else ctx.defenders[0].player_id
-		for unit in target_units:
-			if not _pending_assignments.has(unit.uid):
-				_pending_assignments[unit.uid] = 0
-		var total_assigned: int = 0
-		for uid in _pending_assignments:
-			total_assigned += _pending_assignments[uid]
-		var remaining: int = pool - total_assigned
-		var parts: Array = []
-		for unit in target_units:
-			parts.append("%s: %d" % [unit.card_instance.data.card_name, _pending_assignments.get(unit.uid, 0)])
-		status_label.text             = "P%d assign %d dmg (left: %d) — L-click +1, R-click -1\n%s" % [
-			loser_player_id, pool, remaining, "  |  ".join(parts)
-		]
-		pass_priority_button.visible  = false
-		cancel_payment_button.visible = false
-		confirm_damage_button.visible = true
-		return
-
-	status_label.text             = ""
-	cancel_payment_button.visible = false
-	pass_priority_button.visible  = false
-	confirm_damage_button.visible = false
-
-func _get_pending_card_name() -> String:
-	for card in state.get_active_player().hand:
-		if card.uid == state.pending_card_uid:
-			return card.data.card_name
-	return "card"
-
-func _on_pass_priority_pressed() -> void:
-	try_pass_priority()
-
-func _on_confirm_damage_pressed() -> void:
-	if not _is_local_assigner():
-		return
-	try_confirm_damage()
-
-func _on_cancel_payment_pressed() -> void:
-	if not state.awaiting_rune_payment:
-		return
-	if not _is_local_active():
-		return
-	_cancel_payment_locally()
-	if NetworkManager.is_network_mode:
-		_receive_cancel_payment.rpc()
-
-func _on_choice_a_pressed() -> void:
-	if pending_play_choice.is_empty():
-		return
-	if not _is_local_active():
-		return
-
-	var card_uid: int = int(pending_play_choice.get("card_uid", -1))
-	var slot_index: int = int(pending_play_choice.get("slot_index", -1))
-
-	_hide_play_choice_ui()
-	try_play_card_to_slot(card_uid, slot_index)
-
-func _on_choice_b_pressed() -> void:
-	if pending_play_choice.is_empty():
-		return
-	if not _is_local_active():
-		return
-
-	var card_uid: int = int(pending_play_choice.get("card_uid", -1))
-	var slot_index: int = int(pending_play_choice.get("slot_index", -1))
-	var choice_type: String = str(pending_play_choice.get("type", ""))
-
-	var metadata: Dictionary = {}
-
-	match choice_type:
-		"accelerate":
-			metadata["accelerate"] = true
-			metadata["accelerate_cost"] = 1
-
-		"extra_calm":
-			metadata["extra_calm_paid"] = true
-
-	_hide_play_choice_ui()
-	request_play_card(card_uid, slot_index, metadata)
-
-func try_select_unit_target(target_uid: int) -> bool:
-	if not state.awaiting_unit_target:
-		return false
-	CardAbilityRegistry.resolve_pending_unit_target(target_uid, state)
-	if NetworkManager.is_network_mode:
-		_receive_unit_target.rpc(target_uid)
-	refresh_all_ui()
-	return true
-
-@rpc("any_peer")
-func _receive_unit_target(target_uid: int) -> void:
-	CardAbilityRegistry.resolve_pending_unit_target(target_uid, state)
+func _on_rematch_requested() -> void:
+	state = GameEngine.start_game()
+	board_renderer.setup(self, board, state, hand_manager, hand_manager_p1, deck_ui)
+	spell_target_controller.setup(self, state, status_label)
+	choice_controller.setup(self, state, status_label, choice_a_button, choice_b_button)
+	unit_target_controller.setup(self, state, status_label)
+	combat_ui_controller.setup(self, state, status_label)
+	turn_ui_controller.setup(self, state, status_label)
+	legend_ui_controller.setup(self, state, status_label)
+	await get_tree().process_frame
 	refresh_all_ui()
 
-func _local_id() -> int:
-	return NetworkManager.local_player_id
-
-func _find_hand_card(card_uid: int) -> CardInstance:
-	var p := state.get_active_player()
-	for card in p.hand:
-		if card.uid == card_uid:
-			return card
-	return null
-
-func _card_needs_play_choice(card: CardInstance) -> bool:
-	match card.data.card_id:
-		"OGN-075/298": # Tasty Faefolk
-			return true
-		"OGN-044/298": # Clockwork Keeper
-			return true
-		_:
-			return false
-
-func _show_choice_for_card(card: CardInstance, slot_index: int) -> void:
-	var p := state.get_active_player()
-
-	match card.data.card_id:
-		"OGN-075/298": # Tasty Faefolk
-			var accelerate_total_cost: int = card.data.cost + 1
-			var disable_b: bool = p.awaken_rune_count() < accelerate_total_cost
-
-			_show_play_choice_ui(
-				"Choose how to play %s" % card.data.card_name,
-				"Play Normally",
-				"Accelerate (+1 Calm)",
-				{
-					"type": "accelerate",
-					"card_uid": card.uid,
-					"slot_index": slot_index
-				},
-				disable_b
-			)
-
-		"OGN-044/298": # Clockwork Keeper
-			var extra_total_cost: int = card.data.cost + 1
-			var disable_b: bool = p.awaken_rune_count() < extra_total_cost
-
-			_show_play_choice_ui(
-				"Choose how to play %s" % card.data.card_name,
-				"Play Normally",
-				"Pay extra Calm and draw 1",
-				{
-					"type": "extra_calm",
-					"card_uid": card.uid,
-					"slot_index": slot_index
-				},
-				disable_b
-			)
+func _on_quit_requested() -> void:
+	get_tree().quit()

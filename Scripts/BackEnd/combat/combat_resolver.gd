@@ -17,13 +17,25 @@ class_name CombatResolver
 static func compute_total_attacker_might(context: CombatContext) -> int:
 	var total := 0
 	for unit in context.attackers:
-		total += MightCalculator.compute_attack_might(unit, context.game_state)
+		var m: int = MightCalculator.compute_attack_might(unit, context.game_state)
+		print("DEBUG attacker unit %s might = %d" % [unit.card_instance.data.card_name, m])
+		total += m
+	print("DEBUG total_attacker_might = %d" % total)
 	return total
 
 static func compute_total_defender_might(context: CombatContext) -> int:
 	var total := 0
 	for unit in context.defenders:
-		total += MightCalculator.compute_defense_might(unit, context.game_state)
+		var m: int = MightCalculator.compute_defense_might(unit, context.game_state)
+		print("DEBUG defender unit %s uid=%d buff=%d might=%d" % [
+			unit.card_instance.data.card_name,
+			unit.uid,
+			unit.effects.max_of(EffectInstance.EffectType.BUFF),
+			MightCalculator.compute_defense_might(unit, context.game_state)
+		])
+		total += m
+	print("DEBUG total_defender_might = %d" % total)
+	
 	return total
 
 # ── Damage assignment ─────────────────────────────────────────────────────────

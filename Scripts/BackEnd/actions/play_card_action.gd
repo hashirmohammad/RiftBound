@@ -15,19 +15,60 @@ func _init(_player_id: int = -1, _card_uid: int = -1, _slot_index: int = -1):
 	slot_index = _slot_index
 
 func validate(state: GameState) -> bool:
-	if player_id != state.get_active_player().id:
-		_error_message = "Invalid PLAY_CARD: not this player's turn."
+	var allowed_player_id: int
+
+	if state.awaiting_showdown and state.active_showdown != null:
+		allowed_player_id = state.get_priority_player_id()
+	else:
+		allowed_player_id = state.get_active_player().id
+
+	if player_id != allowed_player_id:
+		_error_message = "Invalid PLAY_CARD: P%d cannot act. Priority is P%d." % [
+			player_id,
+			allowed_player_id
+		]
 		return false
 
-	if state.phase != "MAIN":
-		_error_message = "Invalid PLAY_CARD: not in MAIN phase."
-		return false
-
-	var p := state.get_active_player()
+	var p : PlayerState = state.players[player_id]
 	var card := _find_card_in_hand(p)
+	
+	if bool(state.pending_play_metadata.get("play_to_enemy_battlefield", false)):
+		if card.data.card_id != "OGN-161/298":
+			_error_message = "Only Deadbloom Predator can be played to an enemy battlefield."
+			return false
 
+		var enemy_player_id: int = int(state.pending_play_metadata.get("enemy_player_id", -1))
+		var battlefield_index: int = int(state.pending_play_metadata.get("battlefield_index", -1))
+
+		if enemy_player_id < 0 or enemy_player_id >= state.players.size():
+			_error_message = "Deadbloom failed: invalid enemy player."
+			return false
+
+		if enemy_player_id == player_id:
+			_error_message = "Deadbloom failed: must choose enemy battlefield."
+			return false
+
+		if battlefield_index < 0 or battlefield_index >= state.players[enemy_player_id].battlefield_slots.size():
+			_error_message = "Deadbloom failed: invalid battlefield."
+			return false
+
+		if state.players[enemy_player_id].battlefield_slots[battlefield_index].is_empty():
+			_error_message = "Deadbloom failed: enemy battlefield must be occupied."
+			return false
+	
 	if card == null:
 		_error_message = "Invalid PLAY_CARD: card uid not found in hand."
+		return false
+	
+	if card.data.type == CardData.CardType.SPELL:
+		if SpellRegistry.requires_targets(card.data.card_id):
+			if not SpellRegistry.has_full_legal_target_sequence(card.data.card_id, state, player_id):
+				_error_message = "%s cannot be played: no legal targets." % card.data.card_name
+				return false
+	
+	# 🔥 Allow spells outside MAIN phase
+	if card.data.type != CardData.CardType.SPELL and state.phase != "MAIN":
+		_error_message = "Invalid PLAY_CARD: not in MAIN phase."
 		return false
 
 	var total_cost: int = _get_total_play_cost(card, state)
@@ -46,7 +87,7 @@ func validate(state: GameState) -> bool:
 	return true
 
 func execute(state: GameState) -> void:
-	var p := state.get_active_player()
+	var p : PlayerState = state.players[player_id]
 	var card := _find_card_in_hand(p)
 
 	if card == null:
@@ -62,12 +103,7 @@ func execute(state: GameState) -> void:
 			PlayCardAction.finalize_play(state, p, card, slot_index)
 		return
 
-	state.awaiting_rune_payment = true
-	state.pending_payment_player_id = p.id
-	state.pending_card_uid = card.uid
-	state.pending_slot_index = slot_index
-	state.pending_card_cost = total_cost
-	state.selected_rune_uids.clear()
+	state.enter_rune_payment(card_uid, slot_index, total_cost, player_id)
 
 	state.add_event("P%d started paying %d runes for %s." % [
 		p.id, total_cost, card.data.card_name
@@ -94,7 +130,67 @@ static func finalize_play(state: GameState, p: PlayerState, card: CardInstance, 
 	if hand_index == -1:
 		state.add_event("PLAY_CARD finalize failed: card disappeared from hand.")
 		return
+	var play_to_enemy_bf: bool = bool(state.pending_play_metadata.get("play_to_enemy_battlefield", false))
+	
+	if play_to_enemy_bf:
+		var enemy_player_id: int = int(state.pending_play_metadata.get("enemy_player_id", -1))
+		var battlefield_index: int = int(state.pending_play_metadata.get("battlefield_index", -1))
 
+		if card.data.card_id != "OGN-161/298":
+			state.add_event("Only Deadbloom Predator can be played to an enemy battlefield.")
+			state.pending_play_metadata.clear()
+			return
+		
+		if enemy_player_id < 0 or enemy_player_id >= state.players.size():
+			state.add_event("Deadbloom failed: invalid enemy player.")
+			state.pending_play_metadata.clear()
+			return
+
+		if enemy_player_id == p.id:
+			state.add_event("Deadbloom failed: must choose enemy battlefield.")
+			state.pending_play_metadata.clear()
+			return
+
+		if battlefield_index < 0 or battlefield_index >= state.players[enemy_player_id].battlefield_slots.size():
+			state.add_event("Deadbloom failed: invalid battlefield.")
+			state.pending_play_metadata.clear()
+			return
+		var enemy_battlefield: Array = state.players[enemy_player_id].battlefield_slots[battlefield_index]
+
+		if enemy_battlefield.is_empty():
+			state.add_event("Deadbloom failed: enemy battlefield must be occupied.")
+			state.pending_play_metadata.clear()
+			return
+		p.hand.remove_at(hand_index)
+		card.zone = CardInstance.Zone.ARENA
+		card.exhaust()
+
+		state.players[enemy_player_id].battlefield_slots[battlefield_index].append(card)
+
+		var unit := UnitState.new(card, p.id)
+
+		for effect in KeywordParser.parse(card.data, state):
+			unit.effects.add(effect)
+
+		var extra_fn := CardAbilityRegistry.get_extra_unit_effects_fn(card.data.card_id)
+		if extra_fn.is_valid():
+			var extra_effects: Array[EffectInstance] = extra_fn.call(unit, state)
+			for e in extra_effects:
+				unit.effects.add(e)
+
+		state.unit_registry.register(unit)
+		if card.data.card_id == "OGN-157/298":
+			print("DEBUG Udyr registered effects:")
+			for e in unit.effects.get_all():
+				print("  effect uid=", e.uid, " type=", e.effect_type, " timing=", e.timing_window)
+		state.add_event("P%d played %s to enemy battlefield %d." % [
+			p.id,
+			card.data.card_name,
+			battlefield_index
+		])
+
+		state.pending_play_metadata.clear()
+		return
 	p.hand.remove_at(hand_index)
 	card.zone = CardInstance.Zone.BOARD
 
@@ -155,14 +251,30 @@ static func finalize_spell_play(state: GameState, p: PlayerState, card: CardInst
 		state.add_event("SPELL finalize failed: card disappeared from hand.")
 		return
 
+	var card_id := card.data.card_id
+
+	# Targeted spells: do NOT remove from hand yet
+	if SpellRegistry.requires_targets(card_id):
+		if not SpellRegistry.has_full_legal_target_sequence(card.data.card_id, state, p.id):
+			state.add_event("%s failed: no legal targets." % card.data.card_name)
+			state.pending_play_metadata.clear()
+			return
+
+		state.enter_spell_targets(p.id, card.uid, card_id, SpellRegistry.required_target_count(card_id))
+
+		state.add_event("P%d is selecting targets for %s." % [
+			p.id, card.data.card_name
+		])
+
+		return
+
+	# Non-targeted spells: resolve immediately, then trash
 	p.hand.remove_at(hand_index)
 
-	var resolver := SpellRegistry.get_resolver(card.data.card_id)
-	if resolver.is_valid():
-		var payload: Dictionary = state.pending_play_metadata.duplicate(true)
-		resolver.call(card, state, payload)
-	else:
-		state.add_event("No spell resolver found for %s." % card.data.card_name)
+	var payload: Dictionary = state.pending_play_metadata.duplicate(true)
+	payload["player_id"] = p.id
+
+	SpellRegistry.resolve(card, state, payload)
 
 	card.zone = CardInstance.Zone.TRASH
 	p.trash.append(card)
@@ -194,11 +306,9 @@ func _get_modified_base_cost(card: CardInstance, state: GameState) -> int:
 	match card.data.card_id:
 		"OGN-047/298": # Find Your Center
 			var opponent_id: int = 1 - player_id
-			var opponent: PlayerState = state.players[opponent_id]
+			var opponent_score: int = int(state.scores[opponent_id])
 
-			# Replace with your real victory-score field if named differently
-			var victory_score: int = state.POINTS_TO_WIN
-			if victory_score - opponent.points <= 3:
+			if state.POINTS_TO_WIN - opponent_score <= 3:
 				cost -= 2
 
 	return maxi(cost, 0)

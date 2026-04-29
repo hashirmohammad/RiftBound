@@ -33,7 +33,7 @@ func validate(state: GameState) -> bool:
 		return false
 
 	# TANK rule applies when the attacker is the loser (assigning their damage to defenders)
-	if loser_is_attacker:
+	if loser_is_attacker and not _attackers_have_ganking(context):
 		for tank in context.tank_priority_order:
 			var lethal: int = tank.base_health - tank.damage_taken
 			var assigned: int = assignments.get(tank.uid, 0)
@@ -56,3 +56,9 @@ func execute(state: GameState) -> void:
 
 func get_error_message() -> String:
 	return _error_message
+
+func _attackers_have_ganking(context: CombatContext) -> bool:
+	for attacker in context.attackers:
+		if attacker.effects.has_any(EffectInstance.EffectType.GANKING):
+			return true
+	return false

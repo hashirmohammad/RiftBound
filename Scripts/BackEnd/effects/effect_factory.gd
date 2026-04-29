@@ -27,7 +27,11 @@ static func make_buff(state: GameState, source_uid: int, value: int, expiry := E
 	e.expiry = expiry
 	return e
 
-static func make_stun(state: GameState, source_uid: int, expiry := EffectInstance.ExpiryTiming.END_OF_TURN) -> EffectInstance:
+static func make_stun(
+		state: GameState,
+		source_uid: int,
+		expiry := EffectInstance.ExpiryTiming.END_OF_TURN
+) -> EffectInstance:
 	var e := EffectInstance.new()
 	e.uid = state.next_uid()
 	e.effect_type = EffectInstance.EffectType.STUN
@@ -43,12 +47,16 @@ static func make_tank(state: GameState, source_uid: int) -> EffectInstance:
 	e.expiry = EffectInstance.ExpiryTiming.PERMANENT
 	return e
 
-static func make_ganking(state: GameState, source_uid: int) -> EffectInstance:
+static func make_ganking(
+		state: GameState,
+		source_uid: int,
+		expiry := EffectInstance.ExpiryTiming.PERMANENT
+) -> EffectInstance:
 	var e := EffectInstance.new()
 	e.uid = state.next_uid()
 	e.effect_type = EffectInstance.EffectType.GANKING
 	e.source_uid = source_uid
-	e.expiry = EffectInstance.ExpiryTiming.PERMANENT
+	e.expiry = expiry
 	return e
 
 static func make_deflect(state: GameState, source_uid: int, value: int, expiry := EffectInstance.ExpiryTiming.PERMANENT) -> EffectInstance:
