@@ -60,20 +60,26 @@ static func get_legal_targets(
 
 # Checks whether `intended_target` is a legal declaration target given current board state.
 # Used by CombatManager before creating a CombatContext.
-static func validate_target(
-		attacker: UnitState,
-		intended_target: UnitState,
-		registry: UnitRegistry) -> bool:
+static func validate_target(attacker: UnitState, target: UnitState, registry: UnitRegistry) -> bool:
+	if attacker == null or target == null:
+		return false
 
-	var legal: Array[UnitState] = get_legal_targets(
-		attacker,
-		1 - attacker.player_id,
-		registry
-	)
-	for u in legal:
-		if u.uid == intended_target.uid:
-			return true
-	return false
+	if attacker.player_id == target.player_id:
+		return false
+
+	if attacker.is_stunned():
+		return false
+
+	# Ganking ignores Tank targeting restriction.
+	if attacker.effects.has_any(EffectInstance.EffectType.GANKING):
+		return true
+
+	var tanks: Array[UnitState] = registry.get_tank_units(target.player_id)
+
+	if tanks.is_empty():
+		return true
+
+	return target.effects.has_any(EffectInstance.EffectType.TANK)
 
 # ── Internal ──────────────────────────────────────────────────────────────────
 

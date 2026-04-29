@@ -9,7 +9,7 @@ enum Rarity   { COMMON, UNCOMMON, RARE, EPIC, OVERNUMBER }
 enum Rune   { NONE, FURY, CALM, BODY, MIND, ORDER, CHAOS }
 
 ## FIX: Added CardType enum — was missing, CardManager and Tests.gd referenced it
-enum CardType { UNIT, SPELL, RUNE, CHAMPION, GEAR }
+enum CardType { UNIT, SPELL, RUNE, CHAMPION, GEAR, LEGEND}
 
 # ── Exported fields ───────────────────────────────────────────────────────────
 
@@ -55,7 +55,7 @@ static func type_from_string(s: String) -> int:
 	match s.strip_edges().to_lower():
 		"unit":           return CardType.UNIT
 		"signature unit": return CardType.UNIT
-		"champion unit":  return CardType.UNIT
+		"champion unit":  return CardType.CHAMPION
 		"token unit":     return CardType.UNIT
 		"spell":          return CardType.SPELL
 		"signature spell":return CardType.SPELL
@@ -63,7 +63,7 @@ static func type_from_string(s: String) -> int:
 		"basic rune":     return CardType.RUNE
 		"champion":       return CardType.CHAMPION
 		"champion legend":return CardType.CHAMPION
-		"legend":         return CardType.CHAMPION
+		"legend":         return CardType.LEGEND
 		"gear":           return CardType.GEAR
 		"battlefield":    return CardType.GEAR
 		_:                return CardType.UNIT

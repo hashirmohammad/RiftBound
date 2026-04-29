@@ -444,16 +444,19 @@ func _create_battlefield_slot(panel: Panel, slot_name: String) -> CardSlot:
 func get_slot_index_under_mouse() -> int:
 	if game_controller == null:
 		return -1
-	var active_id: int = game_controller.state.get_active_player().id
-	var slots          = _player_slot_nodes if active_id == 0 else _p1_slot_nodes
-	var mouse_pos      = get_global_mouse_position()
+
+	var active_id: int = game_controller.get_actor_player().id
+	var slots = _player_slot_nodes if active_id == 0 else _p1_slot_nodes
+	var mouse_pos = get_global_mouse_position()
 
 	for i in range(slots.size()):
 		var slot = slots[i]
 		if slot == null:
 			continue
+
 		var local_mouse: Vector2 = slot.to_local(mouse_pos)
-		var half: Vector2        = slot._get_collision_size() / 2.0
+		var half: Vector2 = slot._get_collision_size() / 2.0
+
 		if abs(local_mouse.x) <= half.x and abs(local_mouse.y) <= half.y:
 			return i
 
@@ -650,3 +653,25 @@ func _draw_border_box(pos: Vector2, size: Vector2) -> void:
 	add_rect(Vector2(pos.x,                      pos.y + size.y - BORDER_W), Vector2(size.x,  BORDER_W), COLOR_BORDER)
 	add_rect(Vector2(pos.x,                      pos.y),                     Vector2(BORDER_W, size.y),  COLOR_BORDER)
 	add_rect(Vector2(pos.x + size.x - BORDER_W,  pos.y),                     Vector2(BORDER_W, size.y),  COLOR_BORDER)
+
+func get_board_slot_data_under_mouse() -> Dictionary:
+	var mouse_pos = get_global_mouse_position()
+	var actor_id: int = game_controller.get_actor_player().id
+
+	var slots = _player_slot_nodes if actor_id == 0 else _p1_slot_nodes
+
+	for i in range(slots.size()):
+		var slot = slots[i]
+		if slot == null:
+			continue
+
+		var local_mouse: Vector2 = slot.to_local(mouse_pos)
+		var half: Vector2 = slot._get_collision_size() / 2.0
+
+		if abs(local_mouse.x) <= half.x and abs(local_mouse.y) <= half.y:
+			return {
+				"player": actor_id,
+				"slot": i
+			}
+
+	return {}

@@ -17,7 +17,7 @@ extends RefCounted
 enum CombatRole { NONE, ATTACKER, DEFENDER }
 
 # ── Identity ──────────────────────────────────────────────────────────────────
-
+var chosen_modes_this_turn: Array[String] = []
 var uid: int                       # mirrors card_instance.uid
 var card_instance: CardInstance
 var player_id: int
@@ -52,7 +52,7 @@ func _init(instance: CardInstance, p_id: int) -> void:
 # ── Health ────────────────────────────────────────────────────────────────────
 
 func is_alive() -> bool:
-	return damage_taken < base_health
+	return damage_taken < MightCalculator.compute_max_health(self)
 
 func apply_pending_damage() -> void:
 	damage_taken += pending_damage

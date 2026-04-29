@@ -28,6 +28,7 @@ func pick_random_battlefield() -> void:
 	var index = randi() % battlefields.size()
 	battlefields[index].set_state(BattlefieldInstance.State.USED)
 	picked_battlefield = battlefields[index]
+	picked_battlefield = battlefields[1]
 
 
 # ---------- Rune helpers ----------

@@ -28,7 +28,7 @@ static func start_game() -> GameState:
 	#var p0_deck_name: String = CardDatabase._random_deck_name()
 	#var p1_deck_name: String = CardDatabase._random_deck_name()
 	var p0_deck_name: String = "Lee Sin"
-	var p1_deck_name: String = "Kai'Sa"
+	var p1_deck_name: String = "Lee Sin"
 	state.deck_names[0] = p0_deck_name
 	state.deck_names[1] = p1_deck_name
 	state.add_event("P0 deck: %s | P1 deck: %s" % [p0_deck_name, p1_deck_name])
@@ -37,8 +37,16 @@ static func start_game() -> GameState:
 	var p1_legend_data := CardDatabase._load_legend(p1_deck_name)
 	if p0_legend_data:
 		p0.legend = CardInstance.new(state.next_uid(), p0_legend_data)
+		p0.legend.awaken()
 	if p1_legend_data:
 		p1.legend = CardInstance.new(state.next_uid(), p1_legend_data)
+		p1.legend.awaken()
+	# ── Load champion units: pick 1 as champion, rest into main deck ──────────
+	var p0_champions := CardDatabase._load_champion_units_from_deck(p0_deck_name)
+	var p1_champions := CardDatabase._load_champion_units_from_deck(p1_deck_name)
+
+	_assign_random_champion_and_rest_to_deck(state, p0, p0_champions)
+	_assign_random_champion_and_rest_to_deck(state, p1, p1_champions)
 
 	# ── Load battlefields and pick 1 of 3 ─────────────────────────────────────
 	for b in CardDatabase._load_battlefields_from_deck(p0_deck_name):
@@ -69,14 +77,24 @@ static func start_game() -> GameState:
 	p0.rune_deck.shuffle()
 	p1.rune_deck.shuffle()
 	
-	#rig_card_to_top_of_deck(p0, "OGN-052/298") # Stalwart Poro
-	#rig_card_to_top_of_deck(p0, "OGN-054/298") # Sunlit Guardian
-	#rig_card_to_top_of_deck(p0, "OGN-065/298") # Wizened Elder
-	#rig_card_to_top_of_deck(p0, "OGN-075/298") # Tasty Faefolk
-	#rig_card_to_top_of_deck(p0, "OGN-136/298") # Pit Rookie
-	rig_card_to_top_of_deck(p0, "OGN-044/298") # Clockwork Keeper
-	rig_card_to_top_of_deck(p0, "OGN-047/298") # Clockwork Keeper
-	
+	rig_card_to_top_of_deck(p0, "OGN-052/298") # Stalwart Poro done
+	rig_card_to_top_of_deck(p0, "OGN-054/298") # Sunlit Guardian done
+	#rig_card_to_top_of_deck(p0, "OGN-065/298") # Wizened Elder done
+	#rig_card_to_top_of_deck(p0, "OGN-075/298") # Tasty Faefolk done	
+	rig_card_to_top_of_deck(p0, "OGN-136/298") # Pit Rookie done
+	#rig_card_to_top_of_deck(p0, "OGN-044/298") # Clockwork Keeper done
+	#rig_card_to_top_of_deck(p0, "OGN-047/298") # Find Your Center done
+	#rig_card_to_top_of_deck(p0, "OGN-058/298") # Discipline done
+	#rig_card_to_top_of_deck(p0, "OGN-046/298") # En Garde done
+	#rig_card_to_top_of_deck(p0, "OGN-128/298") # Challenge done
+	#rig_card_to_top_of_deck(p0, "OGN-043/298") # Charm done	
+	#rig_card_to_top_of_deck(p0, "OGN-258/298") # Dragon's Rage done
+	#rig_card_to_top_of_deck(p0, "OGN-161/298") # Deadbloom Predator done
+	#rig_card_to_top_of_deck(p0, "OGN-151/298") # Lee Sin, Centered done
+	#rig_card_to_top_of_deck(p0, "OGN-155/298") # Qiyana, Victorious done
+	#rig_card_to_top_of_deck(p0, "OGN-077/298") # Zhonya's Hourglass done
+	#rig_card_to_top_of_deck(p0, "OGN-157/298") # Udyr, Wildman done
+
 	for i in range(OPENING_HAND_SIZE):
 		state.turn_system._draw_card(p0)
 		state.turn_system._draw_card(p1)
@@ -94,25 +112,44 @@ static func start_turn(state: GameState) -> void:
 	if state.turn_system == null:
 		state.add_event("ERROR: turn_system not initialized.")
 		return
+	_score_start_turn(state, state.active_player_index)
+
+	if state.game_over:
+		return
+
 	state.turn_system.start_turn(state)
-
 static func end_turn(state: GameState) -> void:
-	var ending_player := state.active_player_index
-
-	_score_end_turn(state, ending_player)
-
-	if state.game_over:
-		return
-
-	_check_opponent_win(state, ending_player)
-
-	if state.game_over:
-		return
 
 	state.active_player_index = 1 - state.active_player_index
 	state.turn_number += 1
 	start_turn(state)
-	
+
+static func _assign_random_champion_and_rest_to_deck(
+		state: GameState,
+		player: PlayerState,
+		champion_datas: Array[CardData]) -> void:
+
+	if champion_datas.is_empty():
+		state.add_event("P%d has no champion unit cards." % player.id)
+		return
+
+	var picked_index := randi() % champion_datas.size()
+
+	for i in range(champion_datas.size()):
+		var ci := CardInstance.new(state.next_uid(), champion_datas[i])
+
+		if i == picked_index:
+			player.champion = ci
+			ci.zone = CardInstance.Zone.BOARD
+			ci.awaken()
+			state.add_event("P%d champion selected: %s." % [
+				player.id,
+				ci.data.card_name
+			])
+		else:
+			ci.zone = CardInstance.Zone.DECK
+			player.deck.append(ci)
+
 static func rig_card_to_top_of_deck(player: PlayerState, card_id: String) -> void:
 	var found_index := -1
 
@@ -140,8 +177,27 @@ static func _get_arena_controller(state: GameState, arena_index: int) -> int:
 	return -1
 
 static func _update_arena_control(state: GameState) -> void:
-	state.arena_control[0] = _get_arena_controller(state, 0)
-	state.arena_control[1] = _get_arena_controller(state, 1)
+	var old_control: Array = state.arena_control.duplicate()
+
+	for i in range(state.arena_control.size()):
+		state.arena_control[i] = _get_arena_controller(state, i)
+
+	for i in range(state.arena_control.size()):
+		var new_owner: int = int(state.arena_control[i])
+		var old_owner: int = int(old_control[i])
+
+		if new_owner == -1:
+			continue
+
+		if old_owner != new_owner:
+			var bf: BattlefieldInstance = _get_arena_battlefield(state, i)
+
+			BattlefieldAbilityRegistry.trigger(
+				state,
+				bf,
+				BattlefieldEvents.ON_CONQUER,
+				new_owner
+			)
 
 static func _count_controlled(state: GameState, player_id: int) -> int:
 	var count := 0
@@ -150,7 +206,7 @@ static func _count_controlled(state: GameState, player_id: int) -> int:
 			count += 1
 	return count
 	
-static func _score_end_turn(state: GameState, player_id: int) -> void:
+static func _score_start_turn(state: GameState, player_id: int) -> void:
 	_update_arena_control(state)
 
 	var controlled := _count_controlled(state, player_id)
@@ -159,47 +215,33 @@ static func _score_end_turn(state: GameState, player_id: int) -> void:
 		state.add_event("P%d controls no arenas and gains no points." % player_id)
 		return
 
-	# BOTH arenas → +2 and can win, even from 6 or 7
+	for arena_index in range(state.arena_control.size()):
+		if state.arena_control[arena_index] != player_id:
+			continue
+
+		var bf: BattlefieldInstance = _get_arena_battlefield(state, arena_index)
+
+		BattlefieldAbilityRegistry.trigger(
+			state,
+			bf,
+			BattlefieldEvents.ON_HOLD,
+			player_id
+		)
+
 	if controlled == 2:
 		state.scores[player_id] += 2
-		state.add_event("P%d controls both arenas (+2). Total: %d" % [
+		state.add_event("P%d starts turn controlling both arenas (+2). Total: %d" % [
 			player_id, state.scores[player_id]
 		])
 		_check_win(state, player_id)
 		return
 
-	# ONE arena
-	var current = state.scores[player_id]
-
-	if current < 7:
+	if controlled == 1:
 		state.scores[player_id] += 1
-		state.add_event("P%d controls 1 arena (+1). Total: %d" % [
+		state.add_event("P%d starts turn controlling 1 arena (+1). Total: %d" % [
 			player_id, state.scores[player_id]
 		])
 		_check_win(state, player_id)
-		return
-
-	# At 7 → cannot win from 1 arena on your own end turn
-	state.add_event("P%d controls 1 arena, but cannot claim the final point on their own turn." % player_id)
-
-static func _check_opponent_win(state: GameState, ending_player_id: int) -> void:
-	_update_arena_control(state)
-
-	var opponent := 1 - ending_player_id
-
-	# Only check opponent — NOT the player who just ended turn
-	if state.scores[opponent] != 7:
-		return
-
-	var controlled := _count_controlled(state, opponent)
-
-	# Opponent must control at least one arena
-	if controlled >= 1:
-		state.scores[opponent] += 1
-		state.add_event("P%d gains the final point at the end of P%d's turn!" % [
-			opponent, ending_player_id
-		])
-		_check_win(state, opponent)
 
 static func _check_win(state: GameState, player_id: int) -> void:
 	if state.scores[player_id] >= 8:
@@ -207,3 +249,8 @@ static func _check_win(state: GameState, player_id: int) -> void:
 		state.winner_id = player_id
 		state.game_over = true
 		state.add_event("P%d WINS THE GAME!" % player_id)
+
+static func _get_arena_battlefield(state: GameState, arena_index: int) -> BattlefieldInstance:
+	if arena_index == 0:
+		return state.players[0].picked_battlefield
+	return state.players[1].picked_battlefield
