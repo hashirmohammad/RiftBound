@@ -41,7 +41,7 @@ var legend_ui_controller: LegendUIController
 func _ready() -> void:
 	state = GameEngine.start_game()
 	await get_tree().process_frame
-	
+
 	board_renderer = BoardRenderer.new()
 	board_renderer.setup(
 		self,
@@ -51,7 +51,7 @@ func _ready() -> void:
 		hand_manager_p1,
 		deck_ui
 	)
-	
+
 	status_presenter = StatusPresenter.new()
 	status_presenter.setup(
 		status_label,
@@ -61,14 +61,14 @@ func _ready() -> void:
 		choice_a_button,
 		choice_b_button
 	)
-	
+
 	spell_target_controller = SpellTargetController.new()
 	spell_target_controller.setup(
 		self,
 		state,
 		status_label
 	)
-	
+
 	choice_controller = ChoiceController.new()
 	choice_controller.setup(
 		self,
@@ -77,35 +77,38 @@ func _ready() -> void:
 		choice_a_button,
 		choice_b_button
 	)
-	
+
 	unit_target_controller = UnitTargetController.new()
 	unit_target_controller.setup(
 		self,
 		state,
 		status_label
 	)
-	
+
 	combat_ui_controller = CombatUIController.new()
 	combat_ui_controller.setup(
 		self,
 		state,
 		status_label
 	)
-	
+
 	turn_ui_controller = TurnUIController.new()
 	turn_ui_controller.setup(
 		self,
 		state,
 		status_label
 	)
-	
+
 	legend_ui_controller = LegendUIController.new()
 	legend_ui_controller.setup(
 		self,
 		state,
 		status_label
 	)
-	
+
+	win_screen.rematch_requested.connect(_on_rematch_requested)
+	win_screen.quit_requested.connect(_on_quit_requested)
+
 	_connect_buttons()
 	refresh_all_ui()
 
@@ -307,3 +310,27 @@ func try_move_champion_to_base() -> bool:
 
 	refresh_all_ui()
 	return true
+
+# ─── Rematch / Quit ──────────────────────────────────────────────────────────
+
+func _on_rematch_requested() -> void:
+	state = GameEngine.start_game()
+	board_renderer.setup(
+		self,
+		board,
+		state,
+		hand_manager,
+		hand_manager_p1,
+		deck_ui
+	)
+	spell_target_controller.setup(self, state, status_label)
+	choice_controller.setup(self, state, status_label, choice_a_button, choice_b_button)
+	unit_target_controller.setup(self, state, status_label)
+	combat_ui_controller.setup(self, state, status_label)
+	turn_ui_controller.setup(self, state, status_label)
+	legend_ui_controller.setup(self, state, status_label)
+	await get_tree().process_frame
+	refresh_all_ui()
+
+func _on_quit_requested() -> void:
+	get_tree().quit()
