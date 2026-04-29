@@ -17,9 +17,6 @@
 [ext_resource type="PackedScene" uid="uid://cscpai8v2fbek" path="res://Scenes/Trash.tscn" id="12_k12tt"]
 [ext_resource type="Script" uid="uid://6nllcfqgxq74" path="res://Scripts/FrontEnd/Winscreen.gd" id="16_k12tt"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wsu2k"]
-bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
-
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_k12tt"]
 bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
 
@@ -105,6 +102,9 @@ bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
 bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_aa8k8"]
+bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kqrg6"]
 bg_color = Color(0.050980393, 0.105882354, 0.20784314, 1)
 
 [node name="Main" type="Node2D" unique_id=1554237704]
@@ -247,11 +247,11 @@ offset_left = 1654.0
 offset_top = 488.0
 offset_right = 1918.0
 offset_bottom = 536.0
-theme_override_styles/normal = SubResource("StyleBoxFlat_wsu2k")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_k12tt")
-theme_override_styles/hover = SubResource("StyleBoxFlat_h1bgf")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_b3802")
-theme_override_styles/focus = SubResource("StyleBoxFlat_fevyy")
+theme_override_styles/normal = SubResource("StyleBoxFlat_k12tt")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_h1bgf")
+theme_override_styles/hover = SubResource("StyleBoxFlat_b3802")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_fevyy")
+theme_override_styles/focus = SubResource("StyleBoxFlat_hibaj")
 text = "End Turn"
 
 [node name="GameController" type="Node" parent="." unique_id=540227294]
@@ -266,11 +266,11 @@ offset_left = 1654.0
 offset_top = 536.0
 offset_right = 1918.0
 offset_bottom = 584.0
-theme_override_styles/normal = SubResource("StyleBoxFlat_hibaj")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_pdsj5")
-theme_override_styles/hover = SubResource("StyleBoxFlat_ee4r6")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_gt3je")
-theme_override_styles/focus = SubResource("StyleBoxFlat_3pmx8")
+theme_override_styles/normal = SubResource("StyleBoxFlat_pdsj5")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_ee4r6")
+theme_override_styles/hover = SubResource("StyleBoxFlat_gt3je")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_3pmx8")
+theme_override_styles/focus = SubResource("StyleBoxFlat_u50mg")
 text = "Cancel"
 
 [node name="PassPriorityButton" type="Button" parent="." unique_id=355363714]
@@ -278,11 +278,11 @@ offset_left = 1654.0
 offset_top = 536.0
 offset_right = 1918.0
 offset_bottom = 584.0
-theme_override_styles/normal = SubResource("StyleBoxFlat_u50mg")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_cbgmd")
-theme_override_styles/hover = SubResource("StyleBoxFlat_1w6v2")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_ueoa1")
-theme_override_styles/focus = SubResource("StyleBoxFlat_6vcvc")
+theme_override_styles/normal = SubResource("StyleBoxFlat_cbgmd")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_1w6v2")
+theme_override_styles/hover = SubResource("StyleBoxFlat_ueoa1")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_6vcvc")
+theme_override_styles/focus = SubResource("StyleBoxFlat_7k868")
 text = "Pass Priority"
 
 [node name="ConfirmDamageButton" type="Button" parent="." unique_id=355363715]
@@ -290,11 +290,11 @@ offset_left = 1654.0
 offset_top = 536.0
 offset_right = 1918.0
 offset_bottom = 584.0
-theme_override_styles/normal = SubResource("StyleBoxFlat_7k868")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_hpc6h")
-theme_override_styles/hover = SubResource("StyleBoxFlat_kltya")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_e08e2")
-theme_override_styles/focus = SubResource("StyleBoxFlat_neg2b")
+theme_override_styles/normal = SubResource("StyleBoxFlat_hpc6h")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_kltya")
+theme_override_styles/hover = SubResource("StyleBoxFlat_e08e2")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_neg2b")
+theme_override_styles/focus = SubResource("StyleBoxFlat_r33sp")
 text = "Confirm Damage"
 
 [node name="ChoiceAButton" type="Button" parent="." unique_id=590261534]
@@ -302,23 +302,24 @@ offset_left = 1390.0
 offset_top = 488.0
 offset_right = 1654.0
 offset_bottom = 536.0
-theme_override_styles/normal = SubResource("StyleBoxFlat_r33sp")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_hdf80")
-theme_override_styles/hover = SubResource("StyleBoxFlat_jwpg7")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_k2e45")
-theme_override_styles/focus = SubResource("StyleBoxFlat_536cc")
+theme_override_styles/normal = SubResource("StyleBoxFlat_hdf80")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_jwpg7")
+theme_override_styles/hover = SubResource("StyleBoxFlat_k2e45")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_536cc")
+theme_override_styles/focus = SubResource("StyleBoxFlat_aqgau")
 
 [node name="ChoiceBButton" type="Button" parent="." unique_id=1542843524]
 offset_left = 1390.0
 offset_top = 536.0
 offset_right = 1654.0
 offset_bottom = 584.0
-theme_override_styles/normal = SubResource("StyleBoxFlat_aqgau")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_8cuat")
-theme_override_styles/hover = SubResource("StyleBoxFlat_o1aky")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_kwxat")
-theme_override_styles/focus = SubResource("StyleBoxFlat_aa8k8")
+theme_override_styles/normal = SubResource("StyleBoxFlat_8cuat")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_o1aky")
+theme_override_styles/hover = SubResource("StyleBoxFlat_kwxat")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_aa8k8")
+theme_override_styles/focus = SubResource("StyleBoxFlat_kqrg6")
 
 [node name="WinScreen" type="CanvasLayer" parent="." unique_id=666179721]
+layer = 10
 visible = false
 script = ExtResource("16_k12tt")
