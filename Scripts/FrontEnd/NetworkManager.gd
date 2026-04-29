@@ -5,9 +5,11 @@ const DISCOVERY_PORT     = 7778
 const MAX_PEERS          = 1
 const BROADCAST_INTERVAL = 1.0
 
-var is_network_mode: bool = false
-var local_player_id: int  = 0
-var game_seed: int        = 0
+var is_network_mode: bool   = false
+var local_player_id: int    = 0
+var game_seed: int          = 0
+var last_connected_ip: String = ""
+var pending_reconnect: bool = false
 
 signal game_ready(local_id: int)
 signal connection_failed
@@ -69,8 +71,9 @@ func start_host() -> void:
 
 func join_host(ip: String) -> void:
 	_close_peer()
-	is_network_mode = true
-	local_player_id = 1
+	is_network_mode  = true
+	local_player_id  = 1
+	last_connected_ip = ip
 	var peer := ENetMultiplayerPeer.new()
 	var err  := peer.create_client(ip, PORT)
 	if err != OK:

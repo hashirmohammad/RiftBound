@@ -26,6 +26,14 @@ func _ready() -> void:
 	NetworkManager.connected_to_host.connect(_on_connected_to_host)
 	NetworkManager.start_listening()
 
+	if NetworkManager.pending_reconnect:
+		NetworkManager.pending_reconnect = false
+		status_label.text = "Reconnecting..."
+		if NetworkManager.local_player_id == 0:
+			_on_host_pressed()
+		elif NetworkManager.last_connected_ip != "":
+			_connect_to(NetworkManager.last_connected_ip)
+
 func _on_host_discovered(ip: String) -> void:
 	if _discovered.has(ip):
 		return

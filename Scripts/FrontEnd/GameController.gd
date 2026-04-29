@@ -91,6 +91,9 @@ func _ready() -> void:
 	win_screen.rematch_requested.connect(_on_rematch_requested)
 	win_screen.quit_requested.connect(_on_quit_requested)
 
+	if NetworkManager.is_network_mode:
+		NetworkManager.peer_disconnected.connect(_on_peer_disconnected)
+
 	_connect_buttons()
 	refresh_all_ui()
 
@@ -330,10 +333,13 @@ func _receive_action(data: Dictionary) -> void:
 	var action := _deserialize_action(data)
 	if action == null:
 		return
-	GameEngine.apply_action(state, action)
+	var ok := GameEngine.apply_action(state, action)
+	if not ok:
+		push_error("[NET] _receive_action: remote action '%s' failed — state may have diverged" % data.get("t", "?"))
 	refresh_all_ui()
-	await wait_until_main()
-	refresh_all_ui()
+	if state.phase != "MAIN":
+		await wait_until_main()
+		refresh_all_ui()
 
 @rpc("any_peer")
 func _receive_cancel_payment() -> void:
@@ -434,7 +440,7 @@ func _local_id() -> int:
 # ─── Helpers ──────────────────────────────────────────────────────────────────
 
 func wait_until_main() -> void:
-	var max_frames := 300
+	var max_frames := 600
 	var frames     := 0
 	while state.phase != "MAIN" and frames < max_frames:
 		await get_tree().process_frame
@@ -458,3 +464,12 @@ func _on_rematch_requested() -> void:
 
 func _on_quit_requested() -> void:
 	get_tree().quit()
+
+func _on_peer_disconnected(_id: int) -> void:
+	if state.game_over:
+		return
+	NetworkManager.pending_reconnect = true
+	status_label.text = "Connection lost. Returning to lobby..."
+	await get_tree().create_timer(3.0).timeout
+	NetworkManager._close_peer()
+	get_tree().change_scene_to_file("res://Scenes/Lobby.tscn")
