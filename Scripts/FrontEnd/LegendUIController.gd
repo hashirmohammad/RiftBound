@@ -51,7 +51,7 @@ func try_use_legend_ability(target_uid: int) -> bool:
 
 	var action := UseLegendAbilityAction.new(legend_player_id, target_uid)
 
-	var success := GameEngine.apply_action(state, action)
+	var success := controller._apply_action(action)
 	if not success:
 		status_label.text = action.get_error_message()
 		return false

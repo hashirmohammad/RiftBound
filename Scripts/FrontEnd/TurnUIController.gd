@@ -29,6 +29,9 @@ func cancel_payment() -> void:
 
 	state.exit_rune_payment()
 
+	if NetworkManager.is_network_mode:
+		controller._receive_cancel_payment.rpc()
+
 	controller.refresh_all_ui()
 
 
@@ -36,7 +39,7 @@ func try_pick_runes_to_spend(rune_uid: int) -> bool:
 	var player_id := state.pending_payment_player_id
 	var action = PickRuneAction.new(player_id, rune_uid)
 
-	var success: bool = GameEngine.apply_action(state, action)
+	var success: bool = controller._apply_action(action)
 	if not success:
 		status_label.text = action.get_error_message()
 		return false
@@ -57,16 +60,11 @@ func try_end_turn() -> void:
 	var action = EndTurnAction.new()
 	action.player_id = state.get_active_player().id
 
-	var success := GameEngine.apply_action(state, action)
+	var success := controller._apply_action(action)
 	if not success:
 		status_label.text = action.get_error_message()
 		controller.refresh_all_ui()
 		return
 
-	_deferred_refresh()
-
-
-func _deferred_refresh() -> void:
-	await controller.get_tree().process_frame
-	await controller.get_tree().process_frame
+	await controller.wait_until_main()
 	controller.refresh_all_ui()

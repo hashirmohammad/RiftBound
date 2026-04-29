@@ -18,6 +18,7 @@ const CommitToBattlefieldAction   = preload("res://Scripts/BackEnd/actions/commi
 const PassPriorityAction          = preload("res://Scripts/BackEnd/actions/pass_priority_action.gd")
 const ConfirmDamageAction         = preload("res://Scripts/BackEnd/actions/confirm_damage_action.gd")
 const MoveChampionToBaseAction    = preload("res://Scripts/BackEnd/actions/move_champion_to_base_action.gd")
+const UseLegendAbilityAction      = preload("res://Scripts/BackEnd/actions/use_legend_ability_action.gd")
 
 var state: GameState
 var board_renderer: BoardRenderer
@@ -236,9 +237,6 @@ func try_select_unit_target(target_uid: int) -> bool:
 func _on_pass_priority_pressed() -> void:
 	combat_ui_controller.try_pass_priority()
 
-func _on_confirm_damage_pressed() -> void:
-	combat_ui_controller.confirm_damage()
-
 func try_pass_priority() -> void:
 	combat_ui_controller.try_pass_priority()
 
@@ -252,7 +250,15 @@ func try_return_from_battlefield(card_uid: int, battlefield_index: int, slot_ind
 	return combat_ui_controller.try_return_from_battlefield(card_uid, battlefield_index, slot_index)
 
 func try_return_from_any_battlefield(card_uid: int, source_player_id: int, battlefield_index: int, slot_index: int = 0) -> bool:
-	return combat_ui_controller.try_return_from_any_battlefield(card_uid, source_player_id, battlefield_index, slot_index)
+	var ok := combat_ui_controller.try_return_from_any_battlefield(card_uid, source_player_id, battlefield_index, slot_index)
+	if ok and NetworkManager.is_network_mode:
+		_receive_return_any_battlefield.rpc(card_uid, source_player_id, battlefield_index, slot_index)
+	return ok
+
+func _on_confirm_damage_pressed() -> void:
+	if not _is_local_assigner():
+		return
+	combat_ui_controller.confirm_damage()
 
 func _on_cancel_payment_pressed() -> void:
 	turn_ui_controller.cancel_payment()
@@ -347,6 +353,10 @@ func _receive_cancel_payment() -> void:
 func _receive_unit_target(target_uid: int) -> void:
 	unit_target_controller.try_select_unit_target(target_uid)
 
+@rpc("any_peer")
+func _receive_return_any_battlefield(card_uid: int, source_player_id: int, battlefield_index: int, slot_index: int) -> void:
+	combat_ui_controller.try_return_from_any_battlefield(card_uid, source_player_id, battlefield_index, slot_index)
+
 func _serialize_action(action: GameAction) -> Dictionary:
 	if action is EndTurnAction:
 		return {"t": "end", "pid": action.player_id}
@@ -368,6 +378,8 @@ func _serialize_action(action: GameAction) -> Dictionary:
 		return {"t": "dmg", "pid": action.player_id, "asgn": action.assignments.duplicate()}
 	if action is MoveChampionToBaseAction:
 		return {"t": "champ", "pid": action.player_id}
+	if action is UseLegendAbilityAction:
+		return {"t": "legend", "pid": action.player_id, "uid": action.target_uid}
 	push_warning("GameController: unknown action type for serialization")
 	return {}
 
@@ -396,6 +408,8 @@ func _deserialize_action(data: Dictionary) -> GameAction:
 			return ConfirmDamageAction.new(pid, asgn)
 		"champ":
 			return MoveChampionToBaseAction.new(pid)
+		"legend":
+			return UseLegendAbilityAction.new(pid, int(data["uid"]))
 	push_warning("GameController: unknown action type '%s'" % data.get("t", "?"))
 	return null
 

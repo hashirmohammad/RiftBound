@@ -29,7 +29,7 @@ func try_pass_priority() -> void:
 	var player_id: int = state.get_priority_player_id()
 
 	var action := PassPriorityAction.new(player_id)
-	var success := GameEngine.apply_action(state, action)
+	var success := controller._apply_action(action)
 
 	if not success:
 		status_label.text = action.get_error_message()
@@ -41,7 +41,7 @@ func try_commit_to_battlefield(card_uids: Array[int], battlefield_index: int) ->
 	var player := state.get_active_player()
 	var action := CommitToBattlefieldAction.new(player.id, card_uids, battlefield_index)
 
-	var success := GameEngine.apply_action(state, action)
+	var success := controller._apply_action(action)
 	if not success:
 		status_label.text = action.get_error_message()
 		return false
@@ -54,7 +54,7 @@ func try_move_to_battlefield(card_uid: int, battlefield_index: int) -> bool:
 	var player := state.get_active_player()
 	var action := MoveToBattlefieldAction.new(player.id, card_uid, battlefield_index)
 
-	var success := GameEngine.apply_action(state, action)
+	var success := controller._apply_action(action)
 	if not success:
 		status_label.text = action.get_error_message()
 		return false
@@ -67,7 +67,7 @@ func try_return_from_battlefield(card_uid: int, battlefield_index: int, slot_ind
 	var player := state.get_active_player()
 	var action := ReturnFromBattlefieldAction.new(player.id, card_uid, battlefield_index, slot_index)
 
-	var success := GameEngine.apply_action(state, action)
+	var success := controller._apply_action(action)
 	if not success:
 		status_label.text = action.get_error_message()
 		return false
@@ -86,7 +86,7 @@ func confirm_damage() -> void:
 	var player_id: int = ctx.attackers[0].player_id if loser_is_attacker else ctx.defenders[0].player_id
 	var action := ConfirmDamageAction.new(player_id, pending_assignments)
 
-	var success := GameEngine.apply_action(state, action)
+	var success := controller._apply_action(action)
 	if not success:
 		status_label.text = action.get_error_message()
 		return
