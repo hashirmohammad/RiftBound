@@ -11,6 +11,8 @@ var hand_manager: Node
 var hand_manager_p1: Node
 var deck_ui: Node
 
+var _prev_trash_counts: Dictionary = {}
+
 
 func setup(
 		_controller: Node,
@@ -54,8 +56,8 @@ func refresh_payment_ui() -> void:
 
 
 func render_board() -> void:
-	var local  := state.players[_local_id()]
-	var remote := state.players[1 - _local_id()]
+	var local: PlayerState  = state.players[_local_id()]
+	var remote: PlayerState = state.players[1 - _local_id()]
 	_render_player_slots(local,  board._player_slot_nodes)
 	_render_player_slots(remote, board._p1_slot_nodes)
 
@@ -112,11 +114,56 @@ func render_static_state(player: PlayerState, opponent: PlayerState) -> void:
 	_render_arena_pick(board.arena_p1_panel, opponent.picked_battlefield, "Arena 2")
 
 	render_rune_panels(player, opponent)
+	render_trash_panels(player, opponent)
 
 
 func render_rune_panels(p0: PlayerState, p1: PlayerState) -> void:
 	_render_runes(board.player_runes_panel, p0.rune_pool, p0.id)
 	_render_runes(board.opponent_runes_panel, p1.rune_pool, p1.id)
+
+
+func render_trash_panels(p0: PlayerState, p1: PlayerState) -> void:
+	_render_trash(board.player_trash_panel, p0.trash, p0.id)
+	_render_trash(board.opponent_trash_panel, p1.trash, p1.id)
+
+
+func _render_trash(panel: Panel, trash: Array, player_id: int) -> void:
+	if panel == null:
+		return
+
+	var prev_count: int = _prev_trash_counts.get(player_id, 0)
+	var new_count: int = trash.size()
+	var has_new: bool = new_count > prev_count
+	_prev_trash_counts[player_id] = new_count
+
+	for child in panel.get_children():
+		if child is RiftCard:
+			child.queue_free()
+
+	if trash.is_empty():
+		return
+
+	var show_count: int = mini(new_count, 5)
+
+	for i in range(show_count):
+		var idx: int = new_count - show_count + i
+		var card_instance: CardInstance = trash[idx]
+
+		var card: RiftCard = CARD_SCENE.instantiate()
+		panel.add_child(card)
+		card.position = panel.size / 2.0 + Vector2(i * 2.0, i * 2.0)
+		card.scale = Vector2(0.35, 0.35)
+		card.z_index = i
+		card.setup_from_card_instance(card_instance)
+		card.set_card_state(RiftCard.CardState.ON_BOARD)
+		card.rotation_degrees = 0.0
+		card.refresh_slot_state()
+
+		if i == show_count - 1 and has_new:
+			card.scale = Vector2.ZERO
+			var tween: Tween = card.create_tween()
+			tween.tween_property(card, "scale", Vector2(0.35, 0.35), 0.3)\
+				.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
 
 
 func _render_player_slots(player: PlayerState, slots: Array) -> void:

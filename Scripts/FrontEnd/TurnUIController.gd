@@ -1,9 +1,6 @@
 class_name TurnUIController
 extends RefCounted
 
-const GameEngine = preload("res://Scripts/BackEnd/core/game_engine.gd")
-const EndTurnAction = preload("res://Scripts/BackEnd/actions/end_turn_action.gd")
-const PickRuneAction = preload("res://Scripts/BackEnd/actions/pick_runes_to_spend_action.gd")
 
 var controller: Node
 var state: GameState
@@ -60,7 +57,7 @@ func try_end_turn() -> void:
 	var action = EndTurnAction.new()
 	action.player_id = state.get_active_player().id
 
-	var success := controller._apply_action(action)
+	var success: bool = controller._apply_action(action)
 	if not success:
 		status_label.text = action.get_error_message()
 		controller.refresh_all_ui()

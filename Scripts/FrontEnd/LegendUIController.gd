@@ -1,8 +1,6 @@
 class_name LegendUIController
 extends RefCounted
 
-const GameEngine = preload("res://Scripts/BackEnd/core/game_engine.gd")
-const UseLegendAbilityAction = preload("res://Scripts/BackEnd/actions/use_legend_ability_action.gd")
 
 var controller: Node
 var state: GameState
@@ -51,7 +49,7 @@ func try_use_legend_ability(target_uid: int) -> bool:
 
 	var action := UseLegendAbilityAction.new(legend_player_id, target_uid)
 
-	var success := controller._apply_action(action)
+	var success: bool = controller._apply_action(action)
 	if not success:
 		status_label.text = action.get_error_message()
 		return false
