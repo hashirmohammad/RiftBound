@@ -78,7 +78,30 @@ func declare_attack(
 		"defender": intended.uid,
 		"tank_priority_count": context.tank_priority_order.size()
 	})
+	
+	print("DEBUG declare_attack attackers count=", context.attackers.size(), " defenders count=", context.defenders.size())
 
+	for unit in context.attackers:
+		print("DEBUG attacker in context = ", unit.card_instance.data.card_name)
+
+	for unit in context.defenders:
+		print("DEBUG defender in context = ", unit.card_instance.data.card_name)
+
+	var all_units: Array[UnitState] = []
+	all_units.append_array(context.attackers)
+	all_units.append_array(context.defenders)
+
+	for unit in all_units:
+		if unit.card_instance.data.card_id == "OGN-157/298":
+			print("DEBUG found Udyr during declare_attack")
+
+			for e in unit.effects.get_all():
+				print("DEBUG Udyr effect type=", e.effect_type, " timing=", e.timing_window)
+
+				if e.timing_window == "action":
+					print("DEBUG forcing Udyr ACTION ability from declare_attack")
+					e.ability_fn.call(unit, context, game_state)
+	
 	combat_declared.emit(context)
 	return context
 
@@ -88,6 +111,20 @@ func begin_showdown(context: CombatContext) -> ShowdownContext:
 	var showdown := timing_manager.open_showdown(context)
 	context.game_state.event_log.append({"event": "showdown_opened"})
 	showdown_opened.emit(showdown)
+	var all_units: Array[UnitState] = []
+	all_units.append_array(context.attackers)
+	all_units.append_array(context.defenders)
+
+	for unit in all_units:
+		if unit.card_instance.data.card_id == "OGN-157/298":
+			print("DEBUG found attacking Udyr in showdown")
+
+			for e in unit.effects.get_all():
+				print("DEBUG Udyr effect type=", e.effect_type, " timing=", e.timing_window)
+
+				if e.timing_window == "action":
+					print("DEBUG forcing Udyr ACTION ability")
+					timing_manager.queue_action(e, unit, context)
 	return showdown
 
 # ── Step 4: Close Showdown ────────────────────────────────────────────────────
@@ -118,9 +155,10 @@ func resolve_combat(context: CombatContext) -> void:
 		"attacker_assignments": context.attacker_assignments,
 		"defender_assignments": context.defender_assignments,
 	})
-
+	_resolve_battlefield_result(context)
 	var dead: Array[UnitState] = CombatResolver.collect_dead(context)
 	_process_deaths(dead, context)
+	_check_conquer_triggers(context)
 	_cleanup(context)
 	combat_resolved.emit(context)
 
@@ -129,7 +167,10 @@ func resolve_combat(context: CombatContext) -> void:
 func _process_deaths(dead: Array[UnitState], context: CombatContext) -> void:
 	if dead.is_empty():
 		return
+	dead = _apply_zhonyas_replacements(dead, context)
 
+	if dead.is_empty():
+		return
 	# Collect all DEATHKNELL triggers BEFORE any unit moves to trash
 	# Ordering: turn player's triggers first, then opponent's, registration order within
 	var pending_triggers: Array[Dictionary] = _collect_deathknell_triggers(dead, context)
@@ -203,6 +244,7 @@ func complete_resolve(context: CombatContext) -> void:
 	CombatResolver.apply_all_damage(context)
 	var dead: Array[UnitState] = CombatResolver.collect_dead(context)
 	_process_deaths(dead, context)
+	_check_conquer_triggers(context)
 	_cleanup(context)
 	combat_resolved.emit(context)
 
@@ -228,3 +270,130 @@ func _cleanup(context: CombatContext) -> void:
 	for unit in context.all_units():
 		unit.effects.expire_by_timing(EffectInstance.ExpiryTiming.END_OF_COMBAT, context.game_state)
 		unit.combat_role = UnitState.CombatRole.NONE
+
+func _check_conquer_triggers(context: CombatContext) -> void:
+
+	var qiyana_units: Array[UnitState] = []
+
+	for unit in context.attackers:
+		if unit != null and unit.card_instance.data.card_id == "OGN-155/298":
+			qiyana_units.append(unit)
+
+	for unit in context.defenders:
+		if unit != null and unit.card_instance.data.card_id == "OGN-155/298":
+			qiyana_units.append(unit)
+
+	for unit in qiyana_units:
+
+		if not unit.is_alive():
+			continue
+
+		context.game_state.awaiting_choice = true
+		context.game_state.pending_choice_card_id = "OGN-155/298"
+		context.game_state.pending_choice_source_uid = unit.uid
+		context.game_state.pending_choice_player_id = unit.player_id
+		context.game_state.add_event("Qiyana conquered: choose draw 1 or channel 1 rune exhausted.")
+		return
+		
+func _apply_zhonyas_replacements(dead: Array[UnitState], context: CombatContext) -> Array[UnitState]:
+	var remaining_dead: Array[UnitState] = []
+
+	for unit in dead:
+		var zhonyas: CardInstance = _find_friendly_zhonyas(unit.player_id, context)
+
+		if zhonyas == null:
+			remaining_dead.append(unit)
+			continue
+
+		# Kill Zhonya's instead
+		context.game_state.remove_unit_from_board(zhonyas.uid)
+		zhonyas.zone = CardInstance.Zone.TRASH
+
+		# Save original unit
+		unit.damage_taken = 0
+		EffectResolver.recall_unit_exhausted(context.game_state, unit)
+
+		context.game_state.add_event("Zhonya's Hourglass died instead of %s." % unit.card_instance.data.card_name)
+
+	return remaining_dead
+	
+func _find_friendly_zhonyas(player_id: int, context: CombatContext) -> CardInstance:
+	var player: PlayerState = context.game_state.players[player_id]
+
+	for slot in player.board_slots:
+		for card in slot:
+			if card.data.card_id == "OGN-077/298":
+				return card
+
+	for lane in player.battlefield_slots:
+		for card in lane:
+			if card.data.card_id == "OGN-077/298":
+				return card
+
+	return null
+
+func _trigger_battlefield_result(
+		state: GameState,
+		battlefield: BattlefieldInstance,
+		winner_id: int,
+		result: String
+	) -> void:
+
+	match result:
+		"hold":
+			BattlefieldAbilityRegistry.trigger(
+				state,
+				battlefield,
+				BattlefieldEvents.ON_HOLD,
+				winner_id
+			)
+
+		"conquer":
+			BattlefieldAbilityRegistry.trigger(
+				state,
+				battlefield,
+				BattlefieldEvents.ON_CONQUER,
+				winner_id
+			)
+			
+func _resolve_battlefield_result(context: CombatContext) -> void:
+	var attacker_might := context.total_attacker_might
+	var defender_might := context.total_defender_might
+
+	var attacker_id := context.attackers[0].player_id
+	var defender_id := context.defenders[0].player_id
+
+	var battlefield: BattlefieldInstance = context.game_state.players[attacker_id].picked_battlefield
+
+	if attacker_might > defender_might:
+		# attacker wins → conquer
+		_trigger_battlefield_result(
+			context.game_state,
+			battlefield,
+			attacker_id,
+			"conquer"
+		)
+
+	elif attacker_might < defender_might:
+		# defender holds
+		_trigger_battlefield_result(
+			context.game_state,
+			battlefield,
+			defender_id,
+			"hold"
+		)
+
+	else:
+		# tie → both hold (depends on your rule, but safe default)
+		_trigger_battlefield_result(
+			context.game_state,
+			battlefield,
+			attacker_id,
+			"hold"
+		)
+		_trigger_battlefield_result(
+			context.game_state,
+			battlefield,
+			defender_id,
+			"hold"
+		)

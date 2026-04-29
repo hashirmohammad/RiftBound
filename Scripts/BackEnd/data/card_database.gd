@@ -88,8 +88,13 @@ func _load_cards_from_deck(deck_name: String) -> Array[CardData]:
 		if not _all_cards.has(card_id):
 			push_warning("CardDatabase: card_id '%s' not found in Cards folder (deck: %s)" % [card_id, deck_name])
 			continue
+		var card: CardData = _all_cards[card_id]
+
+		if card.type == CardData.CardType.CHAMPION:
+			continue
+
 		for i in range(count):
-			result.append(_all_cards[card_id])
+			result.append(card)
 	return result
 
 ## Returns an Array[CardData] of the rune deck cards for a preset deck.
@@ -176,3 +181,31 @@ func _find_path(id: String) -> String:
 		file_name = dir.get_next()
 	dir.list_dir_end()
 	return ""
+
+func _load_champion_units_from_deck(deck_name: String) -> Array[CardData]:
+	_ensure_cache()
+	var deck_json := _load_deck_json(deck_name)
+	if deck_json.is_empty():
+		return []
+
+	var result: Array[CardData] = []
+
+	for entry in deck_json.get("cards", []):
+		var card_id := str(entry.get("card_id", ""))
+		var count := int(entry.get("count", 1))
+
+		if card_id == "":
+			continue
+
+		if not _all_cards.has(card_id):
+			push_warning("CardDatabase: champion card_id '%s' not found in Cards folder (deck: %s)" % [card_id, deck_name])
+			continue
+
+		var card: CardData = _all_cards[card_id]
+		if card.type != CardData.CardType.CHAMPION:
+			continue
+
+		for i in range(count):
+			result.append(card)
+
+	return result

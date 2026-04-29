@@ -11,6 +11,17 @@ func validate(state: GameState) -> bool:
 		_error_message = "Invalid PASS_PRIORITY: no showdown is active."
 		return false
 
+	if state.active_showdown == null:
+		_error_message = "Invalid PASS_PRIORITY: showdown context missing."
+		return false
+
+	if not state.active_showdown.can_player_act(player_id):
+		_error_message = "Invalid PASS_PRIORITY: it is P%d's priority, not P%d's." % [
+			state.active_showdown.priority_player_id,
+			player_id
+		]
+		return false
+
 	return true
 
 func execute(state: GameState) -> void:
