@@ -180,9 +180,13 @@ func try_play_card(card_uid: int, slot_index: int) -> String:
 	return choice_controller.try_play_card(card_uid, slot_index)
 
 func _on_choice_a_pressed() -> void:
+	if not _is_local_active():
+		return
 	choice_controller.resolve_pending_choice("A")
 
 func _on_choice_b_pressed() -> void:
+	if not _is_local_active():
+		return
 	choice_controller.resolve_pending_choice("B")
 
 func try_play_card_to_slot(card_uid: int, slot_index: int) -> bool:
@@ -238,6 +242,8 @@ func try_select_unit_target(target_uid: int) -> bool:
 	return ok
 
 func _on_pass_priority_pressed() -> void:
+	if NetworkManager.is_network_mode and state.get_priority_player_id() != NetworkManager.local_player_id:
+		return
 	combat_ui_controller.try_pass_priority()
 
 func try_pass_priority() -> void:
@@ -264,6 +270,8 @@ func _on_confirm_damage_pressed() -> void:
 	combat_ui_controller.confirm_damage()
 
 func _on_cancel_payment_pressed() -> void:
+	if not _is_local_active():
+		return
 	turn_ui_controller.cancel_payment()
 
 func try_pick_runes_to_spend(rune_uid: int) -> bool:
