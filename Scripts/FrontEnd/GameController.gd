@@ -47,6 +47,7 @@ var legend_ui_controller: LegendUIController
 func _ready() -> void:
 	if NetworkManager.is_network_mode:
 		seed(NetworkManager.game_seed)
+		NetworkManager.peer_disconnected.connect(_on_peer_disconnected)
 	state = GameEngine.start_game()
 	await get_tree().process_frame
 
@@ -92,7 +93,8 @@ func _ready() -> void:
 	win_screen.quit_requested.connect(_on_quit_requested)
 
 	if NetworkManager.is_network_mode:
-		NetworkManager.peer_disconnected.connect(_on_peer_disconnected)
+		var peer_status = multiplayer.multiplayer_peer.get_connection_status() if multiplayer.multiplayer_peer else -1
+		print("[NET] GameController ready — peer status: %s" % peer_status)
 
 	_connect_buttons()
 	refresh_all_ui()
@@ -158,9 +160,13 @@ func _update_status_label() -> void:
 func _apply_action(action: GameAction) -> bool:
 	var success := GameEngine.apply_action(state, action)
 	if success and NetworkManager.is_network_mode:
-		var data := _serialize_action(action)
-		print("[NET] sending action t=%s pid=%s" % [data.get("t","?"), data.get("pid","?")])
-		_receive_action.rpc(data)
+		var peer = multiplayer.multiplayer_peer
+		if peer == null or peer.get_connection_status() != MultiplayerPeer.CONNECTION_CONNECTED:
+			print("[NET] WARN: peer not connected (status=%s), RPC skipped" % (str(peer.get_connection_status()) if peer else "null"))
+		else:
+			var data := _serialize_action(action)
+			print("[NET] sending action t=%s pid=%s" % [data.get("t","?"), data.get("pid","?")])
+			_receive_action.rpc(data)
 	return success
 
 func apply_backend_action(action: GameAction) -> void:
