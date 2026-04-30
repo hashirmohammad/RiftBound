@@ -414,6 +414,9 @@ func _get_commit_uids() -> Array[int]:
 # ─── Drag State ───────────────────────────────────────────────────────────────
 
 func _start_drag(card: RiftCard) -> void:
+	if card.is_hidden:
+		return
+
 	var mouse: Vector2 = get_global_mouse_position()
 
 	if card._is_hovered:
