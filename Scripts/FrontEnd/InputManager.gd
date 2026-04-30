@@ -752,7 +752,7 @@ func _clear_unit_highlights() -> void:
 
 
 func _clear_unit_highlights_recursive(node: Node) -> void:
-	if node is RiftCard:
+	if node is RiftCard and not node.is_hidden:
 		node.modulate = Color.WHITE
 
 	for child in node.get_children():
