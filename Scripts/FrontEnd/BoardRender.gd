@@ -43,7 +43,7 @@ func refresh_all_ui() -> void:
 
 func refresh_hand_ui() -> void:
 	hand_manager.render_hand(state.players[_local_id()].hand)
-	hand_manager_p1.render_hand(state.players[1 - _local_id()].hand)
+	hand_manager_p1.render_hand(state.players[1 - _local_id()].hand, NetworkManager.is_network_mode)
 
 
 func refresh_deck_ui() -> void:
