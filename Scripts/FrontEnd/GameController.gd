@@ -158,7 +158,9 @@ func _update_status_label() -> void:
 func _apply_action(action: GameAction) -> bool:
 	var success := GameEngine.apply_action(state, action)
 	if success and NetworkManager.is_network_mode:
-		_receive_action.rpc(_serialize_action(action))
+		var data := _serialize_action(action)
+		print("[NET] sending action t=%s pid=%s" % [data.get("t","?"), data.get("pid","?")])
+		_receive_action.rpc(data)
 	return success
 
 func apply_backend_action(action: GameAction) -> void:
@@ -336,6 +338,7 @@ func get_actor_player() -> PlayerState:
 
 @rpc("any_peer")
 func _receive_action(data: Dictionary) -> void:
+	print("[NET] received action t=%s from peer %s" % [data.get("t","?"), multiplayer.get_remote_sender_id()])
 	if data.get("t") == "play" and data.has("meta"):
 		state.pending_play_metadata = (data["meta"] as Dictionary).duplicate(true)
 	var action := _deserialize_action(data)
@@ -344,6 +347,7 @@ func _receive_action(data: Dictionary) -> void:
 	var ok := GameEngine.apply_action(state, action)
 	if not ok:
 		push_error("[NET] _receive_action: remote action '%s' failed — state may have diverged" % data.get("t", "?"))
+	print("[NET] action applied ok=%s, refreshing UI" % ok)
 	refresh_all_ui()
 	if state.phase != "MAIN":
 		await wait_until_main()
