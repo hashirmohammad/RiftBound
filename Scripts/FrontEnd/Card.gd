@@ -20,6 +20,7 @@ static var _drag_active:  bool     = false
 var card_uid:      int       = -1
 var card_data:     CardData  = null
 var current_state: CardState = CardState.IN_HAND
+var is_hidden:     bool      = false
 var _is_hovered:   bool      = false
 var _hover_tween_active: bool = false
 var _base_scale:         Vector2 = Vector2(0.55, 0.55)
@@ -138,7 +139,9 @@ func _process(_delta: float) -> void:
 	if current_state == CardState.DRAGGING:
 		return
 	if _drag_active:
-		return  # a card is being dragged; suppress hover on all other cards
+		return
+	if is_hidden:
+		return
 	if card_data != null and card_data.type == CardData.CardType.RUNE:
 		return
 

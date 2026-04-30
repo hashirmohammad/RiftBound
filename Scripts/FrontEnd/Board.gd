@@ -444,10 +444,10 @@ func _create_battlefield_slot(panel: Panel, slot_name: String) -> CardSlot:
 func get_slot_index_under_mouse() -> int:
 	if game_controller == null:
 		return -1
-
 	var active_id: int = game_controller.get_actor_player().id
-	var slots = _player_slot_nodes if active_id == 0 else _p1_slot_nodes
-	var mouse_pos = get_global_mouse_position()
+	var local_id: int  = NetworkManager.local_player_id
+	var slots          = _player_slot_nodes if active_id == local_id else _p1_slot_nodes
+	var mouse_pos      = get_global_mouse_position()
 
 	for i in range(slots.size()):
 		var slot = slots[i]
@@ -463,13 +463,14 @@ func get_slot_index_under_mouse() -> int:
 	return -1
 
 func get_battlefield_half_under_mouse() -> Dictionary:
-	var mouse_pos = get_global_mouse_position()
+	var mouse_pos  = get_global_mouse_position()
+	var local_id: int = NetworkManager.local_player_id
 
 	var entries = [
-		{"player": 1, "lane": 0, "slot": _p1_bf_slot_left},
-		{"player": 1, "lane": 1, "slot": _p1_bf_slot_right},
-		{"player": 0, "lane": 0, "slot": _p0_bf_slot_left},
-		{"player": 0, "lane": 1, "slot": _p0_bf_slot_right},
+		{"player": 1 - local_id, "lane": 0, "slot": _p1_bf_slot_left},
+		{"player": 1 - local_id, "lane": 1, "slot": _p1_bf_slot_right},
+		{"player": local_id,     "lane": 0, "slot": _p0_bf_slot_left},
+		{"player": local_id,     "lane": 1, "slot": _p0_bf_slot_right},
 	]
 
 	for entry in entries:
@@ -655,10 +656,10 @@ func _draw_border_box(pos: Vector2, size: Vector2) -> void:
 	add_rect(Vector2(pos.x + size.x - BORDER_W,  pos.y),                     Vector2(BORDER_W, size.y),  COLOR_BORDER)
 
 func get_board_slot_data_under_mouse() -> Dictionary:
-	var mouse_pos = get_global_mouse_position()
-	var actor_id: int = game_controller.get_actor_player().id
-
-	var slots = _player_slot_nodes if actor_id == 0 else _p1_slot_nodes
+	var mouse_pos  = get_global_mouse_position()
+	var actor_id: int  = game_controller.get_actor_player().id
+	var local_id: int  = NetworkManager.local_player_id
+	var slots          = _player_slot_nodes if actor_id == local_id else _p1_slot_nodes
 
 	for i in range(slots.size()):
 		var slot = slots[i]

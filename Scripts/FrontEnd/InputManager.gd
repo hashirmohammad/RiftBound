@@ -45,11 +45,13 @@ func _process(_delta: float) -> void:
 func _input(event) -> void:
 	if not event is InputEventMouseButton:
 		return
+	if not _is_local_turn():
+		return
 
 	if event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
 		if _legend_targeting:
 			_cancel_legend_targeting()
-			return
+		return
 
 	if game_controller.state.awaiting_damage_assignment:
 		if event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
@@ -412,6 +414,9 @@ func _get_commit_uids() -> Array[int]:
 # ─── Drag State ───────────────────────────────────────────────────────────────
 
 func _start_drag(card: RiftCard) -> void:
+	if card.is_hidden:
+		return
+
 	var mouse: Vector2 = get_global_mouse_position()
 
 	if card._is_hovered:
@@ -467,8 +472,8 @@ func _clear_drag() -> void:
 
 
 func _active_hand():
-	var id: int = game_controller.state.get_priority_player_id()
-	return $"../P0/P0_Hand" if id == 0 else $"../P1/P1_Hand"
+	var id: int = game_controller.get_actor_player().id
+	return $"../P0/P0_Hand" if id == NetworkManager.local_player_id else $"../P1/P1_Hand"
 
 
 # ─── Highlights ───────────────────────────────────────────────────────────────
@@ -480,13 +485,14 @@ func _highlight_slots() -> void:
 		return
 
 	var actor: PlayerState = game_controller.get_actor_player()
-	var actor_id: int = actor.id
+	var actor_id: int      = actor.id
+	var local_id: int      = NetworkManager.local_player_id
 
-	var base_slots: Array = board_reference._player_slot_nodes if actor_id == 0 else board_reference._p1_slot_nodes
+	var base_slots: Array = board_reference._player_slot_nodes if actor_id == local_id else board_reference._p1_slot_nodes
 	var bf_slots: Array = [
 		board_reference._p0_bf_slot_left,
 		board_reference._p0_bf_slot_right
-	] if actor_id == 0 else [
+	] if actor_id == local_id else [
 		board_reference._p1_bf_slot_left,
 		board_reference._p1_bf_slot_right
 	]
@@ -514,11 +520,12 @@ func _highlight_enemy_battlefields_for_deadbloom(actor_id: int) -> void:
 		return
 
 	var enemy_id: int = 1 - actor_id
+	var local_id: int = NetworkManager.local_player_id
 	var enemy_player: PlayerState = game_controller.state.players[enemy_id]
 	var enemy_bf_slots: Array = [
 		board_reference._p1_bf_slot_left,
 		board_reference._p1_bf_slot_right
-	] if enemy_id == 1 else [
+	] if enemy_id != local_id else [
 		board_reference._p0_bf_slot_left,
 		board_reference._p0_bf_slot_right
 	]
@@ -589,10 +596,11 @@ func highlight_spell_destinations() -> void:
 	if destination_player_id == -1:
 		return
 
+	var local_id: int = NetworkManager.local_player_id
 	var bf_slots: Array = [
 		board_reference._p0_bf_slot_left,
 		board_reference._p0_bf_slot_right
-	] if destination_player_id == 0 else [
+	] if destination_player_id == local_id else [
 		board_reference._p1_bf_slot_left,
 		board_reference._p1_bf_slot_right
 	]
@@ -601,7 +609,7 @@ func highlight_spell_destinations() -> void:
 		if bf_slot != null:
 			bf_slot.highlight(true, true)
 
-	var board_slots: Array = board_reference._player_slot_nodes if destination_player_id == 0 else board_reference._p1_slot_nodes
+	var board_slots: Array = board_reference._player_slot_nodes if destination_player_id == local_id else board_reference._p1_slot_nodes
 	for slot in board_slots:
 		if slot != null:
 			slot.highlight(true, true)
@@ -725,6 +733,19 @@ func _try_assign_damage(delta: int) -> void:
 			game_controller.adjust_damage_assignment(unit.uid, delta)
 			return
 
+func _is_local_turn() -> bool:
+	if not NetworkManager.is_network_mode:
+		return true
+	var gstate: GameState = game_controller.state
+	if gstate.awaiting_damage_assignment:
+		var ctx := gstate.active_combat_context
+		if ctx == null:
+			return false
+		var loser_is_attacker := ctx.total_defender_might > ctx.total_attacker_might
+		var assigner_id: int = ctx.attackers[0].player_id if loser_is_attacker else ctx.defenders[0].player_id
+		return assigner_id == NetworkManager.local_player_id
+	return NetworkManager.local_player_id == gstate.get_active_player().id
+
 func _is_active_player_champion(card_uid: int) -> bool:
 	var player: PlayerState = game_controller.get_actor_player()
 	return player.champion != null and player.champion.uid == card_uid
@@ -734,7 +755,7 @@ func _clear_unit_highlights() -> void:
 
 
 func _clear_unit_highlights_recursive(node: Node) -> void:
-	if node is RiftCard:
+	if node is RiftCard and not node.is_hidden:
 		node.modulate = Color.WHITE
 
 	for child in node.get_children():

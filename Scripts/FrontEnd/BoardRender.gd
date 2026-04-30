@@ -11,6 +11,8 @@ var hand_manager: Node
 var hand_manager_p1: Node
 var deck_ui: Node
 
+var _prev_trash_counts: Dictionary = {}
+
 
 func setup(
 		_controller: Node,
@@ -28,42 +30,45 @@ func setup(
 	deck_ui = _deck_ui
 
 
-func refresh_all_ui() -> void:
-	var p0: PlayerState = state.players[0]
-	var p1: PlayerState = state.players[1]
+func _local_id() -> int:
+	return NetworkManager.local_player_id
 
-	render_static_state(p0, p1)
+
+func refresh_all_ui() -> void:
+	render_static_state(state.players[_local_id()], state.players[1 - _local_id()])
 	refresh_hand_ui()
 	render_board()
 	refresh_deck_ui()
 
 
 func refresh_hand_ui() -> void:
-	hand_manager.render_hand(state.players[0].hand)
-	hand_manager_p1.render_hand(state.players[1].hand)
+	hand_manager.render_hand(state.players[_local_id()].hand)
+	hand_manager_p1.render_hand(state.players[1 - _local_id()].hand, NetworkManager.is_network_mode)
 
 
 func refresh_deck_ui() -> void:
 	if deck_ui != null and deck_ui.has_method("set_count"):
-		deck_ui.set_count(state.players[0].deck.size())
+		deck_ui.set_count(state.players[_local_id()].deck.size())
 
 
 func refresh_payment_ui() -> void:
-	render_rune_panels(state.players[0], state.players[1])
+	render_rune_panels(state.players[_local_id()], state.players[1 - _local_id()])
 
 
 func render_board() -> void:
-	_render_player_slots(state.players[0], board._player_slot_nodes)
-	_render_player_slots(state.players[1], board._p1_slot_nodes)
+	var local: PlayerState  = state.players[_local_id()]
+	var remote: PlayerState = state.players[1 - _local_id()]
+	_render_player_slots(local,  board._player_slot_nodes)
+	_render_player_slots(remote, board._p1_slot_nodes)
 
-	_render_battlefield_lane(state.players[1].battlefield_slots[0], board._p1_bf_slot_left)
-	_render_battlefield_lane(state.players[1].battlefield_slots[1], board._p1_bf_slot_right)
-	_render_battlefield_lane(state.players[0].battlefield_slots[0], board._p0_bf_slot_left)
-	_render_battlefield_lane(state.players[0].battlefield_slots[1], board._p0_bf_slot_right)
+	_render_battlefield_lane(remote.battlefield_slots[0], board._p1_bf_slot_left)
+	_render_battlefield_lane(remote.battlefield_slots[1], board._p1_bf_slot_right)
+	_render_battlefield_lane(local.battlefield_slots[0],  board._p0_bf_slot_left)
+	_render_battlefield_lane(local.battlefield_slots[1],  board._p0_bf_slot_right)
 
 
 func render_slot(player: PlayerState, slot_index: int) -> void:
-	var slots = board._player_slot_nodes if player.id == 0 else board._p1_slot_nodes
+	var slots = board._player_slot_nodes if player.id == _local_id() else board._p1_slot_nodes
 	if slot_index >= slots.size() or slots[slot_index] == null:
 		return
 
@@ -75,7 +80,7 @@ func render_slot(player: PlayerState, slot_index: int) -> void:
 
 
 func render_arena_slot(player: PlayerState) -> void:
-	if player.id == 1:
+	if player.id != _local_id():
 		_render_battlefield_lane(player.battlefield_slots[0], board._p1_bf_slot_left)
 		_render_battlefield_lane(player.battlefield_slots[1], board._p1_bf_slot_right)
 	else:
@@ -109,11 +114,56 @@ func render_static_state(player: PlayerState, opponent: PlayerState) -> void:
 	_render_arena_pick(board.arena_p1_panel, opponent.picked_battlefield, "Arena 2")
 
 	render_rune_panels(player, opponent)
+	render_trash_panels(player, opponent)
 
 
 func render_rune_panels(p0: PlayerState, p1: PlayerState) -> void:
 	_render_runes(board.player_runes_panel, p0.rune_pool, p0.id)
 	_render_runes(board.opponent_runes_panel, p1.rune_pool, p1.id)
+
+
+func render_trash_panels(p0: PlayerState, p1: PlayerState) -> void:
+	_render_trash(board.player_trash_panel, p0.trash, p0.id)
+	_render_trash(board.opponent_trash_panel, p1.trash, p1.id)
+
+
+func _render_trash(panel: Panel, trash: Array, player_id: int) -> void:
+	if panel == null:
+		return
+
+	var prev_count: int = _prev_trash_counts.get(player_id, 0)
+	var new_count: int = trash.size()
+	var has_new: bool = new_count > prev_count
+	_prev_trash_counts[player_id] = new_count
+
+	for child in panel.get_children():
+		if child is RiftCard:
+			child.queue_free()
+
+	if trash.is_empty():
+		return
+
+	var show_count: int = mini(new_count, 5)
+
+	for i in range(show_count):
+		var idx: int = new_count - show_count + i
+		var card_instance: CardInstance = trash[idx]
+
+		var card: RiftCard = CARD_SCENE.instantiate()
+		panel.add_child(card)
+		card.position = panel.size / 2.0 + Vector2(i * 2.0, i * 2.0)
+		card.scale = Vector2(0.35, 0.35)
+		card.z_index = i
+		card.setup_from_card_instance(card_instance)
+		card.set_card_state(RiftCard.CardState.ON_BOARD)
+		card.rotation_degrees = 0.0
+		card.refresh_slot_state()
+
+		if i == show_count - 1 and has_new:
+			card.scale = Vector2.ZERO
+			var tween: Tween = card.create_tween()
+			tween.tween_property(card, "scale", Vector2(0.35, 0.35), 0.3)\
+				.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
 
 
 func _render_player_slots(player: PlayerState, slots: Array) -> void:
